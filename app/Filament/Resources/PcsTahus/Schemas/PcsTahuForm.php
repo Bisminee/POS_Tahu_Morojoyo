@@ -10,7 +10,7 @@ class PcsTahuForm
     public static function configure(Schema $schema): Schema
     {
         return $schema->components([
-            TextInput::make('nama_pcs')
+            TextInput::make('namaPcs')
                 ->label('Nama PCS')
                 ->required()
                 ->maxLength(255),

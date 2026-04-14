@@ -12,10 +12,10 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('menu_details', function (Blueprint $table) {
-            $table->id('id_detail');
+            $table->id('idDetail');
             $table->unsignedBigInteger('idMenu');
-            $table->unsignedBigInteger('id_pcs');
-            $table->integer('jumlah_pcs');
+            $table->unsignedBigInteger('idPcs');
+            $table->integer('jumlahPcs');
             $table->timestamps();
 
             $table->foreign('idMenu')
@@ -23,12 +23,12 @@ return new class extends Migration
                 ->on('menus')
                 ->cascadeOnDelete();
 
-            $table->foreign('id_pcs')
-                ->references('id_pcs')
+            $table->foreign('idPcs')
+                ->references('idPcs')
                 ->on('pcs_tahus')
                 ->cascadeOnDelete();
 
-            $table->unique(['idMenu', 'id_pcs']);
+            $table->unique(['idMenu', 'idPcs']);
         });
     }
 

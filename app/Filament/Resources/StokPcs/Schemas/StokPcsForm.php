@@ -11,21 +11,21 @@ class StokPcsForm
     public static function configure(Schema $schema): Schema
     {
         return $schema->components([
-            Select::make('id_cabang')
+            Select::make('idCabang')
                 ->label('Cabang')
-                ->relationship('cabang', 'alamat')
+                ->relationship('cabang', 'Alamat')
                 ->required()
                 ->searchable()
                 ->preload(),
 
-            Select::make('id_pcs_tahu')
+            Select::make('idPcs')
                 ->label('PCS Tahu')
-                ->relationship('pcsTahu', 'nama_pcs')
+                ->relationship('pcsTahu', 'namaPcs')
                 ->required()
                 ->searchable()
                 ->preload(),
 
-            TextInput::make('jumlah_stok')
+            TextInput::make('jumlahStok')
                 ->label('Jumlah Stok')
                 ->numeric()
                 ->required(),

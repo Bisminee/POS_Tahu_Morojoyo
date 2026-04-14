@@ -20,12 +20,12 @@ class StokPcsTable
                     ->limit(40)
                     ->searchable(),
 
-                TextColumn::make('pcsTahu.nama_pcs')
+                TextColumn::make('pcsTahu.namaPcs')
                     ->label('PCS Tahu')
                     ->searchable()
                     ->sortable(),
 
-                TextColumn::make('jumlah_stok')
+                TextColumn::make('jumlahStok')
                     ->label('Jumlah Stok')
                     ->sortable(),
 

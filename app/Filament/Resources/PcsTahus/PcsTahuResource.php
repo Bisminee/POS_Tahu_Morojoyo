@@ -16,7 +16,7 @@ class PcsTahuResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCube;
 
-    protected static ?string $recordTitleAttribute = 'nama_pcs';
+    protected static ?string $recordTitleAttribute = 'namaPcs';
 
     protected static ?string $navigationLabel = 'PCS Tahu';
     protected static ?string $modelLabel = 'PCS Tahu';

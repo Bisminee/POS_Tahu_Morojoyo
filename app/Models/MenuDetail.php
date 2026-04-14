@@ -8,12 +8,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class MenuDetail extends Model
 {
     protected $table = 'menu_details';
-    protected $primaryKey = 'id_detail';
+    protected $primaryKey = 'idDetail';
 
     protected $fillable = [
         'idMenu',
-        'id_pcs',
-        'jumlah_pcs',
+        'idPcs',
+        'jumlahPcs',
     ];
 
     public function menu(): BelongsTo
@@ -23,6 +23,6 @@ class MenuDetail extends Model
 
     public function pcsTahu(): BelongsTo
     {
-        return $this->belongsTo(PcsTahu::class, 'id_pcs', 'id_pcs');
+        return $this->belongsTo(PcsTahu::class, 'idPcs', 'idPcs');
     }
 }

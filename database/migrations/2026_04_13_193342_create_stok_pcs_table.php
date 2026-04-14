@@ -13,22 +13,22 @@ return new class extends Migration
     {
         Schema::create('stok_pcs', function (Blueprint $table) {
             $table->id('idStokPcs');
-            $table->unsignedBigInteger('id_cabang');
-            $table->unsignedBigInteger('id_pcs_tahu');
-            $table->integer('jumlah_stok');
+            $table->unsignedBigInteger('idCabang');
+            $table->unsignedBigInteger('idPcs');
+            $table->integer('jumlahStok');
             $table->timestamps();
 
-            $table->foreign('id_cabang')
+            $table->foreign('idCabang')
                 ->references('idCabang')
                 ->on('cabangs')
                 ->cascadeOnDelete();
 
-            $table->foreign('id_pcs_tahu')
-                ->references('id_pcs')
+            $table->foreign('idPcs')
+                ->references('idPcs')
                 ->on('pcs_tahus')
                 ->cascadeOnDelete();
 
-            $table->unique(['id_cabang', 'id_pcs_tahu']);
+            $table->unique(['idCabang', 'idPcs']);
         });
     }
 

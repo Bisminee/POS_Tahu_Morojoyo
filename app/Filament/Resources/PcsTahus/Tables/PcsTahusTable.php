@@ -15,7 +15,7 @@ class PcsTahusTable
     {
         return $table
             ->columns([
-                TextColumn::make('nama_pcs')
+                TextColumn::make('namaPcs')
                     ->label('Nama PCS')
                     ->searchable()
                     ->sortable(),

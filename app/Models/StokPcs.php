@@ -11,18 +11,18 @@ class StokPcs extends Model
     protected $primaryKey = 'idStokPcs';
 
     protected $fillable = [
-        'id_cabang',
-        'id_pcs_tahu',
-        'jumlah_stok',
+        'idCabang',
+        'idPcs',
+        'jumlahStok',
     ];
 
     public function cabang(): BelongsTo
     {
-        return $this->belongsTo(Cabang::class, 'id_cabang', 'idCabang');
+        return $this->belongsTo(Cabang::class, 'idCabang', 'idCabang');
     }
 
     public function pcsTahu(): BelongsTo
     {
-        return $this->belongsTo(PcsTahu::class, 'id_pcs_tahu', 'id_pcs');
+        return $this->belongsTo(PcsTahu::class, 'idPcs', 'idPcs');
     }
 }

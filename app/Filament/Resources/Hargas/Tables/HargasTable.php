@@ -20,11 +20,11 @@ class HargasTable
                     ->searchable()
                     ->sortable(),
 
-                TextColumn::make('metode_payment')
+                TextColumn::make('metodePayment')
                     ->label('Metode Payment')
                     ->formatStateUsing(fn (string $state): string => match ($state) {
-                        'take_away_cash' => 'Take Away Cash',
-                        'take_away_qris' => 'Take Away QRIS',
+                        'takeAwayCash' => 'Take Away Cash',
+                        'takeAwayQris' => 'Take Away QRIS',
                         'shopeefood' => 'ShopeeFood',
                         'gofood' => 'GoFood',
                         default => $state,

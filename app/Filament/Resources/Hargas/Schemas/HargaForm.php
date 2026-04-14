@@ -18,11 +18,11 @@ class HargaForm
                 ->searchable()
                 ->preload(),
 
-            Select::make('metode_payment')
+            Select::make('metodePayment')
                 ->label('Metode Payment')
                 ->options([
-                    'take_away_cash' => 'Take Away Cash',
-                    'take_away_qris' => 'Take Away QRIS',
+                    'takeAwayCash' => 'Take Away Cash',
+                    'takeAwayQris' => 'Take Away QRIS',
                     'shopeefood' => 'ShopeeFood',
                     'gofood' => 'GoFood',
                 ])

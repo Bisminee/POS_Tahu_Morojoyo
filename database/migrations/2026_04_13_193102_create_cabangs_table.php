@@ -13,11 +13,11 @@ return new class extends Migration
     {
         Schema::create('cabangs', function (Blueprint $table) {
             $table->id('idCabang');
-            $table->unsignedBigInteger('karyawan_id')->nullable();
-            $table->text('alamat');
+            $table->unsignedBigInteger('Karyawan')->nullable();
+            $table->text('Alamat');
             $table->timestamps();
 
-            $table->foreign('karyawan_id')
+            $table->foreign('Karyawan')
                 ->references('idKaryawan')
                 ->on('karyawans')
                 ->nullOnDelete();

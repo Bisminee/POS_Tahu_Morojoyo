@@ -10,13 +10,13 @@ class CabangForm
     public static function configure(Schema $schema): Schema
     {
         return $schema->components([
-            Forms\Components\Select::make('karyawan_id')
+            Forms\Components\Select::make('Karyawan')
                 ->label('Karyawan')
                 ->relationship('karyawan', 'nama')
                 ->searchable()
                 ->preload(),
 
-            Forms\Components\Textarea::make('alamat')
+            Forms\Components\Textarea::make('Alamat')
                 ->label('Alamat')
                 ->required()
                 ->rows(3),

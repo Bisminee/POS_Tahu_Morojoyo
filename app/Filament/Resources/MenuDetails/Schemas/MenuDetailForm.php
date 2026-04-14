@@ -18,14 +18,14 @@ class MenuDetailForm
                 ->searchable()
                 ->preload(),
 
-            Select::make('id_pcs')
+            Select::make('idPcs')
                 ->label('PCS Tahu')
-                ->relationship('pcsTahu', 'nama_pcs')
+                ->relationship('pcsTahu', 'namaPcs')
                 ->required()
                 ->searchable()
                 ->preload(),
 
-            TextInput::make('jumlah_pcs')
+            TextInput::make('jumlahPcs')
                 ->label('Jumlah PCS')
                 ->numeric()
                 ->required(),

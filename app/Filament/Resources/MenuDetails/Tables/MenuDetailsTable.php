@@ -20,12 +20,12 @@ class MenuDetailsTable
                     ->searchable()
                     ->sortable(),
 
-                TextColumn::make('pcsTahu.nama_pcs')
+                TextColumn::make('pcsTahu.namaPcs')
                     ->label('PCS Tahu')
                     ->searchable()
                     ->sortable(),
 
-                TextColumn::make('jumlah_pcs')
+                TextColumn::make('jumlahPcs')
                     ->label('Jumlah PCS')
                     ->sortable(),
 

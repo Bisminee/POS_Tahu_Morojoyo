@@ -12,7 +12,7 @@ class Harga extends Model
 
     protected $fillable = [
         'idMenu',
-        'metode_payment',
+        'metodePayment',
         'harga',
     ];
 

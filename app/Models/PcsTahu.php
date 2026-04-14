@@ -8,19 +8,19 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class PcsTahu extends Model
 {
     protected $table = 'pcs_tahus';
-    protected $primaryKey = 'id_pcs';
+    protected $primaryKey = 'idPcs';
 
     protected $fillable = [
-        'nama_pcs',
+        'namaPcs',
     ];
 
     public function stokPcs(): HasMany
     {
-        return $this->hasMany(StokPcs::class, 'id_pcs_tahu', 'id_pcs');
+        return $this->hasMany(StokPcs::class, 'idPcs', 'idPcs');
     }
 
     public function menuDetails(): HasMany
     {
-        return $this->hasMany(MenuDetail::class, 'id_pcs', 'id_pcs');
+        return $this->hasMany(MenuDetail::class, 'idPcs', 'idPcs');
     }
 }

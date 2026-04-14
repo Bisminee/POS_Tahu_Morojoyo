@@ -12,17 +12,17 @@ class Cabang extends Model
     protected $primaryKey = 'idCabang';
 
     protected $fillable = [
-        'karyawan_id',
-        'alamat',
+        'Karyawan',
+        'Alamat',
     ];
 
     public function karyawan(): BelongsTo
     {
-        return $this->belongsTo(Karyawan::class, 'karyawan_id', 'idKaryawan');
+        return $this->belongsTo(Karyawan::class, 'Karyawan', 'idKaryawan');
     }
 
     public function stokPcs(): HasMany
     {
-        return $this->hasMany(StokPcs::class, 'id_cabang', 'idCabang');
+        return $this->hasMany(StokPcs::class, 'idCabang', 'idCabang');
     }
 }

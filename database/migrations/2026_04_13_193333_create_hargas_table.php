@@ -14,9 +14,9 @@ return new class extends Migration
         Schema::create('hargas', function (Blueprint $table) {
             $table->id('idHarga');
             $table->unsignedBigInteger('idMenu');
-            $table->enum('metode_payment', [
-                'take_away_cash',
-                'take_away_qris',
+            $table->enum('metodePayment', [
+                'takeAwayCash',
+                'takeAwayQris',
                 'shopeefood',
                 'gofood',
             ]);
@@ -28,7 +28,7 @@ return new class extends Migration
                 ->on('menus')
                 ->cascadeOnDelete();
 
-            $table->unique(['idMenu', 'metode_payment']);
+            $table->unique(['idMenu', 'metodePayment']);
         });
     }
 

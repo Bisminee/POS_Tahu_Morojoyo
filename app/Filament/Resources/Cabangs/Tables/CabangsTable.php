@@ -20,7 +20,7 @@ class CabangsTable
                     ->searchable()
                     ->sortable(),
 
-                TextColumn::make('alamat')
+                TextColumn::make('Alamat')
                     ->label('Alamat')
                     ->limit(50)
                     ->searchable(),

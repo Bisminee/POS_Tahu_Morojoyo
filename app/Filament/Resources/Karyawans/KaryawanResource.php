@@ -22,12 +22,21 @@ class KaryawanResource extends Resource
     protected static ?string $modelLabel = 'Karyawan';
     protected static ?string $pluralModelLabel = 'Karyawan';
 
+    /**
+     * Sembunyikan resource ini dari navigasi jika user tidak punya akses.
+     * Policy KaryawanPolicy::viewAny() akan menentukan siapa yang boleh.
+     */
+    public static function canAccess(): bool
+    {
+        return auth()->user()?->can('viewAny', Karyawan::class) ?? false;
+    }
+
     public static function getPages(): array
     {
         return [
-            'index' => ListKaryawans::route('/'),
+            'index'  => ListKaryawans::route('/'),
             'create' => CreateKaryawan::route('/create'),
-            'edit' => EditKaryawan::route('/{record}/edit'),
+            'edit'   => EditKaryawan::route('/{record}/edit'),
         ];
     }
 }
