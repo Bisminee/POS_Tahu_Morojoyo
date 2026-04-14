@@ -12,8 +12,23 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('stok_pcs', function (Blueprint $table) {
-            $table->id();
+            $table->id('idStokPcs');
+            $table->unsignedBigInteger('idCabang');
+            $table->unsignedBigInteger('idPcs');
+            $table->integer('jumlahStok');
             $table->timestamps();
+
+            $table->foreign('idCabang')
+                ->references('idCabang')
+                ->on('cabangs')
+                ->cascadeOnDelete();
+
+            $table->foreign('idPcs')
+                ->references('idPcs')
+                ->on('pcs_tahus')
+                ->cascadeOnDelete();
+
+            $table->unique(['idCabang', 'idPcs']);
         });
     }
 

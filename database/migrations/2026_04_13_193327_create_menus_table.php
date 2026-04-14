@@ -12,7 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('menus', function (Blueprint $table) {
-            $table->id();
+            $table->id('idMenu');
+            $table->string('namaMenu');
             $table->timestamps();
         });
     }

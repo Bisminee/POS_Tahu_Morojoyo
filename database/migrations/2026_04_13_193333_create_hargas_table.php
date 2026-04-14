@@ -12,8 +12,23 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('hargas', function (Blueprint $table) {
-            $table->id();
+            $table->id('idHarga');
+            $table->unsignedBigInteger('idMenu');
+            $table->enum('metodePayment', [
+                'takeAwayCash',
+                'takeAwayQris',
+                'shopeefood',
+                'gofood',
+            ]);
+            $table->decimal('harga', 12, 2);
             $table->timestamps();
+
+            $table->foreign('idMenu')
+                ->references('idMenu')
+                ->on('menus')
+                ->cascadeOnDelete();
+
+            $table->unique(['idMenu', 'metode_payment']);
         });
     }
 
