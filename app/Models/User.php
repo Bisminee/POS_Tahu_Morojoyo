@@ -4,11 +4,13 @@ namespace App\Models;
 
 use App\Enums\Role;
 use Database\Factories\UserFactory;
+use Filament\Models\Contracts\FilamentUser;
+use Filament\Panel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-class User extends Authenticatable
+class User extends Authenticatable implements FilamentUser
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
@@ -42,5 +44,19 @@ class User extends Authenticatable
     public function isManager(): bool
     {
         return $this->role === Role::Manager;
+    }
+
+    /**
+     * Tentukan panel mana yang boleh diakses user ini.
+     * Owner hanya boleh masuk panel 'owner'.
+     * Manager hanya boleh masuk panel 'manager'.
+     */
+    public function canAccessPanel(Panel $panel): bool
+    {
+        return match ($panel->getId()) {
+            'owner'   => $this->isOwner(),
+            'manager' => $this->isManager(),
+            default   => false,
+        };
     }
 }

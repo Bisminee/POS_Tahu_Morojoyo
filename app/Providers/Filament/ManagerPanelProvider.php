@@ -2,8 +2,6 @@
 
 namespace App\Providers\Filament;
 
-use App\Enums\Role;
-use App\Models\User;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -31,7 +29,6 @@ class ManagerPanelProvider extends PanelProvider
             ->colors([
                 'primary' => Color::Blue,
             ])
-            // Daftarkan resource KECUALI Karyawan - manager tidak bisa kelola karyawan
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
             ->pages([
@@ -54,9 +51,6 @@ class ManagerPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
-            ])
-            // Hanya user dengan role 'manager' yang boleh masuk panel ini
-            ->authGuard('web')
-            ->auth(fn (User $user) => $user->role === Role::Manager);
+            ]);
     }
 }

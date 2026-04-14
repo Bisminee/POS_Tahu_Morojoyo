@@ -13,14 +13,14 @@ class StokPcsForm
         return $schema->components([
             Select::make('idCabang')
                 ->label('Cabang')
-                ->relationship('cabang', 'Alamat')
+                ->options(\App\Models\Cabang::pluck('Alamat', 'idCabang'))
                 ->required()
                 ->searchable()
                 ->preload(),
 
             Select::make('idPcs')
                 ->label('PCS Tahu')
-                ->relationship('pcsTahu', 'namaPcs')
+                ->options(\App\Models\PcsTahu::pluck('namaPcs', 'idPcs'))
                 ->required()
                 ->searchable()
                 ->preload(),

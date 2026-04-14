@@ -13,7 +13,7 @@ class HargaForm
         return $schema->components([
             Select::make('idMenu')
                 ->label('Menu')
-                ->relationship('menu', 'namaMenu')
+                ->options(\App\Models\Menu::pluck('namaMenu', 'idMenu'))
                 ->required()
                 ->searchable()
                 ->preload(),

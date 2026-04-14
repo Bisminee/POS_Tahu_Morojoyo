@@ -13,14 +13,14 @@ class MenuDetailForm
         return $schema->components([
             Select::make('idMenu')
                 ->label('Menu')
-                ->relationship('menu', 'namaMenu')
+                ->options(\App\Models\Menu::pluck('namaMenu', 'idMenu'))
                 ->required()
                 ->searchable()
                 ->preload(),
 
             Select::make('idPcs')
                 ->label('PCS Tahu')
-                ->relationship('pcsTahu', 'namaPcs')
+                ->options(\App\Models\PcsTahu::pluck('namaPcs', 'idPcs'))
                 ->required()
                 ->searchable()
                 ->preload(),
