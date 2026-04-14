@@ -13,7 +13,7 @@ class StokPcsForm
         return $schema->components([
             Select::make('id_cabang')
                 ->label('Cabang')
-                ->relationship('cabang', 'Alamat')
+                ->relationship('cabang', 'alamat')
                 ->required()
                 ->searchable()
                 ->preload(),

@@ -14,9 +14,9 @@ return new class extends Migration
         Schema::create('hargas', function (Blueprint $table) {
             $table->id('idHarga');
             $table->unsignedBigInteger('idMenu');
-            $table->enum('metodePayment', [
-                'takeAwayCash',
-                'takeAwayQris',
+            $table->enum('metode_payment', [
+                'take_away_cash',
+                'take_away_qris',
                 'shopeefood',
                 'gofood',
             ]);

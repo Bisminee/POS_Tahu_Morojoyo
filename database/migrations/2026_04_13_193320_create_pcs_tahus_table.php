@@ -12,8 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('pcs_tahus', function (Blueprint $table) {
-            $table->id('idPcs');
-            $table->string('namaPcs');
+            $table->id('id_pcs');
+            $table->string('nama_pcs');
             $table->timestamps();
         });
     }

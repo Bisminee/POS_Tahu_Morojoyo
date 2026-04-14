@@ -12,13 +12,13 @@ class Cabang extends Model
     protected $primaryKey = 'idCabang';
 
     protected $fillable = [
-        'Karyawan',
-        'Alamat',
+        'karyawan_id',
+        'alamat',
     ];
 
     public function karyawan(): BelongsTo
     {
-        return $this->belongsTo(Karyawan::class, 'Karyawan', 'idKaryawan');
+        return $this->belongsTo(Karyawan::class, 'karyawan_id', 'idKaryawan');
     }
 
     public function stokPcs(): HasMany
