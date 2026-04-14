@@ -38,17 +38,22 @@ class MenuResource extends Resource
         return $table
             ->columns([
                 TextColumn::make('namaMenu')
-                    ->label('Nama Menu'),
+                    ->label('Nama Menu')
+                    ->searchable(),
 
                 TextColumn::make('deskripsi')
                     ->label('Isi Menu')
                     ->wrap()
-                    ->limit(50),
+                    ->placeholder('—')
+                    // ✅ Safety net: eksplisit baca dari accessor
+                    // Berguna selama transisi / debugging
+                    ->getStateUsing(fn($record) => $record->deskripsi),
             ]);
     }
+
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()
-            ->with('menuDetails.pcsTahu');
+            ->with('menuDetails.pcsTahu'); // ✅ Sudah benar, pertahankan
     }
 }

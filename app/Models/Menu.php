@@ -12,8 +12,11 @@ class Menu extends Model
 
     protected $fillable = [
         'namaMenu',
-        'deskripsi',
+        // 'deskripsi' JANGAN ada di sini
     ];
+
+    // ✅ FIX #1: Tambahkan $appends
+    protected $appends = ['deskripsi'];
 
     public function hargas(): HasMany
     {
@@ -25,12 +28,18 @@ class Menu extends Model
         return $this->hasMany(MenuDetail::class, 'idMenu', 'idMenu');
     }
 
-    public function getDeskripsiAttribute()
+    // ✅ FIX #2: Tambahkan relationLoaded() guard
+    public function getDeskripsiAttribute(): string
     {
+        // Jika relasi belum di-load, jangan trigger query baru
+        // (mencegah N+1 di konteks yang tidak punya eager load)
+        if (! $this->relationLoaded('menuDetails')) {
+            return '';
+        }
+
         return $this->menuDetails
-            ->map(function ($detail) {
-                return optional($detail->pcsTahu)->nama_pcs . ' (' . $detail->jumlah_pcs . ')';
-            })
+            ->filter(fn($detail) => $detail->pcsTahu !== null)
+            ->map(fn($detail) => $detail->pcsTahu->nama_pcs . ' (' . $detail->jumlah_pcs . ')')
             ->implode(', ');
     }
 }
