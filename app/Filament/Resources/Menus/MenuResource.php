@@ -12,6 +12,7 @@ use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Filament\Tables\Columns\TextColumn;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Auth;
 
 class MenuResource extends Resource
 {
@@ -33,6 +34,7 @@ class MenuResource extends Resource
             'edit' => EditMenu::route('/{record}/edit'),
         ];
     }
+
     public static function table(Table $table): Table
     {
         return $table
@@ -45,8 +47,6 @@ class MenuResource extends Resource
                     ->label('Isi Menu')
                     ->wrap()
                     ->placeholder('—')
-                    // ✅ Safety net: eksplisit baca dari accessor
-                    // Berguna selama transisi / debugging
                     ->getStateUsing(fn($record) => $record->deskripsi),
             ]);
     }
@@ -54,6 +54,38 @@ class MenuResource extends Resource
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()
-            ->with('menuDetails.pcsTahu'); // ✅ Sudah benar, pertahankan
+            ->with('menuDetails.pcsTahu');
+    }
+
+    public static function canViewAny(): bool
+    {
+        /** @var \App\Models\User|null $user */
+        $user = Auth::user();
+
+        return $user && !$user->isKasir();
+    }
+
+    public static function canCreate(): bool
+    {
+        /** @var \App\Models\User|null $user */
+        $user = Auth::user();
+
+        return $user && !$user->isKasir();
+    }
+
+    public static function canEdit($record): bool
+    {
+        /** @var \App\Models\User|null $user */
+        $user = Auth::user();
+
+        return $user && !$user->isKasir();
+    }
+
+    public static function canDelete($record): bool
+    {
+        /** @var \App\Models\User|null $user */
+        $user = Auth::user();
+
+        return $user && !$user->isKasir();
     }
 }
