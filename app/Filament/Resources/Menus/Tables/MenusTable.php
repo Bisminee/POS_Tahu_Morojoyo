@@ -20,10 +20,15 @@ class MenusTable
                     ->searchable()
                     ->sortable(),
 
-                TextColumn::make('created_at')
-                    ->label('Dibuat')
-                    ->dateTime('d M Y H:i')
-                    ->sortable(),
+                TextColumn::make('compositions.pcsTahu.nama_pcs')
+                    ->label('Nama Tahu')
+                    ->listWithLineBreaks()
+                    ->bulleted(),
+
+                TextColumn::make('hargas.harga')
+                    ->label('Harga')
+                    ->money('IDR')
+                    ->listWithLineBreaks(),
             ])
             ->recordActions([
                 EditAction::make(),

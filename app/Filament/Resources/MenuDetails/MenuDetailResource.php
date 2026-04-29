@@ -12,6 +12,9 @@ use Filament\Support\Icons\Heroicon;
 
 class MenuDetailResource extends Resource
 {
+
+    protected static bool $shouldRegisterNavigation = false;
+
     protected static ?string $model = MenuDetail::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedListBullet;

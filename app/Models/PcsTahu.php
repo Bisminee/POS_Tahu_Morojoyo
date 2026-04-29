@@ -23,4 +23,9 @@ class PcsTahu extends Model
     {
         return $this->hasMany(MenuDetail::class, 'id_pcs', 'id_pcs');
     }
+
+    public function menuCompositions(): HasMany
+    {
+        return $this->hasMany(MenuComposition::class, 'pcs_tahu_id', 'id_pcs');
+    }
 }

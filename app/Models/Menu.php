@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Models\MenuComposition;
 
 class Menu extends Model
 {
@@ -17,5 +18,10 @@ class Menu extends Model
     public function hargas(): HasMany
     {
         return $this->hasMany(Harga::class, 'idMenu', 'idMenu');
+    }
+
+    public function compositions()
+    {
+        return $this->hasMany(MenuComposition::class, 'menu_id', 'idMenu');
     }
 }

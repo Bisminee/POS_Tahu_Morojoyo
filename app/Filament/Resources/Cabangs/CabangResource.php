@@ -16,7 +16,7 @@ class CabangResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBuildingStorefront;
 
-    protected static ?string $recordTitleAttribute = 'Alamat';
+    protected static ?string $recordTitleAttribute = 'namaCabang';
 
     protected static ?string $navigationLabel = 'Cabang';
     protected static ?string $modelLabel = 'Cabang';
