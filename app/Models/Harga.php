@@ -12,8 +12,9 @@ class Harga extends Model
 
     protected $fillable = [
         'idMenu',
-        'metode_payment',
-        'harga',
+        'harga_normal',
+        'harga_gofood',
+        'harga_shopeefood',
     ];
 
     public function menu(): BelongsTo

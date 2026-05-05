@@ -40,6 +40,7 @@ class LoginPanelProvider extends PanelProvider
             ->widgets([
                 AccountWidget::class,
                 FilamentInfoWidget::class,
+                \App\Filament\Widgets\DashboardOwnerStats::class,
             ])
             ->middleware([
                 EncryptCookies::class,

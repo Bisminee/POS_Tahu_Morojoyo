@@ -107,6 +107,9 @@ class MenuResource extends Resource
 
                 TextColumn::make('harga')
                     ->label('Harga')
+                    ->formatStateUsing(function ($state, $record) {
+                        return 'Rp ' . number_format($state, 0, ',', '.') . ' (' . $record->metode_payment . ')';
+                    })
                     ->money('IDR')
                     ->sortable(),
 

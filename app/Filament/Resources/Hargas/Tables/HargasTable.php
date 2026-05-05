@@ -20,21 +20,22 @@ class HargasTable
                     ->searchable()
                     ->sortable(),
 
-                TextColumn::make('metode_payment')
-                    ->label('Metode Payment')
-                    ->formatStateUsing(fn (string $state): string => match ($state) {
-                        'take_away_cash' => 'Take Away Cash',
-                        'take_away_qris' => 'Take Away QRIS',
-                        'shopeefood' => 'ShopeeFood',
-                        'gofood' => 'GoFood',
-                        default => $state,
-                    })
-                    ->sortable(),
-
-                TextColumn::make('harga')
-                    ->label('Harga')
+                TextColumn::make('harga_normal')
+                    ->label('Harga Normal')
                     ->money('IDR')
                     ->sortable(),
+
+                TextColumn::make('harga_gofood')
+                    ->label('Harga GoFood')
+                    ->money('IDR')
+                    ->sortable()
+                    ->placeholder('-'),
+
+                TextColumn::make('harga_shopeefood')
+                    ->label('Harga ShopeeFood')
+                    ->money('IDR')
+                    ->sortable()
+                    ->placeholder('-'),
 
                 TextColumn::make('created_at')
                     ->label('Dibuat')
