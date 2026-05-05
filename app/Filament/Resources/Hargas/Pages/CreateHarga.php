@@ -15,4 +15,9 @@ class CreateHarga extends CreateRecord
     {
         return HargaForm::configure($schema);
     }
+    protected function getRedirectUrl(): string
+    {
+        return $this->getResource()::getUrl('index');
+    }
+    
 }

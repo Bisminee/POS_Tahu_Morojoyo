@@ -17,11 +17,11 @@ use Filament\Forms\Components\Toggle;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
-use Filament\Tables\Table;
 use Filament\Tables\Columns\TextColumn;
 use Illuminate\Database\Eloquent\Builder;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Table;
 
 class MenuResource extends Resource
 {
@@ -159,23 +159,6 @@ class MenuResource extends Resource
             'create' => CreateMenu::route('/create'),
             'edit' => EditMenu::route('/{record}/edit'),
         ];
-    }
-    public static function table(Table $table): Table
-    {
-        return $table
-            ->columns([
-                TextColumn::make('namaMenu')
-                    ->label('Nama Menu')
-                    ->searchable(),
-
-                TextColumn::make('deskripsi')
-                    ->label('Isi Menu')
-                    ->wrap()
-                    ->placeholder('—')
-                    // ✅ Safety net: eksplisit baca dari accessor
-                    // Berguna selama transisi / debugging
-                    ->getStateUsing(fn($record) => $record->deskripsi),
-            ]);
     }
 
     public static function getEloquentQuery(): Builder

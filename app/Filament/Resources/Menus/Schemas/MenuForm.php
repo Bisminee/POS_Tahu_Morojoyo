@@ -5,8 +5,6 @@ namespace App\Filament\Resources\Menus\Schemas;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Repeater;
-use Filament\Forms\Components\Placeholder;
-use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Schema;
 
 class MenuForm
