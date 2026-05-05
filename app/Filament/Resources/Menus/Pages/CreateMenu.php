@@ -15,4 +15,9 @@ class CreateMenu extends CreateRecord
     {
         return MenuForm::configure($schema);
     }
+
+    protected function getRedirectUrl(): string
+    {
+        return $this->getResource()::getUrl('index');
+    }
 }
