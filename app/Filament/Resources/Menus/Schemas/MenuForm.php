@@ -4,8 +4,8 @@ namespace App\Filament\Resources\Menus\Schemas;
 
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Repeater;
 use Filament\Schemas\Schema;
+use Filament\Forms\Components\Repeater;
 
 class MenuForm
 {
