@@ -12,6 +12,7 @@ class Cabang extends Model
     protected $primaryKey = 'idCabang';
 
     protected $fillable = [
+        'namaCabang',
         'karyawan_id',
         'alamat',
     ];

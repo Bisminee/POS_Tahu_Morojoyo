@@ -2,10 +2,11 @@
 
 namespace App\Filament\Resources\Menus\Schemas;
 
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Repeater;
-use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Placeholder;
+use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Schema;
 
 class MenuForm
@@ -15,35 +16,31 @@ class MenuForm
         return $schema->components([
             TextInput::make('namaMenu')
                 ->label('Nama Menu')
-                ->required(),
+                ->required()
+                ->maxLength(255),
 
-            // ✅ FIX #3: Hapus Textarea 'deskripsi' dari form
-            // Deskripsi adalah computed/accessor — tidak boleh jadi input.
-            // Jika ingin ditampilkan di form (readonly), gunakan Placeholder:
-            Placeholder::make('deskripsi')
-                ->label('Isi Menu (otomatis)')
-                ->content(fn($record) => $record?->deskripsi ?? '—')
-                ->visibleOn('edit'), // hanya tampil saat edit, bukan create
-
-            Repeater::make('menuDetails')
-                ->relationship()
-                ->label('Detail Menu')
+            Repeater::make('compositions')
+                ->label('Komposisi Menu / Pengurangan Stok')
+                ->relationship('compositions')
                 ->schema([
-                    Select::make('id_pcs')
-                        ->label('Jenis Barang')
+                    Select::make('pcs_tahu_id')
+                        ->label('Jenis Tahu')
                         ->relationship('pcsTahu', 'nama_pcs')
                         ->searchable()
                         ->preload()
                         ->required(),
 
-                    TextInput::make('jumlah_pcs')
-                        ->label('Jumlah')
+                    TextInput::make('jumlah_pakai')
+                        ->label('Jumlah Pakai')
                         ->numeric()
                         ->minValue(1)
                         ->required(),
                 ])
                 ->columns(2)
-                ->defaultItems(1),
+                ->defaultItems(1)
+                ->addActionLabel('Tambah Komposisi')
+                ->reorderable(false)
+                ->collapsible(),
         ]);
     }
 }

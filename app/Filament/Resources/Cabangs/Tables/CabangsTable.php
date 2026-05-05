@@ -15,6 +15,11 @@ class CabangsTable
     {
         return $table
             ->columns([
+                TextColumn::make('namaCabang')
+                    ->label('Nama Cabang')
+                    ->searchable()
+                    ->sortable(),
+
                 TextColumn::make('karyawan.nama')
                     ->label('Karyawan')
                     ->searchable()
