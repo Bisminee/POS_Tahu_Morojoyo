@@ -13,6 +13,9 @@ use Illuminate\Support\Facades\Auth;
 
 class MenuDetailResource extends Resource
 {
+
+    protected static bool $shouldRegisterNavigation = false;
+
     protected static ?string $model = MenuDetail::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedListBullet;
@@ -30,37 +33,5 @@ class MenuDetailResource extends Resource
             'create' => CreateMenuDetail::route('/create'),
             'edit' => EditMenuDetail::route('/{record}/edit'),
         ];
-    }
-
-    public static function canViewAny(): bool
-    {
-        /** @var \App\Models\User|null $user */
-        $user = Auth::user();
-
-        return $user && !$user->isKasir();
-    }
-    
-    public static function canCreate(): bool
-    {
-        /** @var \App\Models\User|null $user */
-        $user = Auth::user();
-
-        return $user && !$user->isKasir();
-    }
-
-    public static function canEdit($record): bool
-    {
-        /** @var \App\Models\User|null $user */
-        $user = Auth::user();
-
-        return $user && !$user->isKasir();
-    }
-
-    public static function canDelete($record): bool
-    {
-        /** @var \App\Models\User|null $user */
-        $user = Auth::user();
-
-        return $user && !$user->isKasir();
     }
 }

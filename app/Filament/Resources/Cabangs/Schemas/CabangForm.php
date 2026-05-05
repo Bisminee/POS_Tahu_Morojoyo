@@ -10,6 +10,11 @@ class CabangForm
     public static function configure(Schema $schema): Schema
     {
         return $schema->components([
+            Forms\Components\TextInput::make('namaCabang')
+                ->label('Nama Cabang')
+                ->required()
+                ->maxLength(255),
+
             Forms\Components\Select::make('karyawan_id')
                 ->label('Karyawan')
                 ->relationship('karyawan', 'nama')

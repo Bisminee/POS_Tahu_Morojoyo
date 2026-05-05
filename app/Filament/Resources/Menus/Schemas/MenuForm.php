@@ -2,11 +2,13 @@
 
 namespace App\Filament\Resources\Menus\Schemas;
 
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Placeholder;
 use Filament\Schemas\Schema;
+use Filament\Forms\Components\Repeater;
 
 class MenuForm
 {
@@ -15,6 +17,15 @@ class MenuForm
         return $schema->components([
             TextInput::make('namaMenu')
                 ->label('Nama Menu')
+                ->required()
+                ->maxLength(255),
+
+            Repeater::make('compositions')
+                ->label('Komposisi Menu / Pengurangan Stok')
+                ->relationship('compositions')
+                ->schema([
+                    Select::make('pcs_tahu_id')
+                        ->label('Jenis Tahu')
                 ->required(),
 
             // ✅ FIX #3: Hapus Textarea 'deskripsi' dari form
@@ -43,6 +54,10 @@ class MenuForm
                         ->required(),
                 ])
                 ->columns(2)
+                ->defaultItems(1)
+                ->addActionLabel('Tambah Komposisi')
+                ->reorderable(false)
+                ->collapsible(),
                 ->defaultItems(1),
         ]);
     }

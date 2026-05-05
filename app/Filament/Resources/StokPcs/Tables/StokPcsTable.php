@@ -15,7 +15,7 @@ class StokPcsTable
     {
         return $table
             ->columns([
-                TextColumn::make('cabang.Alamat')
+                TextColumn::make('cabang.namaCabang')
                     ->label('Cabang')
                     ->limit(40)
                     ->searchable(),
