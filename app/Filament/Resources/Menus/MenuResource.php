@@ -22,6 +22,9 @@ use Illuminate\Database\Eloquent\Builder;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Filament\Tables\Columns\TextColumn;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Auth;
 
 class MenuResource extends Resource
 {
@@ -161,9 +164,57 @@ class MenuResource extends Resource
         ];
     }
 
+    public static function table(Table $table): Table
+    {
+        return $table
+            ->columns([
+                TextColumn::make('namaMenu')
+                    ->label('Nama Menu')
+                    ->searchable(),
+
+                TextColumn::make('deskripsi')
+                    ->label('Isi Menu')
+                    ->wrap()
+                    ->placeholder('—')
+                    ->getStateUsing(fn($record) => $record->deskripsi),
+            ]);
+    }
+
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()
-            ->with('menuDetails.pcsTahu'); // ✅ Sudah benar, pertahankan
+            ->with('menuDetails.pcsTahu');
+    }
+
+    public static function canViewAny(): bool
+    {
+        /** @var \App\Models\User|null $user */
+        $user = Auth::user();
+
+        return $user && !$user->isKasir();
+    }
+
+    public static function canCreate(): bool
+    {
+        /** @var \App\Models\User|null $user */
+        $user = Auth::user();
+
+        return $user && !$user->isKasir();
+    }
+
+    public static function canEdit($record): bool
+    {
+        /** @var \App\Models\User|null $user */
+        $user = Auth::user();
+
+        return $user && !$user->isKasir();
+    }
+
+    public static function canDelete($record): bool
+    {
+        /** @var \App\Models\User|null $user */
+        $user = Auth::user();
+
+        return $user && !$user->isKasir();
     }
 }

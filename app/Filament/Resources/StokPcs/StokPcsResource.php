@@ -19,6 +19,7 @@ use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\Auth;
 
 class StokPcsResource extends Resource
 {
@@ -118,5 +119,37 @@ class StokPcsResource extends Resource
             'create' => CreateStokPcs::route('/create'),
             'edit' => EditStokPcs::route('/{record}/edit'),
         ];
+    }
+
+    public static function canViewAny(): bool
+    {
+        /** @var \App\Models\User|null $user */
+        $user = Auth::user();
+
+        return $user && !$user->isKasir();
+    }
+
+    public static function canCreate(): bool
+    {
+        /** @var \App\Models\User|null $user */
+        $user = Auth::user();
+
+        return $user && !$user->isKasir();
+    }
+
+    public static function canEdit($record): bool
+    {
+        /** @var \App\Models\User|null $user */
+        $user = Auth::user();
+
+        return $user && !$user->isKasir();
+    }
+
+    public static function canDelete($record): bool
+    {
+        /** @var \App\Models\User|null $user */
+        $user = Auth::user();
+
+        return $user && !$user->isKasir();
     }
 }

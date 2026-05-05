@@ -9,6 +9,7 @@ use App\Models\MenuDetail;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Support\Icons\Heroicon;
+use Illuminate\Support\Facades\Auth;
 
 class MenuDetailResource extends Resource
 {
