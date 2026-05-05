@@ -5,6 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use App\Models\MenuComposition;
+use App\Models\MenuDetail;
+
 
 class Menu extends Model
 {
@@ -28,10 +30,9 @@ class Menu extends Model
     {
         return $this->hasMany(MenuComposition::class, 'menu_id', 'idMenu');
     }
-}
     public function menuDetails(): HasMany
     {
-        return $this->hasMany(MenuDetail::class, 'idMenu', 'idMenu');
+        return $this->hasMany(MenuDetail::class, 'id_detail', 'idMenu');
     }
 
     // ✅ FIX #2: Tambahkan relationLoaded() guard
