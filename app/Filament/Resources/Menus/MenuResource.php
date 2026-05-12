@@ -18,11 +18,9 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
-use Filament\Tables\Columns\TextColumn;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Facades\Auth;
 
 class MenuResource extends Resource
 {
@@ -109,6 +107,9 @@ class MenuResource extends Resource
 
                 TextColumn::make('harga')
                     ->label('Harga')
+                    ->formatStateUsing(function ($state, $record) {
+                        return 'Rp ' . number_format($state, 0, ',', '.') . ' (' . $record->metode_payment . ')';
+                    })
                     ->money('IDR')
                     ->sortable(),
 
@@ -161,6 +162,7 @@ class MenuResource extends Resource
             'edit' => EditMenu::route('/{record}/edit'),
         ];
     }
+<<<<<<< HEAD
 
    
     public static function getEloquentQuery(): Builder
@@ -200,4 +202,6 @@ class MenuResource extends Resource
 
         return $user && !$user->isKasir();
     }
+=======
+>>>>>>> b6ba4dc95278d16750310dc87bd0144707661ba1
 }

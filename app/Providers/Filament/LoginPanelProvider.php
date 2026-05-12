@@ -25,8 +25,8 @@ class LoginPanelProvider extends PanelProvider
     {
         return $panel
             ->default()
-            ->id('admin')
-            ->path('admin')
+            ->id('login')
+            ->path('login')
             ->login()
             ->colors([
                 'primary' => Color::Amber,
@@ -40,6 +40,7 @@ class LoginPanelProvider extends PanelProvider
             ->widgets([
                 AccountWidget::class,
                 FilamentInfoWidget::class,
+                \App\Filament\Widgets\DashboardOwnerStats::class,
             ])
             ->middleware([
                 EncryptCookies::class,

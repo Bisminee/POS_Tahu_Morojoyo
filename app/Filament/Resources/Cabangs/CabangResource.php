@@ -9,7 +9,6 @@ use App\Models\Cabang;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Support\Icons\Heroicon;
-use Illuminate\Support\Facades\Auth;
 
 class CabangResource extends Resource
 {
@@ -30,37 +29,5 @@ class CabangResource extends Resource
             'create' => CreateCabang::route('/create'),
             'edit' => EditCabang::route('/{record}/edit'),
         ];
-    }
-
-    public static function canViewAny(): bool
-    {
-        /** @var \App\Models\User|null $user */
-        $user = Auth::user();
-
-        return $user && !$user->isKasir();
-    }
-
-    public static function canCreate(): bool
-    {
-        /** @var \App\Models\User|null $user */
-        $user = Auth::user();
-
-        return $user && !$user->isKasir();
-    }
-
-    public static function canEdit($record): bool
-    {
-        /** @var \App\Models\User|null $user */
-        $user = Auth::user();
-
-        return $user && !$user->isKasir();
-    }
-
-    public static function canDelete($record): bool
-    {
-        /** @var \App\Models\User|null $user */
-        $user = Auth::user();
-
-        return $user && !$user->isKasir();
     }
 }

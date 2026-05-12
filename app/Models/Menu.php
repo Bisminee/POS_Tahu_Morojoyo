@@ -12,12 +12,8 @@ class Menu extends Model
     protected $primaryKey = 'idMenu';
 
     protected $fillable = [
-        'namaMenu'
-        // 'deskripsi' JANGAN ada di sini
+        'namaMenu',
     ];
-
-    // ✅ FIX #1: Tambahkan $appends
-    protected $appends = ['deskripsi'];
 
     public function hargas(): HasMany
     {

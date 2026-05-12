@@ -15,9 +15,4 @@ class CreatePcsTahu extends CreateRecord
     {
         return PcsTahuForm::configure($schema);
     }
-
-    protected function getRedirectUrl(): string
-    {
-        return $this->getResource()::getUrl('index');
-    }
 }
