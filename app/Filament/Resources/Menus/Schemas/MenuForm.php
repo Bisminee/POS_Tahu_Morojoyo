@@ -5,7 +5,7 @@ namespace App\Filament\Resources\Menus\Schemas;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Repeater;
-use Filament\Forms\Components\Placeholder;
+use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Schema;
 
 class MenuForm
@@ -29,7 +29,7 @@ class MenuForm
             // ✅ FIX #3: Hapus Textarea 'deskripsi' dari form
             // Deskripsi adalah computed/accessor — tidak boleh jadi input.
             // Jika ingin ditampilkan di form (readonly), gunakan Placeholder:
-            Placeholder::make('deskripsi')
+            TextEntry::make('deskripsi')
                 ->label('Isi Menu (otomatis)')
                 ->content(fn($record) => $record?->deskripsi ?? '—')
                 ->visibleOn('edit'), // hanya tampil saat edit, bukan create

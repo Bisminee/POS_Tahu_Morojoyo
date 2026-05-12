@@ -258,21 +258,21 @@
     <div class="max-w-6xl mx-auto px-6">
       <div class="grid md:grid-cols-3 gap-8">
         <div class="text-center group">
-          <div class="w-16 h-16 bg-brand-yellow rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:bg-brand-red transition-colors duration-300">
+          <div class="w-16 h-16 bg-brand-red rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:bg-brand-yellow transition-colors duration-300">
             <span class="text-3xl"><img src="{{ asset('img/badge.png') }}" class="w-7 h-full"></span>
           </div>
           <h3 class="font-display text-brand-red text-2xl mb-2">BAHAN SEGAR</h3>
           <p class="text-gray-500 font-body text-sm leading-relaxed">Dipilih langsung dari pasar setiap pagi untuk menjamin kesegaran dan kelezatan.</p>
         </div>
         <div class="text-center group">
-          <div class="w-16 h-16 bg-brand-yellow rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:bg-brand-red transition-colors duration-300">
+          <div class="w-16 h-16 bg-brand-red rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:bg-brand-yellow transition-colors duration-300">
             <span class="text-3xl"><img src="{{ asset('img/chef.png') }}" class="w-7 h-full"></span>
           </div>
           <h3 class="font-display text-brand-red text-2xl mb-2">RASA AUTENTIK</h3>
           <p class="text-gray-500 font-body text-sm leading-relaxed">Bumbu khas turun-temurun yang menghadirkan cita rasa autentik Malang.</p>
         </div>
         <div class="text-center group">
-          <div class="w-16 h-16 bg-brand-yellow rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:bg-brand-red transition-colors duration-300">
+          <div class="w-16 h-16 bg-brand-red rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:bg-brand-yellow transition-colors duration-300">
             <span class="text-3xl"><img src="{{ asset('img/pack.png') }}" class="w-7 h-full"></span>
           </div>
           <h3 class="font-display text-brand-red text-2xl mb-2">KEMASAN AMAN</h3>
@@ -282,7 +282,7 @@
     </div>
   </section>
 
-          <!-- PROMO CARDS -->
+    <!-- PROMO CARDS -->
   <section class="bg-brand-cream py-16">
     <div class="max-w-6xl mx-auto px-6">
       <div class="text-center mb-10">
