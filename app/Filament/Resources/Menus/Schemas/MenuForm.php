@@ -5,10 +5,8 @@ namespace App\Filament\Resources\Menus\Schemas;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Repeater;
-use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Placeholder;
 use Filament\Schemas\Schema;
-use Filament\Forms\Components\Repeater;
 
 class MenuForm
 {
@@ -57,8 +55,8 @@ class MenuForm
                 ->defaultItems(1)
                 ->addActionLabel('Tambah Komposisi')
                 ->reorderable(false)
-                ->collapsible(),
+                ->collapsible()
                 ->defaultItems(1),
-        ]);
+        ])]);
     }
 }
