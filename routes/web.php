@@ -15,11 +15,8 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/cashier/checkout', [CashierController::class, 'checkout'])
         ->name('cashier.pos.checkout');
 
-    Route::get('/cashier/pos/laporan/pdf', [CashierController::class, 'laporanPdf'])
-        ->name('cashier.pos.laporan.pdf');
-
-    Route::get('/cashier/pos/laporan/excel', [CashierController::class, 'laporanExcel'])
-        ->name('cashier.pos.laporan.excel');
+    Route::post('/cashier/sync-sheets', [CashierController::class, 'syncToSheets'])
+        ->name('cashier.sync-sheets');
 
     Route::post('/logout', [CashierController::class, 'logout'])
         ->name('logout');
