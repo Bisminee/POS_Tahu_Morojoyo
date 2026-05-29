@@ -25,14 +25,15 @@ class MenuForm
                 ->schema([
                     Select::make('pcs_tahu_id')
                         ->label('Jenis Tahu')
-                ->required(),
+                        ->required(),
+                ]),
 
             // ✅ FIX #3: Hapus Textarea 'deskripsi' dari form
             // Deskripsi adalah computed/accessor — tidak boleh jadi input.
             // Jika ingin ditampilkan di form (readonly), gunakan Placeholder:
-            TextEntry::make('deskripsi')
+            TextInput::make('deskripsi')
                 ->label('Isi Menu (otomatis)')
-                ->content(fn ($record) => $record?->deskripsi ?? '—')
+                ->formatStateUsing(fn($record) => $record?->deskripsi ?? '—')
                 ->visibleOn('edit'),
 
             // Repeater Detail Menu
@@ -61,6 +62,6 @@ class MenuForm
                 ->reorderable(false)
                 ->collapsible()
                 ->defaultItems(1),
-        ])]);
+        ]);
     }
 }
