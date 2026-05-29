@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Menus\Schemas;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Repeater;
+use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Schema;
 
 class MenuForm
@@ -12,6 +13,7 @@ class MenuForm
     public static function configure(Schema $schema): Schema
     {
         return $schema->components([
+
             TextInput::make('namaMenu')
                 ->label('Nama Menu')
                 ->required()
@@ -33,6 +35,7 @@ class MenuForm
                         ->numeric()
                         ->minValue(1)
                         ->required(),
+
                 ])
                 ->columns(2)
                 ->defaultItems(1)

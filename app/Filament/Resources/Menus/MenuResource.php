@@ -21,6 +21,8 @@ use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Auth;
 
 class MenuResource extends Resource
 {
@@ -113,6 +115,12 @@ class MenuResource extends Resource
                     ->money('IDR')
                     ->sortable(),
 
+                TextColumn::make('deskripsi')
+                    ->label('Isi Menu')
+                    ->wrap()
+                    ->placeholder('—')
+                    ->getStateUsing(fn ($record) => $record->deskripsi),
+
                 IconColumn::make('is_active')
                     ->label('Aktif')
                     ->boolean(),
@@ -162,7 +170,6 @@ class MenuResource extends Resource
             'edit' => EditMenu::route('/{record}/edit'),
         ];
     }
-<<<<<<< HEAD
 
    
     public static function getEloquentQuery(): Builder
@@ -202,6 +209,4 @@ class MenuResource extends Resource
 
         return $user && !$user->isKasir();
     }
-=======
->>>>>>> b6ba4dc95278d16750310dc87bd0144707661ba1
 }

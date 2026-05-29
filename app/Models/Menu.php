@@ -5,22 +5,28 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use App\Models\MenuComposition;
+use App\Models\MenuDetail;
+
 
 class Menu extends Model
 {
     protected $table = 'menus';
+
     protected $primaryKey = 'idMenu';
 
     protected $fillable = [
         'namaMenu',
     ];
 
+    // Accessor otomatis ikut tampil
+    protected $appends = ['deskripsi'];
+
     public function hargas(): HasMany
     {
         return $this->hasMany(Harga::class, 'idMenu', 'idMenu');
     }
 
-    public function compositions()
+    public function compositions(): HasMany
     {
         return $this->hasMany(MenuComposition::class, 'menu_id', 'idMenu');
     }
