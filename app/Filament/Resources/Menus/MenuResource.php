@@ -18,9 +18,9 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
-use Filament\Tables\Columns\TextColumn;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
 
@@ -112,6 +112,12 @@ class MenuResource extends Resource
                     ->money('IDR')
                     ->sortable(),
 
+                TextColumn::make('deskripsi')
+                    ->label('Isi Menu')
+                    ->wrap()
+                    ->placeholder('—')
+                    ->getStateUsing(fn ($record) => $record->deskripsi),
+
                 IconColumn::make('is_active')
                     ->label('Aktif')
                     ->boolean(),
@@ -171,7 +177,6 @@ class MenuResource extends Resource
 
     public static function canViewAny(): bool
     {
-        /** @var \App\Models\User|null $user */
         $user = Auth::user();
 
         return $user && !$user->isKasir();
@@ -179,7 +184,6 @@ class MenuResource extends Resource
 
     public static function canCreate(): bool
     {
-        /** @var \App\Models\User|null $user */
         $user = Auth::user();
 
         return $user && !$user->isKasir();
@@ -187,7 +191,6 @@ class MenuResource extends Resource
 
     public static function canEdit($record): bool
     {
-        /** @var \App\Models\User|null $user */
         $user = Auth::user();
 
         return $user && !$user->isKasir();
@@ -195,7 +198,6 @@ class MenuResource extends Resource
 
     public static function canDelete($record): bool
     {
-        /** @var \App\Models\User|null $user */
         $user = Auth::user();
 
         return $user && !$user->isKasir();

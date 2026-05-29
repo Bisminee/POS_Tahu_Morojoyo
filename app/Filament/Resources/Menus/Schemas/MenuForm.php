@@ -13,6 +13,7 @@ class MenuForm
     public static function configure(Schema $schema): Schema
     {
         return $schema->components([
+
             TextInput::make('namaMenu')
                 ->label('Nama Menu')
                 ->required()
@@ -31,13 +32,15 @@ class MenuForm
             // Jika ingin ditampilkan di form (readonly), gunakan Placeholder:
             TextEntry::make('deskripsi')
                 ->label('Isi Menu (otomatis)')
-                ->content(fn($record) => $record?->deskripsi ?? '—')
-                ->visibleOn('edit'), // hanya tampil saat edit, bukan create
+                ->content(fn ($record) => $record?->deskripsi ?? '—')
+                ->visibleOn('edit'),
 
+            // Repeater Detail Menu
             Repeater::make('menuDetails')
                 ->relationship()
                 ->label('Detail Menu')
                 ->schema([
+
                     Select::make('id_pcs')
                         ->label('Jenis Barang')
                         ->relationship('pcsTahu', 'nama_pcs')
@@ -50,6 +53,7 @@ class MenuForm
                         ->numeric()
                         ->minValue(1)
                         ->required(),
+
                 ])
                 ->columns(2)
                 ->defaultItems(1)

@@ -9,14 +9,14 @@ use App\Models\MenuComposition;
 class Menu extends Model
 {
     protected $table = 'menus';
+
     protected $primaryKey = 'idMenu';
 
     protected $fillable = [
-        'namaMenu'
-        // 'deskripsi' JANGAN ada di sini
+        'namaMenu',
     ];
 
-    // ✅ FIX #1: Tambahkan $appends
+    // Accessor otomatis ikut tampil
     protected $appends = ['deskripsi'];
 
     public function hargas(): HasMany
@@ -24,7 +24,7 @@ class Menu extends Model
         return $this->hasMany(Harga::class, 'idMenu', 'idMenu');
     }
 
-    public function compositions()
+    public function compositions(): HasMany
     {
         return $this->hasMany(MenuComposition::class, 'menu_id', 'idMenu');
     }
