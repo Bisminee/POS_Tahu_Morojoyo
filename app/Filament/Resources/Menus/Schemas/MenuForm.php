@@ -25,32 +25,13 @@ class MenuForm
                 ->schema([
                     Select::make('pcs_tahu_id')
                         ->label('Jenis Tahu')
-                        ->required(),
-                ]),
-
-            // ✅ FIX #3: Hapus Textarea 'deskripsi' dari form
-            // Deskripsi adalah computed/accessor — tidak boleh jadi input.
-            // Jika ingin ditampilkan di form (readonly), gunakan Placeholder:
-            TextInput::make('deskripsi')
-                ->label('Isi Menu (otomatis)')
-                ->formatStateUsing(fn($record) => $record?->deskripsi ?? '—')
-                ->visibleOn('edit'),
-
-            // Repeater Detail Menu
-            Repeater::make('menuDetails')
-                ->relationship()
-                ->label('Detail Menu')
-                ->schema([
-
-                    Select::make('id_pcs')
-                        ->label('Jenis Barang')
                         ->relationship('pcsTahu', 'nama_pcs')
                         ->searchable()
                         ->preload()
                         ->required(),
 
-                    TextInput::make('jumlah_pcs')
-                        ->label('Jumlah')
+                    TextInput::make('jumlah_pakai')
+                        ->label('Jumlah Pakai')
                         ->numeric()
                         ->minValue(1)
                         ->required(),

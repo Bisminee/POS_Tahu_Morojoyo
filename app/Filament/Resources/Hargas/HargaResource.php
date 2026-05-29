@@ -9,7 +9,6 @@ use App\Models\Harga;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Support\Icons\Heroicon;
-use Illuminate\Support\Facades\Auth;
 
 class HargaResource extends Resource
 {
@@ -30,37 +29,5 @@ class HargaResource extends Resource
             'create' => CreateHarga::route('/create'),
             'edit' => EditHarga::route('/{record}/edit'),
         ];
-    }
-
-    public static function canViewAny(): bool
-    {
-        /** @var \App\Models\User|null $user */
-        $user = Auth::user();
-
-        return $user && !$user->isKasir();
-    }
-
-    public static function canCreate(): bool
-    {
-        /** @var \App\Models\User|null $user */
-        $user = Auth::user();
-
-        return $user && !$user->isKasir();
-    }
-
-    public static function canEdit($record): bool
-    {
-        /** @var \App\Models\User|null $user */
-        $user = Auth::user();
-
-        return $user && !$user->isKasir();
-    }
-
-    public static function canDelete($record): bool
-    {
-        /** @var \App\Models\User|null $user */
-        $user = Auth::user();
-
-        return $user && !$user->isKasir();
     }
 }

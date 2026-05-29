@@ -25,8 +25,8 @@ class LoginPanelProvider extends PanelProvider
     {
         return $panel
             ->default()
-            ->id('admin')
-            ->path('admin')
+            ->id('login')
+            ->path('login')
             ->login()
             // ->loginResponse(LoginResponse::class)
 
@@ -54,7 +54,9 @@ class LoginPanelProvider extends PanelProvider
             )
 
             ->widgets([
-                //
+                AccountWidget::class,
+                FilamentInfoWidget::class,
+                \App\Filament\Widgets\DashboardOwnerStats::class,
             ])
 
             ->middleware([

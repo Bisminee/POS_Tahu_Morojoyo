@@ -18,20 +18,23 @@ class HargaForm
                 ->searchable()
                 ->preload(),
 
-            Select::make('metode_payment')
-                ->label('Metode Payment')
-                ->options([
-                    'take_away_cash' => 'Take Away Cash',
-                    'take_away_qris' => 'Take Away QRIS',
-                    'shopeefood' => 'ShopeeFood',
-                    'gofood' => 'GoFood',
-                ])
-                ->required(),
-
-            TextInput::make('harga')
-                ->label('Harga')
+            TextInput::make('harga_normal')
+                ->label('Harga Normal')
                 ->numeric()
-                ->required(),
+                ->required()
+                ->prefix('Rp'),
+
+            TextInput::make('harga_gofood')
+                ->label('Harga GoFood')
+                ->numeric()
+                ->required()
+                ->prefix('Rp'),
+
+            TextInput::make('harga_shopeefood')
+                ->label('Harga ShopeeFood')
+                ->numeric()
+                ->required()
+                ->prefix('Rp'),
         ]);
     }
 }

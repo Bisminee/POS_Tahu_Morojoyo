@@ -15,8 +15,4 @@ class CreateStokPcs extends CreateRecord
     {
         return StokPcsForm::configure($schema);
     }
-    protected function getRedirectUrl(): string
-    {
-        return $this->getResource()::getUrl('index');
-    }
 }
