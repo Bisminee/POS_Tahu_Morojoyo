@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\CashierController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\GuestController;
 
 Route::get('/', function () {
     return view('welcome');
