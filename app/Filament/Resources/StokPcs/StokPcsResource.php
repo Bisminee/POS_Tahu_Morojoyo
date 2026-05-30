@@ -2,55 +2,126 @@
 
 namespace App\Filament\Resources\StokPcs;
 
-use App\Filament\Resources\StokPcs\Pages\CreateStokPcs;
-use App\Filament\Resources\StokPcs\Pages\EditStokPcs;
-use App\Filament\Resources\StokPcs\Pages\ListStokPcs;
+use App\Filament\Resources\StokPcs\Pages;
+use App\Models\Cabang;
+use App\Models\PcsTahu;
 use App\Models\StokPcs;
-use BackedEnum;
-use Filament\Actions\BulkActionGroup;
-use Filament\Actions\DeleteAction;
-use Filament\Actions\DeleteBulkAction;
-use Filament\Actions\EditAction;
+use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Resources\Resource;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
-use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Support\HtmlString;
 
 class StokPcsResource extends Resource
 {
     protected static ?string $model = StokPcs::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedArchiveBox;
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-cube';
+
+    protected static string | \UnitEnum | null $navigationGroup = 'Manajemen Stok';
 
     protected static ?string $navigationLabel = 'Stok PCS';
+
+    protected static ?int $navigationSort = 1;
+
+    protected static ?string $modelLabel = 'Stok PCS';
+
+    protected static ?string $pluralModelLabel = 'Stok PCS';
 
     public static function form(Schema $schema): Schema
     {
         return $schema
             ->components([
-                Select::make('id_cabang') 
-                    ->label('Cabang')
-                    ->relationship('cabang', 'namaCabang')
-                    ->searchable()
-                    ->preload()
-                    ->required(),
+                Section::make('Kelola Stok PCS')
+                    ->description('Gunakan halaman ini untuk menambah atau mengurangi stok PCS tahu. Setiap perubahan otomatis tercatat di Mutasi Stok.')
+                    ->icon('heroicon-o-cube')
+                    ->columns(2)
+                    ->schema([
+                        Select::make('id_cabang')
+                            ->label('Cabang')
+                            ->options(fn (): array => Cabang::query()
+                                ->orderBy('namaCabang')
+                                ->pluck('namaCabang', 'idCabang')
+                                ->toArray())
+                            ->searchable()
+                            ->preload()
+                            ->live()
+                            ->required(),
 
-                Select::make('id_pcs_tahu') 
-                    ->label('PCS Tahu')
-                    ->relationship('pcsTahu', 'nama_pcs')
-                    ->searchable()
-                    ->preload()
-                    ->required(),
+                        Select::make('id_pcs_tahu')
+                            ->label('Jenis PCS Tahu')
+                            ->options(fn (): array => PcsTahu::query()
+                                ->orderBy('nama_pcs')
+                                ->pluck('nama_pcs', 'id_pcs')
+                                ->toArray())
+                            ->searchable()
+                            ->preload()
+                            ->live()
+                            ->required(),
 
-                TextInput::make('jumlah_stok')
-                    ->label('Jumlah Stok')
-                    ->numeric()
-                    ->required()
-                    ->minValue(0),
+                        Select::make('tipe')
+                            ->label('Tipe Perubahan')
+                            ->options([
+                                'masuk' => 'Tambah Stok',
+                                'keluar' => 'Kurangi Stok',
+                            ])
+                            ->default('masuk')
+                            ->native(false)
+                            ->live()
+                            ->required(),
+
+                        TextInput::make('jumlah')
+                            ->label('Jumlah')
+                            ->numeric()
+                            ->minValue(1)
+                            ->default(1)
+                            ->suffix('pcs')
+                            ->live(debounce: 500)
+                            ->required(),
+
+                        Placeholder::make('preview_stok')
+                            ->label('Preview Stok')
+                            ->content(function (Get $get): HtmlString {
+                                $cabangId = $get('id_cabang');
+                                $pcsTahuId = $get('id_pcs_tahu');
+                                $tipe = $get('tipe') ?: 'masuk';
+                                $jumlah = (int) ($get('jumlah') ?: 0);
+
+                                if (! $cabangId || ! $pcsTahuId) {
+                                    return new HtmlString('<span class="text-sm text-gray-500">Pilih cabang dan jenis PCS tahu terlebih dahulu.</span>');
+                                }
+
+                                $stokSebelum = (int) (StokPcs::query()
+                                    ->where('id_cabang', $cabangId)
+                                    ->where('id_pcs_tahu', $pcsTahuId)
+                                    ->value('jumlah_stok') ?? 0);
+
+                                $stokSesudah = $tipe === 'keluar'
+                                    ? $stokSebelum - $jumlah
+                                    : $stokSebelum + $jumlah;
+
+                                $warna = $stokSesudah < 0 ? 'text-red-600' : 'text-gray-900';
+
+                                return new HtmlString("<div class='rounded-lg border border-gray-200 bg-gray-50 p-3 text-sm'>
+                                    <div>Stok sekarang: <strong>{$stokSebelum} pcs</strong></div>
+                                    <div>Stok setelah perubahan: <strong class='{$warna}'>{$stokSesudah} pcs</strong></div>
+                                </div>");
+                            })
+                            ->columnSpanFull(),
+
+                        Textarea::make('keterangan')
+                            ->label('Keterangan')
+                            ->placeholder('Contoh: produksi masuk, barang rusak, koreksi stok, retur, dll.')
+                            ->rows(4)
+                            ->columnSpanFull(),
+                    ]),
             ]);
     }
 
@@ -69,54 +140,37 @@ class StokPcsResource extends Resource
                     ->sortable(),
 
                 TextColumn::make('jumlah_stok')
-                    ->label('Jumlah Stok')
+                    ->label('Stok Saat Ini')
+                    ->numeric()
+                    ->suffix(' pcs')
+                    ->badge()
+                    ->color(fn ($state): string => ((int) $state) <= 10 ? 'danger' : 'success')
                     ->sortable(),
 
-                TextColumn::make('status_stok')
-                    ->label('Status Stok')
-                    ->getStateUsing(function ($record) {
-                        if ($record->jumlah_stok <= 0) {
-                            return 'Habis';
-                        }
-
-                        if ($record->jumlah_stok <= 10) {
-                            return 'Menipis';
-                        }
-
-                        return 'Aman';
-                    })
-                    ->badge()
-                    ->color(function ($state) {
-                        return match ($state) {
-                            'Habis' => 'danger',
-                            'Menipis' => 'warning',
-                            'Aman' => 'success',
-                            default => 'gray',
-                        };
-                    }),
+                TextColumn::make('updated_at')
+                    ->label('Terakhir Diperbarui')
+                    ->dateTime('d M Y H:i')
+                    ->sortable(),
             ])
             ->filters([
-                SelectFilter::make('id_cabang') 
-                    ->label('Filter Cabang')
+                SelectFilter::make('id_cabang')
+                    ->label('Cabang')
                     ->relationship('cabang', 'namaCabang'),
+
+                SelectFilter::make('id_pcs_tahu')
+                    ->label('PCS Tahu')
+                    ->relationship('pcsTahu', 'nama_pcs'),
             ])
-            ->actions([
-                EditAction::make(),
-                DeleteAction::make(),
-            ])
-            ->bulkActions([
-                BulkActionGroup::make([
-                    DeleteBulkAction::make(),
-                ]),
-            ]);
+            ->defaultSort('updated_at', 'desc')
+            ->actions([])
+            ->bulkActions([]);
     }
 
     public static function getPages(): array
     {
         return [
-            'index' => ListStokPcs::route('/'),
-            'create' => CreateStokPcs::route('/create'),
-            'edit' => EditStokPcs::route('/{record}/edit'),
+            'index' => Pages\ListStokPcs::route('/'),
+            'create' => Pages\CreateStokPcs::route('/create'),
         ];
     }
 }
