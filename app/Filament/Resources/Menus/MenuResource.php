@@ -108,9 +108,9 @@ class MenuResource extends Resource
 
                 TextColumn::make('jumlah_komposisi')
                     ->label('Jumlah Komposisi')
-                    ->state(fn (Menu $record): string => $record->compositions->count() . ' Item')
+                    ->state(fn(Menu $record): string => $record->compositions->count() . ' Item')
                     ->badge()
-                    ->color(fn (string $state): string => $state === '0 Item' ? 'gray' : 'success'),
+                    ->color(fn(string $state): string => $state === '0 Item' ? 'gray' : 'success'),
 
                 TextColumn::make('jumlah_harga')
                     ->label('Harga')
@@ -138,7 +138,7 @@ class MenuResource extends Resource
                         return $jumlah > 0 ? $jumlah . ' Harga' : 'Belum Ada Harga';
                     })
                     ->badge()
-                    ->color(fn (string $state): string => $state === 'Belum Ada Harga' ? 'gray' : 'success'),
+                    ->color(fn(string $state): string => $state === 'Belum Ada Harga' ? 'gray' : 'success'),
 
                 TextColumn::make('tagline_product')
                     ->label('Tagline')
@@ -181,6 +181,7 @@ class MenuResource extends Resource
 
     public static function canViewAny(): bool
     {
+        /** @var \App\Models\User|null $user */
         $user = Auth::user();
 
         return $user && ! $user->isKasir();
@@ -188,6 +189,7 @@ class MenuResource extends Resource
 
     public static function canCreate(): bool
     {
+        /** @var \App\Models\User|null $user */
         $user = Auth::user();
 
         return $user && ! $user->isKasir();
@@ -195,6 +197,7 @@ class MenuResource extends Resource
 
     public static function canEdit($record): bool
     {
+        /** @var \App\Models\User|null $user */
         $user = Auth::user();
 
         return $user && ! $user->isKasir();
@@ -202,6 +205,7 @@ class MenuResource extends Resource
 
     public static function canDelete($record): bool
     {
+        /** @var \App\Models\User|null $user */
         $user = Auth::user();
 
         return $user && ! $user->isKasir();
