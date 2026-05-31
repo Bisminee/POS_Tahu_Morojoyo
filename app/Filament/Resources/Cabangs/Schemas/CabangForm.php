@@ -15,12 +15,6 @@ class CabangForm
                 ->required()
                 ->maxLength(255),
 
-            Forms\Components\Select::make('karyawan_id')
-                ->label('Karyawan')
-                ->relationship('karyawan', 'nama')
-                ->searchable()
-                ->preload(),
-
             Forms\Components\Textarea::make('alamat')
                 ->label('Alamat')
                 ->required()

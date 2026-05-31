@@ -3,27 +3,18 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Cabang extends Model
 {
     protected $table = 'cabangs';
     protected $primaryKey = 'idCabang';
-
-    protected $fillable = [
-        'namaCabang',
-        'karyawan_id',
-        'alamat',
-    ];
-
-    public function karyawan(): BelongsTo
+    protected $fillable = ['namaCabang', 'alamat',];
+    public function karyawans()
     {
-        return $this->belongsTo(Karyawan::class, 'karyawan_id', 'idKaryawan');
+        return $this->hasMany(Karyawan::class, 'cabang_id', 'idCabang');
     }
-
-    public function stokPcs(): HasMany
+    public function shifts()
     {
-        return $this->hasMany(StokPcs::class, 'id_cabang', 'idCabang');
+        return $this->hasMany(Shift::class, 'cabang_id', 'idCabang');
     }
 }
