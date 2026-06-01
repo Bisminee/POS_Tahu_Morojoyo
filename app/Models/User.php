@@ -32,7 +32,7 @@ class User extends Authenticatable implements FilamentUser
         return in_array($this->role, [
             'owner',
             'manager',
-            'kasir'
+            'kasir',
         ]);
     }
 
@@ -46,6 +46,11 @@ class User extends Authenticatable implements FilamentUser
         return $this->belongsTo(Cabang::class, 'cabang_id', 'idCabang');
     }
 
+    public function isKasir(): bool
+    {
+        return $this->role === 'kasir';
+    }
+
     public function isOwner(): bool
     {
         return $this->role === 'owner';
@@ -54,10 +59,5 @@ class User extends Authenticatable implements FilamentUser
     public function isManager(): bool
     {
         return $this->role === 'manager';
-    }
-
-    public function isKasir(): bool
-    {
-        return $this->role === 'kasir';
     }
 }

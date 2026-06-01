@@ -54,7 +54,7 @@ class LoginPanelProvider extends PanelProvider
             )
 
             ->widgets([
-                //
+                \App\Filament\Widgets\DashboardOwnerStats::class,
             ])
 
             ->middleware([

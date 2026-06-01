@@ -2,57 +2,34 @@
 
 namespace App\Filament\Resources\StokPcs;
 
-use App\Filament\Resources\StokPcs\Pages\CreateStokPcs;
-use App\Filament\Resources\StokPcs\Pages\EditStokPcs;
-use App\Filament\Resources\StokPcs\Pages\ListStokPcs;
+use App\Filament\Resources\StokPcs\Pages;
+use App\Filament\Resources\StokPcs\Schemas\StokPcsForm;
 use App\Models\StokPcs;
-use BackedEnum;
-use Filament\Actions\BulkActionGroup;
-use Filament\Actions\DeleteAction;
-use Filament\Actions\DeleteBulkAction;
-use Filament\Actions\EditAction;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\TextInput;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
-use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
-use Illuminate\Support\Facades\Auth;
 
 class StokPcsResource extends Resource
 {
     protected static ?string $model = StokPcs::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedArchiveBox;
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-cube';
+
+    protected static string | \UnitEnum | null $navigationGroup = 'Manajemen Stok';
 
     protected static ?string $navigationLabel = 'Stok PCS';
 
+    protected static ?int $navigationSort = 1;
+
+    protected static ?string $modelLabel = 'Stok PCS';
+
+    protected static ?string $pluralModelLabel = 'Stok PCS';
+
     public static function form(Schema $schema): Schema
     {
-        return $schema
-            ->components([
-                Select::make('id_cabang') 
-                    ->label('Cabang')
-                    ->relationship('cabang', 'namaCabang')
-                    ->searchable()
-                    ->preload()
-                    ->required(),
-
-                Select::make('id_pcs_tahu') 
-                    ->label('PCS Tahu')
-                    ->relationship('pcsTahu', 'nama_pcs')
-                    ->searchable()
-                    ->preload()
-                    ->required(),
-
-                TextInput::make('jumlah_stok')
-                    ->label('Jumlah Stok')
-                    ->numeric()
-                    ->required()
-                    ->minValue(0),
-            ]);
+        return StokPcsForm::configure($schema);
     }
 
     public static function table(Table $table): Table
@@ -70,86 +47,37 @@ class StokPcsResource extends Resource
                     ->sortable(),
 
                 TextColumn::make('jumlah_stok')
-                    ->label('Jumlah Stok')
+                    ->label('Stok Saat Ini')
+                    ->numeric()
+                    ->suffix(' pcs')
+                    ->badge()
+                    ->color(fn ($state): string => ((int) $state) <= 10 ? 'danger' : 'success')
                     ->sortable(),
 
-                TextColumn::make('status_stok')
-                    ->label('Status Stok')
-                    ->getStateUsing(function ($record) {
-                        if ($record->jumlah_stok <= 0) {
-                            return 'Habis';
-                        }
-
-                        if ($record->jumlah_stok <= 10) {
-                            return 'Menipis';
-                        }
-
-                        return 'Aman';
-                    })
-                    ->badge()
-                    ->color(function ($state) {
-                        return match ($state) {
-                            'Habis' => 'danger',
-                            'Menipis' => 'warning',
-                            'Aman' => 'success',
-                            default => 'gray',
-                        };
-                    }),
+                TextColumn::make('updated_at')
+                    ->label('Terakhir Diperbarui')
+                    ->dateTime('d M Y H:i')
+                    ->sortable(),
             ])
             ->filters([
-                SelectFilter::make('id_cabang') 
-                    ->label('Filter Cabang')
+                SelectFilter::make('id_cabang')
+                    ->label('Cabang')
                     ->relationship('cabang', 'namaCabang'),
+
+                SelectFilter::make('id_pcs_tahu')
+                    ->label('PCS Tahu')
+                    ->relationship('pcsTahu', 'nama_pcs'),
             ])
-            ->actions([
-                EditAction::make(),
-                DeleteAction::make(),
-            ])
-            ->bulkActions([
-                BulkActionGroup::make([
-                    DeleteBulkAction::make(),
-                ]),
-            ]);
+            ->defaultSort('updated_at', 'desc')
+            ->actions([])
+            ->bulkActions([]);
     }
 
     public static function getPages(): array
     {
         return [
-            'index' => ListStokPcs::route('/'),
-            'create' => CreateStokPcs::route('/create'),
-            'edit' => EditStokPcs::route('/{record}/edit'),
+            'index' => Pages\ListStokPcs::route('/'),
+            'create' => Pages\CreateStokPcs::route('/create'),
         ];
-    }
-
-    public static function canViewAny(): bool
-    {
-        /** @var \App\Models\User|null $user */
-        $user = Auth::user();
-
-        return $user && !$user->isKasir();
-    }
-
-    public static function canCreate(): bool
-    {
-        /** @var \App\Models\User|null $user */
-        $user = Auth::user();
-
-        return $user && !$user->isKasir();
-    }
-
-    public static function canEdit($record): bool
-    {
-        /** @var \App\Models\User|null $user */
-        $user = Auth::user();
-
-        return $user && !$user->isKasir();
-    }
-
-    public static function canDelete($record): bool
-    {
-        /** @var \App\Models\User|null $user */
-        $user = Auth::user();
-
-        return $user && !$user->isKasir();
     }
 }

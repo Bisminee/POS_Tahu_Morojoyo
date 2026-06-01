@@ -11,13 +11,16 @@ use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Toggle;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
@@ -30,7 +33,7 @@ class MenuResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBookOpen;
 
-    protected static ?string $recordTitleAttribute = 'nama_menu';
+    protected static ?string $recordTitleAttribute = 'namaMenu';
 
     protected static ?string $navigationLabel = 'Menu';
     protected static ?string $modelLabel = 'Menu';
@@ -40,41 +43,50 @@ class MenuResource extends Resource
     {
         return $schema
             ->components([
-                TextInput::make('nama_menu')
+                TextInput::make('namaMenu')
                     ->label('Nama Menu')
                     ->required()
                     ->maxLength(255),
 
-                Select::make('rasa')
-                    ->label('Rasa')
-                    ->options([
-                        'keju' => 'Keju',
-                        'ori' => 'Original',
-                        'pedas' => 'Pedas',
-                        'spicy_cheese' => 'Spicy Cheese',
-                        'mix_keju_ori_pedas' => 'Mix Keju Ori Pedas',
+                FileUpload::make('foto')
+                    ->label('Foto Produk')
+                    ->image()
+                    ->directory('menus')
+                    ->disk('public'),
+
+                TextInput::make('tagline_product')
+                    ->label('Tagline Product')
+                    ->maxLength(255),
+
+                Textarea::make('deskripsi_produk')
+                    ->label('Deskripsi Produk')
+                    ->rows(4)
+                    ->columnSpanFull(),
+
+                Repeater::make('compositions')
+                    ->label('Komposisi Menu / Pengurangan Stok')
+                    ->relationship('compositions')
+                    ->schema([
+                        Select::make('pcs_tahu_id')
+                            ->label('Jenis PCS Tahu')
+                            ->relationship('pcsTahu', 'nama_pcs')
+                            ->searchable()
+                            ->preload()
+                            ->required(),
+
+                        TextInput::make('jumlah_pakai')
+                            ->label('Jumlah Pakai')
+                            ->numeric()
+                            ->minValue(1)
+                            ->default(1)
+                            ->required(),
                     ])
-                    ->required(),
-
-                Select::make('ukuran')
-                    ->label('Ukuran')
-                    ->options([
-                        'small' => 'Small',
-                        'medium' => 'Medium',
-                        'large' => 'Large',
-                    ])
-                    ->required(),
-
-                TextInput::make('harga')
-                    ->label('Harga')
-                    ->numeric()
-                    ->prefix('Rp')
-                    ->required()
-                    ->minValue(0),
-
-                Toggle::make('is_active')
-                    ->label('Menu Aktif')
-                    ->default(true),
+                    ->columns(2)
+                    ->defaultItems(1)
+                    ->addActionLabel('Tambah Komposisi')
+                    ->reorderable(false)
+                    ->collapsible()
+                    ->columnSpanFull(),
             ]);
     }
 
@@ -82,77 +94,79 @@ class MenuResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('nama_menu')
+                ImageColumn::make('foto')
+                    ->label('Foto')
+                    ->square(),
+
+                TextColumn::make('namaMenu')
                     ->label('Nama Menu')
                     ->searchable()
                     ->sortable(),
 
-                TextColumn::make('rasa')
-                    ->label('Rasa')
-                    ->formatStateUsing(function ($state) {
-                        return match ($state) {
-                            'keju' => 'Keju',
-                            'ori' => 'Original',
-                            'pedas' => 'Pedas',
-                            'spicy_cheese' => 'Spicy Cheese',
-                            'mix_keju_ori_pedas' => 'Mix Keju Ori Pedas',
-                            default => $state,
-                        };
-                    })
-                    ->searchable()
-                    ->sortable(),
+                TextColumn::make('compositions.pcsTahu.nama_pcs')
+                    ->label('Komposisi')
+                    ->bulleted()
+                    ->listWithLineBreaks(),
 
-                TextColumn::make('ukuran')
-                    ->label('Ukuran')
+                TextColumn::make('jumlah_komposisi')
+                    ->label('Jumlah Komposisi')
+                    ->state(fn(Menu $record): string => $record->compositions->count() . ' Item')
                     ->badge()
-                    ->sortable(),
+                    ->color(fn(string $state): string => $state === '0 Item' ? 'gray' : 'success'),
 
-                TextColumn::make('harga')
+                TextColumn::make('jumlah_harga')
                     ->label('Harga')
-                    ->money('IDR')
-                    ->sortable(),
+                    ->state(function (Menu $record): string {
+                        $harga = $record->hargas->first();
+
+                        if (! $harga) {
+                            return 'Belum Ada Harga';
+                        }
+
+                        $jumlah = 0;
+
+                        if ($harga->harga_normal !== null) {
+                            $jumlah++;
+                        }
+
+                        if ($harga->harga_gofood !== null) {
+                            $jumlah++;
+                        }
+
+                        if ($harga->harga_shopeefood !== null) {
+                            $jumlah++;
+                        }
+
+                        return $jumlah > 0 ? $jumlah . ' Harga' : 'Belum Ada Harga';
+                    })
+                    ->badge()
+                    ->color(fn(string $state): string => $state === 'Belum Ada Harga' ? 'gray' : 'success'),
+
+                TextColumn::make('tagline_product')
+                    ->label('Tagline')
+                    ->searchable()
+                    ->limit(40),
+
+                TextColumn::make('deskripsi_produk')
+                    ->label('Deskripsi')
+                    ->limit(60)
+                    ->wrap(),
 
                 TextColumn::make('deskripsi')
                     ->label('Isi Menu')
                     ->wrap()
                     ->placeholder('—')
-                    ->getStateUsing(fn ($record) => $record->deskripsi),
+                    ->getStateUsing(fn($record) => $record->deskripsi),
 
                 IconColumn::make('is_active')
                     ->label('Aktif')
                     ->boolean(),
             ])
-            ->filters([
-                SelectFilter::make('rasa')
-                    ->label('Filter Rasa')
-                    ->options([
-                        'keju' => 'Keju',
-                        'ori' => 'Original',
-                        'pedas' => 'Pedas',
-                        'spicy_cheese' => 'Spicy Cheese',
-                        'mix_keju_ori_pedas' => 'Mix Keju Ori Pedas',
-                    ]),
-
-                SelectFilter::make('ukuran')
-                    ->label('Filter Ukuran')
-                    ->options([
-                        'small' => 'Small',
-                        'medium' => 'Medium',
-                        'large' => 'Large',
-                    ]),
-
-                SelectFilter::make('is_active')
-                    ->label('Status Menu')
-                    ->options([
-                        '1' => 'Aktif',
-                        '0' => 'Nonaktif',
-                    ]),
-            ])
-            ->actions([
+            ->recordActions([
                 EditAction::make(),
                 DeleteAction::make(),
             ])
-            ->bulkActions([
+            ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
                 ]),
@@ -171,34 +185,37 @@ class MenuResource extends Resource
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()
-            ->with('menuDetails.pcsTahu');
+            ->with([
+                'compositions.pcsTahu',
+                'hargas',
+            ]);
     }
 
     public static function canViewAny(): bool
     {
         $user = Auth::user();
 
-        return $user && !$user->isKasir();
+        return $user && ! $user->isKasir();
     }
 
     public static function canCreate(): bool
     {
         $user = Auth::user();
 
-        return $user && !$user->isKasir();
+        return $user && ! $user->isKasir();
     }
 
     public static function canEdit($record): bool
     {
         $user = Auth::user();
 
-        return $user && !$user->isKasir();
+        return $user && ! $user->isKasir();
     }
 
     public static function canDelete($record): bool
     {
         $user = Auth::user();
 
-        return $user && !$user->isKasir();
+        return $user && ! $user->isKasir();
     }
 }

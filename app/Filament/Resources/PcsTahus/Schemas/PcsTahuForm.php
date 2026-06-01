@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\PcsTahus\Schemas;
 
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Schema;
 
@@ -14,6 +15,16 @@ class PcsTahuForm
                 ->label('Nama PCS')
                 ->required()
                 ->maxLength(255),
+
+            Select::make('is_active')
+                ->label('Status')
+                ->options([
+                    true => 'Aktif',
+                    false => 'Nonaktif',
+                ])
+                ->default(true)
+                ->native(false)
+                ->required(),
         ]);
     }
 }

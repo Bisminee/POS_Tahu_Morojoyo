@@ -7,7 +7,12 @@ use Illuminate\Database\Eloquent\Model;
 class Karyawan extends Model
 {
     protected $table = 'karyawans';
+
     protected $primaryKey = 'idKaryawan';
+
+    public $incrementing = true;
+
+    protected $keyType = 'int';
 
     protected $fillable = [
         'nama',
@@ -16,10 +21,12 @@ class Karyawan extends Model
         'cabang_id',
         'face_photo',
         'face_descriptor',
+        'is_active',
     ];
 
     protected $casts = [
         'face_descriptor' => 'array',
+        'is_active' => 'boolean',
     ];
 
     public function user()

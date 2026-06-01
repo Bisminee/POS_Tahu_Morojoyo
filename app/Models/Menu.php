@@ -16,7 +16,6 @@ class Menu extends Model
         'namaMenu',
     ];
 
-    // Accessor otomatis ikut tampil
     protected $appends = ['deskripsi'];
 
     public function hargas(): HasMany
@@ -36,16 +35,13 @@ class Menu extends Model
 
     public function getDeskripsiAttribute(): string
     {
-        // Hindari query berulang
         if (! $this->relationLoaded('menuDetails')) {
             return '';
         }
 
         return $this->menuDetails
-            ->filter(fn ($detail) => $detail->pcsTahu !== null)
-            ->map(fn ($detail) =>
-                $detail->pcsTahu->nama_pcs . ' (' . $detail->jumlah_pcs . ')'
-            )
+            ->filter(fn($detail) => $detail->pcsTahu !== null)
+            ->map(fn($detail) => $detail->pcsTahu->nama_pcs . ' (' . $detail->jumlah_pcs . ')')
             ->implode(', ');
     }
 }

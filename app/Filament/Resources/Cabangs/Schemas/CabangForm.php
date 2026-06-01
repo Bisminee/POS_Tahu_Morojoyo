@@ -15,6 +15,16 @@ class CabangForm
                 ->required()
                 ->maxLength(255),
 
+            Forms\Components\Select::make('is_active')
+                ->label('Status')
+                ->options([
+                    true => 'Aktif',
+                    false => 'Nonaktif',
+                ])
+                ->default(true)
+                ->native(false)
+                ->required(),
+
             Forms\Components\Textarea::make('alamat')
                 ->label('Alamat')
                 ->required()
