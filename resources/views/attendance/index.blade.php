@@ -1,5 +1,5 @@
 {{-- resources/views/attendance/index.blade.php --}}
-@extends('layouts.app') {{-- sesuaikan dengan layout yang dipakai --}}
+@extends('layouts.app')
 
 @section('title', 'Absensi Masuk')
 
@@ -87,7 +87,6 @@
             margin-bottom: 20px;
         }
 
-        /* Kamera */
         .camera-wrap {
             position: relative;
             border-radius: 16px;
@@ -103,7 +102,6 @@
             object-fit: cover;
             display: block;
             transform: scaleX(-1);
-            /* mirror */
         }
 
         #canvas {
@@ -125,6 +123,7 @@
             border: 2.5px solid rgba(255, 255, 255, .5);
             border-radius: 50%;
             box-shadow: 0 0 0 9999px rgba(0, 0, 0, .35);
+            transition: border-color .3s;
         }
 
         .face-guide.detected {
@@ -133,6 +132,11 @@
 
         .face-guide.no-face {
             border-color: #f87171;
+        }
+
+        .face-guide.matched {
+            border-color: #60a5fa;
+            box-shadow: 0 0 0 9999px rgba(0, 0, 0, .35), 0 0 24px rgba(96, 165, 250, .4);
         }
 
         .camera-status {
@@ -175,6 +179,33 @@
             to {
                 transform: rotate(360deg);
             }
+        }
+
+        /* Confidence bar */
+        .confidence-bar-wrap {
+            margin-bottom: 12px;
+            display: none;
+        }
+
+        .confidence-bar-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            color: #6b7280;
+            margin-bottom: 4px;
+        }
+
+        .confidence-bar-bg {
+            height: 6px;
+            background: #e5e7eb;
+            border-radius: 99px;
+            overflow: hidden;
+        }
+
+        .confidence-bar-fill {
+            height: 100%;
+            border-radius: 99px;
+            transition: width .3s, background .3s;
         }
 
         .btn-absen {
@@ -254,15 +285,26 @@
         }
     </style>
 
+    {{--
+        Face descriptor karyawan yang sedang shift — dikirim dari controller.
+        Format: JSON string dari array Float32 (128 angka).
+        Contoh di controller:
+            $shift->karyawan->face_descriptor  (sudah json_encode saat disimpan)
+    --}}
+    @php
+        $faceDescriptorRaw = $shift?->karyawan?->face_descriptor ?? null;
+    @endphp
+
     <div class="abs-wrap">
         <div class="abs-card">
+
             <div class="abs-header">
                 <h1>Absensi Masuk</h1>
                 <p>{{ now()->translatedFormat('l, d F Y') }} &middot; {{ now()->format('H:i') }}</p>
             </div>
 
             @if (session('status'))
-                <div class="status-box status-ok" style="margin-bottom:16px; display:block;">
+                <div class="status-box status-ok" style="display:block;margin-bottom:16px">
                     {{ session('status') }}
                 </div>
             @endif
@@ -273,48 +315,29 @@
                 </div>
             @endif
 
-            @if (!empty($cabangName))
-                <div class="status-box" style="background:#eff6ff;color:#0c4a6e;margin-bottom:16px;border:1px solid #bfdbfe;">
-                    Pilih shift untuk cabang <strong>{{ $cabangName }}</strong>. Jika masih jam siang, daftar shift siang akan otomatis tampil.
-                </div>
-            @endif
-
-            {{-- KONDISI 1: Sudah pilih shift → tampilkan info shift --}}
+            {{-- Shift sudah dipilih --}}
             @if ($shift)
-                <div class="shift-info">
-                    <div class="si-row">
-                        <span>Karyawan</span>
-                        <strong>{{ $shift->karyawan->nama }}</strong>
+                @if (!$faceDescriptorRaw)
+                    <div class="status-box status-warn" style="display:block;margin-bottom:16px">
+                        ⚠️ Karyawan <strong>{{ $shift->karyawan->nama }}</strong> belum mendaftarkan wajah.
+                        Hubungi owner untuk mendaftar terlebih dahulu.
                     </div>
-                    <div class="si-row">
-                        <span>Sesi</span>
-                        <strong>{{ ucfirst($shift->sesi) }}</strong>
-                    </div>
-                    <div class="si-row">
-                        <span>Jam masuk</span>
-                        <strong>{{ substr($shift->jam_mulai, 0, 5) }}</strong>
-                    </div>
-                    <div class="si-row">
-                        <span>Jam selesai</span>
-                        <strong>{{ substr($shift->jam_selesai, 0, 5) }}</strong>
-                    </div>
-                    <div class="si-row">
-                        <span>Toleransi</span>
-                        <strong>{{ $shift->toleransi_menit }} menit</strong>
-                    </div>
-                </div>
+                @endif
 
-                {{-- KONDISI 2: Belum pilih shift, tapi ada shift hari ini → dropdown pilih --}}
+                <div class="shift-info">
+                    <div class="si-row"><span>Karyawan</span><strong>{{ $shift->karyawan->nama }}</strong></div>
+                    <div class="si-row"><span>Sesi</span><strong>{{ ucfirst($shift->sesi) }}</strong></div>
+                    <div class="si-row"><span>Jam masuk</span><strong>{{ substr($shift->jam_mulai, 0, 5) }}</strong></div>
+                    <div class="si-row"><span>Jam selesai</span><strong>{{ substr($shift->jam_selesai, 0, 5) }}</strong>
+                    </div>
+                    <div class="si-row"><span>Toleransi</span><strong>{{ $shift->toleransi_menit }} menit</strong></div>
+                </div>
             @elseif ($todayShifts->isNotEmpty())
                 <form method="POST" action="{{ route('attendance.select-shift') }}" style="margin-bottom:20px">
                     @csrf
-
                     @if ($errors->any())
-                        <div class="no-shift" style="background:#fef2f2;border-color:#fecaca;color:#991b1b;">
-                            Terjadi kesalahan: {{ $errors->first() }}
-                        </div>
+                        <div class="no-shift">Terjadi kesalahan: {{ $errors->first() }}</div>
                     @endif
-
                     <label style="font-size:13px;font-weight:600;color:#374151;display:block;margin-bottom:6px">
                         Pilih karyawan yang jaga sekarang:
                     </label>
@@ -331,8 +354,6 @@
                         ✓ Pilih &amp; Lanjut ke Absensi
                     </button>
                 </form>
-
-                {{-- KONDISI 3: Tidak ada shift sama sekali hari ini --}}
             @else
                 <div class="no-shift">
                     Belum ada jadwal shift untuk hari ini.<br>
@@ -340,9 +361,9 @@
                 </div>
             @endif
 
-            {{-- Kamera & tombol — hanya tampil jika shift sudah dipilih --}}
-            @if ($shift)
-                <div class="camera-wrap" id="camera-wrap">
+            {{-- Kamera — hanya tampil jika shift sudah dipilih & ada face descriptor --}}
+            @if ($shift && $faceDescriptorRaw)
+                <div class="camera-wrap">
                     <video id="video" autoplay muted playsinline></video>
                     <canvas id="canvas"></canvas>
                     <div class="face-overlay">
@@ -355,169 +376,247 @@
                     </div>
                 </div>
 
+                {{-- Confidence bar --}}
+                <div class="confidence-bar-wrap" id="confidence-wrap">
+                    <div class="confidence-bar-label">
+                        <span>Kecocokan wajah</span>
+                        <span id="confidence-pct">0%</span>
+                    </div>
+                    <div class="confidence-bar-bg">
+                        <div class="confidence-bar-fill" id="confidence-fill" style="width:0%;background:#e5e7eb"></div>
+                    </div>
+                </div>
+
                 <button class="btn-absen" id="btn-absen" disabled onclick="doAbsen()">
                     📸 Absen Sekarang
                 </button>
-
                 <div class="status-box" id="status-box"></div>
             @endif
+
         </div>
     </div>
 
-    {{-- face-api.js dari CDN --}}
     <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
-    <script>
-        const CSRF_TOKEN = document.querySelector('meta[name="csrf-token"]')?.content || '';
-        const CLOCK_IN_URL = "{{ route('attendance.clock-in') }}";
-        const POS_URL = "{{ route('cashier.pos') }}";
-        const HAS_SHIFT = {{ $shift ? 'true' : 'false' }};
-        const MODEL_URL = '/face-models'; // taruh model di public/face-models/
 
-        let faceDetected = false;
-        let lastDescriptor = null;
-        let detectionLoop = null;
+    @if ($shift && $faceDescriptorRaw)
+        <script>
+            const CSRF_TOKEN = document.querySelector('meta[name="csrf-token"]')?.content || '';
+            const CLOCK_IN_URL = "{{ route('attendance.clock-in') }}";
+            const POS_URL = "{{ route('cashier.pos') }}";
+            const MODEL_URL = '/face-models';
 
-        const video = document.getElementById('video');
-        const canvas = document.getElementById('canvas');
-        const guide = document.getElementById('face-guide');
-        const camStatus = document.getElementById('camera-status');
-        const loadingEl = document.getElementById('loading-models');
-        const btnAbsen = document.getElementById('btn-absen');
-        const statusBox = document.getElementById('status-box');
+            // ── THRESHOLD: Semakin kecil = semakin ketat ──────────────────────────
+            // 0.4 = ketat (disarankan), 0.5 = moderat, 0.6 = longgar (mudah lolos)
+            const MATCH_THRESHOLD = 0.40;
 
-        function showStatus(type, msg) {
-            statusBox.className = 'status-box status-' + type;
-            statusBox.innerHTML = msg;
-            statusBox.style.display = '';
-        }
+            // Descriptor terdaftar dari server (sudah diparse jadi Float32Array)
+            const RAW_DESCRIPTOR = @json(is_string($faceDescriptorRaw) ? json_decode($faceDescriptorRaw, true) : $faceDescriptorRaw);
+            const KARYAWAN_NAMA = @json($shift->karyawan->nama);
 
-        async function initFaceApi() {
-            try {
-                // Load model yang diperlukan
-                await Promise.all([
-                    faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
-                    faceapi.nets.faceLandmark68TinyNet.loadFromUri(MODEL_URL),
-                    faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL),
-                ]);
-
-                // Akses kamera
-                const stream = await navigator.mediaDevices.getUserMedia({
-                    video: {
-                        facingMode: 'user',
-                        width: 640,
-                        height: 480
-                    }
-                });
-                video.srcObject = stream;
-
-                await new Promise(r => video.addEventListener('loadedmetadata', r, {
-                    once: true
-                }));
-                canvas.width = video.videoWidth;
-                canvas.height = video.videoHeight;
-
-                loadingEl.style.display = 'none';
-                camStatus.textContent = 'Arahkan wajah ke kamera';
-
-                if (HAS_SHIFT) startDetectionLoop();
-
-            } catch (err) {
-                loadingEl.innerHTML = `<span style="color:#fca5a5">⚠️ ${err.message || 'Gagal akses kamera'}</span>`;
-            }
-        }
-
-        function startDetectionLoop() {
-            detectionLoop = setInterval(async () => {
-                try {
-                    const detection = await faceapi
-                        .detectSingleFace(video, new faceapi.TinyFaceDetectorOptions({
-                            scoreThreshold: 0.5
-                        }))
-                        .withFaceLandmarks(true)
-                        .withFaceDescriptor();
-
-                    if (detection) {
-                        faceDetected = true;
-                        lastDescriptor = Array.from(detection.descriptor);
-                        guide.className = 'face-guide detected';
-                        camStatus.textContent = '✓ Wajah terdeteksi';
-                        btnAbsen.disabled = false;
-                    } else {
-                        faceDetected = false;
-                        lastDescriptor = null;
-                        guide.className = 'face-guide no-face';
-                        camStatus.textContent = 'Wajah tidak terdeteksi...';
-                        btnAbsen.disabled = true;
-                    }
-                } catch (_) {}
-            }, 600);
-        }
-
-        function capturePhoto() {
-            const ctx = canvas.getContext('2d');
-            ctx.save();
-            ctx.scale(-1, 1);
-            ctx.drawImage(video, -canvas.width, 0, canvas.width, canvas.height);
-            ctx.restore();
-            return canvas.toDataURL('image/jpeg', 0.8);
-        }
-
-        async function doAbsen() {
-            if (!faceDetected || !lastDescriptor) {
-                showStatus('warn', 'Pastikan wajah terdeteksi dulu di kamera.');
-                return;
+            // Validasi panjang descriptor
+            if (!Array.isArray(RAW_DESCRIPTOR) || RAW_DESCRIPTOR.length !== 128) {
+                console.error('Face descriptor tidak valid! Panjang:', RAW_DESCRIPTOR?.length);
             }
 
-            clearInterval(detectionLoop);
-            btnAbsen.disabled = true;
-            btnAbsen.innerHTML = '<span class="spinner-sm"></span> Memverifikasi wajah...';
-            showStatus('wait', '⏳ Memverifikasi wajah...');
+            const REGISTERED_DESCRIPTOR = new Float32Array(RAW_DESCRIPTOR);
 
-            const fotoBase64 = capturePhoto();
+            let faceDetected = false;
+            let lastDescriptor = null;
+            let currentDistance = 1.0; // 0 = identik, 1 = tidak mirip
+            let detectionLoop = null;
+            let faceMatchOk = false; // true jika wajah sudah cocok di frontend
 
-            try {
-                const res = await fetch(CLOCK_IN_URL, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': CSRF_TOKEN,
-                        'Accept': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        face_descriptor: lastDescriptor,
-                        foto_base64: fotoBase64,
-                    }),
-                });
+            const video = document.getElementById('video');
+            const canvas = document.getElementById('canvas');
+            const guide = document.getElementById('face-guide');
+            const camStatus = document.getElementById('camera-status');
+            const loadingEl = document.getElementById('loading-models');
+            const btnAbsen = document.getElementById('btn-absen');
+            const statusBox = document.getElementById('status-box');
+            const confWrap = document.getElementById('confidence-wrap');
+            const confFill = document.getElementById('confidence-fill');
+            const confPct = document.getElementById('confidence-pct');
 
-                const data = await res.json();
+            function showStatus(type, msg) {
+                statusBox.className = 'status-box status-' + type;
+                statusBox.innerHTML = msg;
+                statusBox.style.display = '';
+            }
 
-                if (data.success) {
-                    if (data.status_masuk === 'telat') {
-                        showStatus('warn', `⚠️ ${data.message}`);
-                    } else {
-                        showStatus('ok', `✅ ${data.message}`);
-                    }
-                    // Redirect ke POS langsung
-                    setTimeout(() => {
-                        window.location.href = data.redirect || POS_URL;
-                    }, 900);
+            function updateConfidenceBar(distance) {
+                // distance 0 = identik (100% cocok), 1 = tidak mirip (0% cocok)
+                const pct = Math.max(0, Math.min(100, Math.round((1 - distance) * 100)));
+                confWrap.style.display = '';
+                confPct.textContent = pct + '%';
+                confFill.style.width = pct + '%';
+
+                if (distance <= MATCH_THRESHOLD) {
+                    confFill.style.background = '#10b981'; // hijau = cocok
+                } else if (distance <= 0.55) {
+                    confFill.style.background = '#f59e0b'; // kuning = hampir
                 } else {
-                    showStatus('err', `❌ ${data.message}`);
+                    confFill.style.background = '#ef4444'; // merah = tidak cocok
+                }
+            }
+
+            async function initFaceApi() {
+                try {
+                    await Promise.all([
+                        faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
+                        faceapi.nets.faceLandmark68TinyNet.loadFromUri(MODEL_URL),
+                        faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL),
+                    ]);
+
+                    const stream = await navigator.mediaDevices.getUserMedia({
+                        video: {
+                            facingMode: 'user',
+                            width: 640,
+                            height: 480
+                        }
+                    });
+                    video.srcObject = stream;
+                    await new Promise(r => video.addEventListener('loadedmetadata', r, {
+                        once: true
+                    }));
+                    canvas.width = video.videoWidth;
+                    canvas.height = video.videoHeight;
+
+                    loadingEl.style.display = 'none';
+                    camStatus.textContent = 'Arahkan wajah ke kamera';
+
+                    startDetectionLoop();
+
+                } catch (err) {
+                    loadingEl.innerHTML = `<span style="color:#fca5a5">⚠️ ${err.message || 'Gagal akses kamera'}</span>`;
+                }
+            }
+
+            function startDetectionLoop() {
+                detectionLoop = setInterval(async () => {
+                    try {
+                        const detection = await faceapi
+                            .detectSingleFace(video, new faceapi.TinyFaceDetectorOptions({
+                                scoreThreshold: 0.5
+                            }))
+                            .withFaceLandmarks(true)
+                            .withFaceDescriptor();
+
+                        if (detection) {
+                            faceDetected = true;
+                            lastDescriptor = detection.descriptor; // Float32Array langsung
+
+                            // ── BANDINGKAN DI FRONTEND ────────────────────────────────────
+                            // Euclidean distance antara wajah di kamera vs wajah terdaftar
+                            currentDistance = faceapi.euclideanDistance(
+                                lastDescriptor,
+                                REGISTERED_DESCRIPTOR
+                            );
+
+                            updateConfidenceBar(currentDistance);
+
+                            if (currentDistance <= MATCH_THRESHOLD) {
+                                // Wajah COCOK
+                                faceMatchOk = true;
+                                guide.className = 'face-guide matched';
+                                camStatus.textContent = `✓ Wajah cocok dengan ${KARYAWAN_NAMA}`;
+                                btnAbsen.disabled = false;
+                            } else {
+                                // Wajah TIDAK COCOK (mungkin orang lain)
+                                faceMatchOk = false;
+                                guide.className = 'face-guide detected';
+                                camStatus.textContent = `Wajah tidak dikenali (${(currentDistance).toFixed(2)})`;
+                                btnAbsen.disabled = true;
+                            }
+
+                        } else {
+                            faceDetected = false;
+                            faceMatchOk = false;
+                            lastDescriptor = null;
+                            currentDistance = 1.0;
+                            guide.className = 'face-guide no-face';
+                            camStatus.textContent = 'Wajah tidak terdeteksi...';
+                            btnAbsen.disabled = true;
+                            updateConfidenceBar(1.0);
+                        }
+
+                    } catch (_) {}
+                }, 600);
+            }
+
+            function capturePhoto() {
+                const ctx = canvas.getContext('2d');
+                ctx.save();
+                ctx.scale(-1, 1);
+                ctx.drawImage(video, -canvas.width, 0, canvas.width, canvas.height);
+                ctx.restore();
+                return canvas.toDataURL('image/jpeg', 0.8);
+            }
+
+            async function doAbsen() {
+                // Double check di frontend sebelum kirim ke server
+                if (!faceDetected || !lastDescriptor) {
+                    showStatus('warn', 'Pastikan wajah terdeteksi dulu di kamera.');
+                    return;
+                }
+
+                if (!faceMatchOk || currentDistance > MATCH_THRESHOLD) {
+                    showStatus('err', `❌ Wajah tidak cocok dengan ${KARYAWAN_NAMA}. Harap gunakan wajah yang terdaftar.`);
+                    return;
+                }
+
+                clearInterval(detectionLoop);
+                btnAbsen.disabled = true;
+                btnAbsen.innerHTML = '<span class="spinner-sm"></span> Memverifikasi...';
+                showStatus('wait', '⏳ Mengirim data absensi...');
+
+                const fotoBase64 = capturePhoto();
+
+                try {
+                    const res = await fetch(CLOCK_IN_URL, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': CSRF_TOKEN,
+                            'Accept': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            // Kirim descriptor sebagai plain array (128 float)
+                            face_descriptor: Array.from(lastDescriptor),
+                            // Kirim juga distance hasil pencocokan frontend
+                            // Server bisa pakai ini sebagai double-check
+                            face_distance: currentDistance,
+                            foto_base64: fotoBase64,
+                        }),
+                    });
+
+                    const data = await res.json();
+
+                    if (data.success) {
+                        if (data.status_masuk === 'telat') {
+                            showStatus('warn', `⚠️ ${data.message}`);
+                        } else {
+                            showStatus('ok', `✅ ${data.message}`);
+                        }
+                        setTimeout(() => {
+                            window.location.href = data.redirect || POS_URL;
+                        }, 900);
+                    } else {
+                        showStatus('err', `❌ ${data.message}`);
+                        btnAbsen.disabled = false;
+                        btnAbsen.innerHTML = '📸 Absen Sekarang';
+                        startDetectionLoop();
+                    }
+
+                } catch (err) {
+                    showStatus('err', '❌ Terjadi kesalahan koneksi. Coba lagi.');
                     btnAbsen.disabled = false;
                     btnAbsen.innerHTML = '📸 Absen Sekarang';
                     startDetectionLoop();
                 }
-            } catch (err) {
-                showStatus('err', '❌ Terjadi kesalahan koneksi. Coba lagi.');
-                btnAbsen.disabled = false;
-                btnAbsen.innerHTML = '📸 Absen Sekarang';
-                startDetectionLoop();
             }
-        }
 
-        // Init saat halaman dimuat
-        if (HAS_SHIFT) {
             initFaceApi();
-        }
-    </script>
+        </script>
+    @endif
+
 @endsection

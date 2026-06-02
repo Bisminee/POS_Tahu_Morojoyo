@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Http\JsonResponse;
 
 class AttendanceController extends Controller
 {
@@ -79,123 +80,123 @@ class AttendanceController extends Controller
             ->with('success', 'Shift dipilih. Silakan lanjutkan verifikasi wajah.');
     }
 
-    /**
-     * Clock in / absen masuk
-     */
-    public function clockIn(Request $request)
+    public function clockIn(Request $request): JsonResponse
     {
-        $shift = Shift::with('karyawan')
-            ->find(session('selected_shift_id'));
+        $user = $request->user();
 
-        if (!$shift) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Shift tidak ditemukan.'
-            ], 404);
+        if (!$user || $user->role !== 'kasir') {
+            return response()->json(['success' => false, 'message' => 'Unauthorized.'], 403);
         }
 
-        // Cek apakah sudah ada attendance aktif untuk shift ini
-        $existingAttendance = Attendance::where('shift_id', $shift->id)
-            ->whereNotNull('jam_masuk')
-            ->whereNull('jam_keluar')
-            ->first();
+        // Ambil shift aktif dari session
+        $shiftId = session('selected_shift_id');
+        $shift   = Shift::with('karyawan')->find($shiftId);
 
-        // Jika sudah absen dan masih aktif, langsung redirect ke POS
-        if ($existingAttendance) {
-            return response()->json([
-                'success' => true,
-                'message' => 'Sudah diabsen. Lanjut ke POS.',
-                'status_masuk' => $existingAttendance->status_masuk,
-                'redirect' => route('cashier.pos'),
-            ]);
+        if (!$shift) {
+            return response()->json(['success' => false, 'message' => 'Shift tidak ditemukan. Pilih shift dulu.']);
         }
 
         $karyawan = $shift->karyawan;
 
-        if (!$karyawan) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Data karyawan tidak ditemukan.'
-            ], 404);
+        // ── VALIDASI FACE DESCRIPTOR ─────────────────────────────────────────
+        if (!$karyawan->face_descriptor) {
+            return response()->json(['success' => false, 'message' => 'Karyawan belum mendaftarkan wajah.']);
         }
 
-        // Face descriptor referensi
-        $storedDescriptor = $karyawan->face_descriptor;
+        $incomingDescriptor = $request->input('face_descriptor'); // array[128]
+        $frontendDistance   = (float) $request->input('face_distance', 1.0);
+        $THRESHOLD          = 0.40;
 
-        if (!$storedDescriptor) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Face ID belum terdaftar.'
-            ], 422);
+        if (!is_array($incomingDescriptor) || count($incomingDescriptor) !== 128) {
+            return response()->json(['success' => false, 'message' => 'Data wajah tidak valid.']);
         }
 
-        // Descriptor dari kamera
-        $incomingDescriptor = $request->input('face_descriptor');
+        // Decode descriptor terdaftar
+        $registeredRaw = is_string($karyawan->face_descriptor)
+            ? json_decode($karyawan->face_descriptor, true)
+            : (array) $karyawan->face_descriptor;
 
-        if (!$incomingDescriptor) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Descriptor wajah tidak ditemukan.'
-            ], 422);
+        if (!is_array($registeredRaw) || count($registeredRaw) !== 128) {
+            return response()->json(['success' => false, 'message' => 'Data wajah karyawan rusak. Hubungi owner.']);
         }
 
-        // Hitung similarity
-        $confidence = $this->cosineSimilarity(
-            $incomingDescriptor,
-            $storedDescriptor
+        // ── DOUBLE-CHECK DISTANCE DI SERVER ──────────────────────────────────
+        $distance = $this->euclideanDistance(
+            array_values($incomingDescriptor),
+            array_values($registeredRaw)
         );
 
-        // Threshold
-        if ($confidence < 0.6) {
+        Log::info('Face verification', [
+            'karyawan'          => $karyawan->nama,
+            'distance_server'   => round($distance, 4),
+            'distance_frontend' => round($frontendDistance, 4),
+            'threshold'         => $THRESHOLD,
+            'match'             => $distance <= $THRESHOLD,
+        ]);
+
+        if ($distance > $THRESHOLD) {
             return response()->json([
                 'success' => false,
-                'message' => 'Wajah tidak cocok.',
-                'confidence' => round($confidence, 3),
-            ], 422);
+                'message' => "Wajah tidak cocok dengan {$karyawan->nama}. Gunakan wajah yang terdaftar.",
+            ]);
         }
 
-        // Simpan foto absen
-        $fotoPath = null;
+        // ── CEK SUDAH ABSEN HARI INI ─────────────────────────────────────────
+        $alreadyAbsen = Attendance::where('user_id', $user->id)
+            ->whereDate('created_at', today())
+            ->whereNotNull('jam_masuk')
+            ->whereNull('jam_keluar')
+            ->exists();
 
-        if ($request->input('foto_base64')) {
-            $fotoPath = $this->saveBase64Photo(
-                $request->input('foto_base64'),
-                $karyawan->idKaryawan
-            );
+        if ($alreadyAbsen) {
+            return response()->json([
+                'success'  => true,
+                'message'  => 'Kamu sudah absen hari ini.',
+                'redirect' => route('cashier.pos'),
+            ]);
         }
 
-        // Hitung status masuk
-        $now = Carbon::now();
+        // ── CATAT ABSENSI ────────────────────────────────────────────────────
+        $jamMasuk      = now();
+        $jamMulaiShift = Carbon::parse($shift->jam_mulai);
+        $toleransi     = (int) ($shift->toleransi_menit ?? 15);
+        $statusMasuk   = $jamMasuk->gt($jamMulaiShift->copy()->addMinutes($toleransi))
+            ? 'telat'
+            : 'tepat_waktu';
 
-        [
-            'status' => $status,
-            'menit' => $telatMenit
-        ] = $shift->hitungStatusMasuk($now);
-
-        // Simpan attendance
         Attendance::create([
-            'shift_id' => $shift->id,
-            'user_id' => Auth::id(),
-            'jam_masuk' => $now,
-            'status_masuk' => $status,
-            'telat_menit' => $telatMenit,
-            'foto_absen' => $fotoPath,
-            'face_confidence' => $confidence,
+            'user_id'      => $user->id,
+            'shift_id'     => $shift->id,
+            'karyawan_id'  => $karyawan->idKaryawan,
+            'jam_masuk'    => $jamMasuk,
+            'status_masuk' => $statusMasuk,
+            'foto_masuk'   => $request->input('foto_base64'),
         ]);
 
-        // Ensure session is persisted
-        session()->save();
-
-        $message = $status === 'telat'
-            ? "Absen berhasil. Telat {$telatMenit} menit."
-            : "Absen berhasil. Selamat bekerja!";
+        $telat = $jamMasuk->diffInMinutes($jamMulaiShift);
+        $msg   = $statusMasuk === 'telat'
+            ? "Absen berhasil tapi telat {$telat} menit."
+            : "Selamat bekerja, {$karyawan->nama}! Absen tercatat.";
 
         return response()->json([
-            'success' => true,
-            'message' => $message,
-            'status_masuk' => $status,
-            'redirect' => route('attendance.verified'),
+            'success'      => true,
+            'message'      => $msg,
+            'status_masuk' => $statusMasuk,
+            'redirect'     => route('cashier.pos'),
         ]);
+    }
+
+    /**
+     * Hitung Euclidean distance antara dua descriptor (array float[128]).
+     */
+    private function euclideanDistance(array $a, array $b): float
+    {
+        $sum = 0.0;
+        for ($i = 0; $i < 128; $i++) {
+            $diff = ((float) ($a[$i] ?? 0.0)) - ((float) ($b[$i] ?? 0.0));
+            $sum += $diff * $diff;
+        }
+        return sqrt($sum);
     }
 
     /**
@@ -340,6 +341,22 @@ class AttendanceController extends Controller
             'tidakHadir',
             'tanggal'
         ));
+    }
+
+    public function karyawanList(Request $request)
+    {
+        if (auth()->user()->role !== 'owner') {
+            abort(403);
+        }
+
+        $search = $request->input('search');
+
+        $karyawans = \App\Models\Karyawan::with(['cabang', 'user'])
+            ->when($search, fn($q) => $q->where('nama', 'like', "%{$search}%"))
+            ->orderBy('nama')
+            ->get();
+
+        return view('owner.karyawan-list', compact('karyawans'));
     }
 
     /**

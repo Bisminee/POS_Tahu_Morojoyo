@@ -1465,6 +1465,15 @@
                         📋 Riwayat
                     </button>
 
+                    {{-- Tambahkan di dalam div topbar, sebelum tombol Keluar --}}
+                    <a href="{{ route('cashier.index') }}"
+                        style="display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:99px;
+          background:#fef3c7;color:#92400e;border:1px solid #fde68a;font-size:12px;
+          font-weight:600;text-decoration:none;transition:background .15s"
+                        onmouseover="this.style.background='#fde68a'" onmouseout="this.style.background='#fef3c7'">
+                        👤 Absensi
+                    </a>
+
                     <form action="{{ route('logout') }}" method="POST">
                         @csrf
                         <button type="submit" class="btn-logout">Keluar</button>

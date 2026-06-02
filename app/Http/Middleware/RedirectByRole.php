@@ -3,7 +3,6 @@
 namespace App\Http\Middleware;
 
 use Closure;
-use App\Models\Attendance;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response;
@@ -12,7 +11,9 @@ class RedirectByRole
 {
     public function handle(Request $request, Closure $next): Response
     {
-        if (!Auth::check()) return $next($request);
+        if (!Auth::check()) {
+            return $next($request);
+        }
 
         $user = Auth::user();
 
@@ -22,18 +23,8 @@ class RedirectByRole
                 return $next($request);
             }
 
-            // Cek attendance aktif langsung by user_id, tidak perlu lewat shift
-            $sudahAbsen = Attendance::where('user_id', $user->id)
-                ->whereNotNull('jam_masuk')
-                ->whereNull('jam_keluar')
-                ->whereDate('jam_masuk', today())
-                ->exists();
-
-            if (!$sudahAbsen) {
-                return redirect('/absensi');
-            }
-
-            // Sudah absen tapi bukan di halaman cashier → paksa ke POS
+            // Kasir hanya boleh akses halaman cashier & absensi
+            // Tidak perlu cek sudah absen atau belum untuk akses POS
             if (!$request->is('cashier*')) {
                 return redirect('/cashier/pos');
             }
