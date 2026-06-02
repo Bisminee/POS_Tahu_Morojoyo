@@ -5,8 +5,9 @@ namespace App\Filament\Resources\Menus\Schemas;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Repeater;
-use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Schema;
+use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Textarea;
 
 class MenuForm
 {
@@ -18,6 +19,20 @@ class MenuForm
                 ->label('Nama Menu')
                 ->required()
                 ->maxLength(255),
+
+            TextInput::make('tagline')
+                ->label('Tagline')
+                ->maxLength(255),
+
+            Textarea::make('deskripsi')
+                ->label('Deskripsi')
+                ->rows(3),
+
+            FileUpload::make('foto')
+                ->label('Foto Menu')
+                ->image()
+                ->directory('menus')
+                ->disk('public'),
 
             Repeater::make('compositions')
                 ->label('Komposisi Menu / Pengurangan Stok')
@@ -34,6 +49,7 @@ class MenuForm
                         ->label('Jumlah Pakai')
                         ->numeric()
                         ->minValue(1)
+                        ->default(1)
                         ->required(),
 
                 ])

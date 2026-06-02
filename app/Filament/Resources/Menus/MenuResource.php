@@ -23,6 +23,10 @@ use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
+use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Textarea;
+use Filament\Tables\Columns\ImageColumn;
+
 
 class MenuResource extends Resource
 {
@@ -40,7 +44,7 @@ class MenuResource extends Resource
     {
         return $schema
             ->components([
-                TextInput::make('nama_menu')
+                TextInput::make('namaMenu')
                     ->label('Nama Menu')
                     ->required()
                     ->maxLength(255),
@@ -75,6 +79,20 @@ class MenuResource extends Resource
                 Toggle::make('is_active')
                     ->label('Menu Aktif')
                     ->default(true),
+
+                FileUpload::make('foto')
+                    ->label('Foto Menu')
+                    ->image()
+                    ->directory('menus')
+                    ->disk('public'),
+
+                TextInput::make('tagline')
+                    ->label('Tagline')
+                    ->maxLength(255),
+
+                Textarea::make('deskripsi')
+                    ->label('Deskripsi')
+                    ->rows(3),
             ]);
     }
 
@@ -82,7 +100,7 @@ class MenuResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('nama_menu')
+                TextColumn::make('namaMenu')
                     ->label('Nama Menu')
                     ->searchable()
                     ->sortable(),
@@ -119,11 +137,19 @@ class MenuResource extends Resource
                     ->label('Isi Menu')
                     ->wrap()
                     ->placeholder('—')
-                    ->getStateUsing(fn ($record) => $record->deskripsi),
+                    ->getStateUsing(fn($record) => $record->deskripsi),
 
                 IconColumn::make('is_active')
                     ->label('Aktif')
                     ->boolean(),
+
+                ImageColumn::make('foto')
+                    ->label('Foto'),
+
+                TextColumn::make('tagline')
+                    ->label('Tagline')
+                    ->limit(30),
+
             ])
             ->filters([
                 SelectFilter::make('rasa')
@@ -147,8 +173,8 @@ class MenuResource extends Resource
                 SelectFilter::make('is_active')
                     ->label('Status Menu')
                     ->options([
-                        '1' => 'Aktif',
-                        '0' => 'Nonaktif',
+                        'true' => 'Aktif',
+                        'false' => 'Nonaktif',
                     ]),
             ])
             ->actions([
@@ -171,7 +197,7 @@ class MenuResource extends Resource
         ];
     }
 
-   
+
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()
