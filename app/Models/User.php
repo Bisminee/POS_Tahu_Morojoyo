@@ -50,4 +50,9 @@ class User extends Authenticatable implements FilamentUser
     {
         return $this->role === 'manager';
     }
+
+    public function isKasir(): bool
+    {
+        return $this->role === 'kasir';
+    }
 }

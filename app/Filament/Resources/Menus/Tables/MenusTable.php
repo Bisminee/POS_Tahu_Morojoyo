@@ -10,6 +10,7 @@ use Filament\Actions\Action;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Support\HtmlString;
+use Filament\Tables\Columns\ToggleColumn;
 
 class MenusTable
 {
@@ -100,6 +101,10 @@ class MenusTable
                                 return new HtmlString($html);
                             })
                     ),
+                ToggleColumn::make('is_active')
+                    ->label('Aktif')
+                    ->onColor('success')
+                    ->offColor('danger'),
             ])
             ->recordActions([
                 EditAction::make(),

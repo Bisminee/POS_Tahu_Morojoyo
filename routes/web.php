@@ -1,16 +1,25 @@
 <?php
 
+use App\Http\Controllers\CashierController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\GuestController;
 
-// Route::get('/', function () {
-//     return view('welcome');
-// });
+Route::get('/', function () {
+    return view('welcome');
+});
 
-Route::get('/', [GuestController::class, 'home'])->name('home');
+Route::middleware(['auth'])->group(function () {
 
-Route::get('/menu', [GuestController::class, 'menu'])->name('menu');
+    Route::get('/cashier/pos', [CashierController::class, 'pos'])
+        ->name('cashier.pos');
 
-Route::get('/about', [GuestController::class, 'about'])->name('about');
+    Route::post('/cashier/checkout', [CashierController::class, 'checkout'])
+        ->name('cashier.pos.checkout');
 
-Route::get('/contact', [GuestController::class, 'contact'])->name('contact');
+    Route::post('/cashier/sync-sheets', [CashierController::class, 'syncToSheets'])
+        ->name('cashier.sync-sheets');
+
+    Route::post('/logout', [CashierController::class, 'logout'])
+        ->name('logout');
+
+});

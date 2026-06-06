@@ -8,6 +8,8 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
 use Filament\Schemas\Schema;
+use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Textarea;
 
 class MenuForm
 {
@@ -49,7 +51,9 @@ class MenuForm
                         ->label('Jumlah Pakai')
                         ->numeric()
                         ->minValue(1)
+                        ->default(1)
                         ->required(),
+
                 ])
                 ->columns(2)
                 ->defaultItems(1)
