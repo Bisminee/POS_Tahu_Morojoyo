@@ -4,23 +4,26 @@ namespace App\Listeners;
 
 use Illuminate\Auth\Events\Login;
 
+use App\Models\User;
+
 class SetUserRoleFromEmail
 {
     public function handle(Login $event): void
     {
+        /** @var User $user */
         $user = $event->user;
 
         // Determine role based on email
         $role = match ($user->email) {
             'owner@gmail.com' => 'owner',
             'manager@gmail.com' => 'manager',
-            'kasir@gmail.com' => 'kasir',
-            default => 'manager', // default if not matched
+            'kasir@gmail.com', 'kasir.cabang1@gmail.com', 'kasir.cabang2@gmail.com' => 'kasir',
+            default => $user->role,
         };
 
-        // Update role if different
         if ($user->role !== $role) {
-            $user->update(['role' => $role]);
+            $user->role = $role;
+            $user->save();
         }
     }
 }

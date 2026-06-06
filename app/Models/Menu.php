@@ -21,7 +21,6 @@ class Menu extends Model
         'namaMenu',
     ];
 
-    // Accessor otomatis ikut tampil
     protected $appends = ['deskripsi'];
 
     public function hargas(): HasMany
@@ -33,14 +32,14 @@ class Menu extends Model
     {
         return $this->hasMany(MenuComposition::class, 'menu_id', 'idMenu');
     }
+
     public function menuDetails(): HasMany
     {
         return $this->hasMany(MenuDetail::class, 'idMenu', 'idMenu');
-        }
-        
-        public function getDeskripsiAttribute(): string
-        {
+    }
 
+    public function getDeskripsiAttribute(): string
+    {
         if (! $this->relationLoaded('menuDetails')) {
             return '';
         }

@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use Filament\Models\Contracts\FilamentUser;
-use Filament\Panel;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -23,17 +22,28 @@ class User extends Authenticatable implements FilamentUser
         'remember_token',
     ];
 
-    protected function casts(): array
-    {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-        ];
-    }
+    protected $casts = [
+        'email_verified_at' => 'datetime',
+        'password' => 'hashed',
+    ];
 
     public function canAccessPanel(\Filament\Panel $panel): bool
     {
-        return in_array($this->role, ['kasir','owner', 'manager']);
+        return in_array($this->role, [
+            'owner',
+            'manager',
+            'kasir',
+        ]);
+    }
+
+    public function karyawan()
+    {
+        return $this->hasOne(Karyawan::class, 'user_id', 'id');
+    }
+
+    public function cabang()
+    {
+        return $this->belongsTo(Cabang::class, 'cabang_id', 'idCabang');
     }
 
     public function isKasir(): bool
@@ -50,5 +60,4 @@ class User extends Authenticatable implements FilamentUser
     {
         return $this->role === 'manager';
     }
-
 }

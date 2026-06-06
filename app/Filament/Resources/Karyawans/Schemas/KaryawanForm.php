@@ -11,6 +11,7 @@ class KaryawanForm
     public static function configure(Schema $schema): Schema
     {
         return $schema->components([
+
             TextInput::make('nama')
                 ->label('Nama Karyawan')
                 ->required()
