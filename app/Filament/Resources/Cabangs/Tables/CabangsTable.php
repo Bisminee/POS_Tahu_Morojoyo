@@ -2,12 +2,10 @@
 
 namespace App\Filament\Resources\Cabangs\Tables;
 
-use Filament\Actions\BulkActionGroup;
-use Filament\Actions\DeleteAction;
-use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\Action;
 use Filament\Actions\EditAction;
-use Filament\Tables\Table;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Table;
 
 class CabangsTable
 {
@@ -20,29 +18,37 @@ class CabangsTable
                     ->searchable()
                     ->sortable(),
 
-                TextColumn::make('karyawan.nama')
-                    ->label('Karyawan')
-                    ->searchable()
+                TextColumn::make('is_active')
+                    ->label('Status')
+                    ->formatStateUsing(fn ($state): string => $state === false ? 'Nonaktif' : 'Aktif')
+                    ->badge()
+                    ->color(fn ($state): string => $state === false ? 'danger' : 'success')
                     ->sortable(),
 
                 TextColumn::make('alamat')
                     ->label('Alamat')
-                    ->limit(50)
+                    ->limit(60)
                     ->searchable(),
-
-                TextColumn::make('created_at')
-                    ->label('Dibuat')
-                    ->dateTime('d M Y H:i')
-                    ->sortable(),
             ])
             ->recordActions([
                 EditAction::make(),
-                DeleteAction::make(),
+
+                Action::make('nonaktifkan')
+                    ->label('Nonaktifkan')
+                    ->icon('heroicon-o-x-circle')
+                    ->color('danger')
+                    ->requiresConfirmation()
+                    ->visible(fn ($record): bool => $record->is_active !== false)
+                    ->action(fn ($record) => $record->update(['is_active' => false])),
+
+                Action::make('aktifkan')
+                    ->label('Aktifkan')
+                    ->icon('heroicon-o-check-circle')
+                    ->color('success')
+                    ->requiresConfirmation()
+                    ->visible(fn ($record): bool => $record->is_active === false)
+                    ->action(fn ($record) => $record->update(['is_active' => true])),
             ])
-            ->toolbarActions([
-                BulkActionGroup::make([
-                    DeleteBulkAction::make(),
-                ]),
-            ]);
+            ->toolbarActions([]);
     }
 }

@@ -4,17 +4,27 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class StokPcs extends Model
+class MutasiStok extends Model
 {
-    protected $table = 'stok_pcs';
-    protected $primaryKey = 'idStokPcs';
+    protected $table = 'mutasi_stok';
+    protected $primaryKey = 'idMutasi';
 
     protected $fillable = [
         'id_cabang',
         'id_pcs_tahu',
-        'jumlah_stok',
+        'tipe',
+        'jumlah',
+        'stok_sebelum',
+        'stok_sesudah',
+        'keterangan',
+    ];
+
+    protected $casts = [
+        'tipe' => 'string',
+        'jumlah' => 'integer',
+        'stok_sebelum' => 'integer',
+        'stok_sesudah' => 'integer',
     ];
 
     public function cabang(): BelongsTo
@@ -25,12 +35,5 @@ class StokPcs extends Model
     public function pcsTahu(): BelongsTo
     {
         return $this->belongsTo(PcsTahu::class, 'id_pcs_tahu', 'id_pcs');
-    }
-
-    public function mutasi(): HasMany
-    {
-        return $this->hasMany(MutasiStok::class, 'id_pcs_tahu', 'id_pcs_tahu')
-            ->where('id_cabang', $this->id_cabang)
-            ->latest();
     }
 }

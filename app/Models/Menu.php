@@ -36,13 +36,11 @@ class Menu extends Model
     public function menuDetails(): HasMany
     {
         return $this->hasMany(MenuDetail::class, 'idMenu', 'idMenu');
-    }
+        }
+        
+        public function getDeskripsiAttribute(): string
+        {
 
-    // ✅ FIX #2: Tambahkan relationLoaded() guard
-    public function getDeskripsiAttribute(): string
-    {
-        // Jika relasi belum di-load, jangan trigger query baru
-        // (mencegah N+1 di konteks yang tidak punya eager load)
         if (! $this->relationLoaded('menuDetails')) {
             return '';
         }
