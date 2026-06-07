@@ -59,7 +59,7 @@ Route::middleware(['auth'])->group(function () {
 
     // Face registration per karyawan
     Route::get('/owner/karyawan/{karyawan}/face', function (\App\Models\Karyawan $karyawan) {
-        if (auth()->user()->role !== 'owner') {
+        if (auth('web')->user()->role !== 'owner') {
             abort(403);
         }
         return view('owner.karyawan-face', compact('karyawan'));

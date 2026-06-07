@@ -345,7 +345,7 @@ class AttendanceController extends Controller
 
     public function karyawanList(Request $request)
     {
-        if (auth()->user()->role !== 'owner') {
+        if (auth('web')->user()->role !== 'owner') {
             abort(403);
         }
 
