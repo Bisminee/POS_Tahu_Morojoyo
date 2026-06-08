@@ -100,12 +100,11 @@
 
   <!-- NAVBAR -->
   <nav class="sticky top-0 z-50 bg-white border-b-4 border-brand-red shadow-md">
-    <div class="max-w-6xl mx-auto px-6 py-3 flex items-center justify-between">
+    <div class="max-w-6xl mx-auto px-6 py-5 flex items-center justify-between">
       <a href="#home" class="flex items-center gap-2 group">
-        <div class="bg-brand-red rounded-xl px-4 py-2 group-hover:bg-brand-darkred transition-colors">
-          <p class="text-brand-yellow text-[9px] font-display tracking-[0.25em] text-center leading-none">· TAHU BAKSO ·</p>
-          <p class="text-brand-yellow font-display text-2xl leading-none tracking-wider">MOROJOYO</p>
-        </div>
+          @if(isset($identitas) && $identitas->logo)
+            <img src="{{ asset('storage/' . $identitas->logo) }}" alt="{{ $identitas->nama_brand ?? 'Logo' }}"class="h-10 w-auto">
+          @endif
       </a>
       <ul class="hidden md:flex items-center gap-8">
         <li><a href="{{ route('home') }}" class="nav-link active font-body text-gray-800 font-bold text-sm tracking-wide hover:text-brand-red transition-colors">Home</a></li>
@@ -165,35 +164,32 @@
       </div>
 
       <!-- CAROUSEL -->
-      <div
-        x-data="{
-            active: 1,
-            items: [
-            { emoji: 'img/ori.png', name: 'TAHU BAKSO ORIGINAL',  label: 'Best Seller', price: 'Rp 3.000' },
-            { emoji: 'img/pedas.png', name: 'TAHU BAKSO PEDAS',     label: 'Pedas Menggigit',     price: 'Rp 3.500' },
-            { emoji: 'img/keju.png', name: 'TAHU BAKSO KEJU',      label: 'Keju Lumer Gurih',  price: 'Rp 3.500' },
-            { emoji: 'img/mix.png', name: 'TAHU BAKSO MIX',   label: 'Paling Lengkap',    price: 'Rp 3.500' },
-            { emoji: 'img/s_cheese.png', name: 'TAHU BAKSO S.CHEESE',       label: 'Spicy Cheese', price: 'Rp 3.500' },
-            ],
-            prev() { this.active = this.active === 0 ? this.items.length - 1 : this.active - 1 },
-            next() { this.active = this.active === this.items.length - 1 ? 0 : this.active + 1 },
-            pos(i) {
+<div
+    x-data="{
+        active: 0,
+        items: {{ Js::from($menus->map(fn($m) => [
+            'foto'  => $m->foto ? asset('storage/' . $m->foto) : null,
+            'name'  => strtoupper($m->namaMenu),
+            'label' => $m->tagline ?? '',
+            'price' => $m->harga ? 'Rp ' . number_format($m->harga->harga_normal, 0, ',', '.') : '-',
+        ])) }},
+        prev() { this.active = this.active === 0 ? this.items.length - 1 : this.active - 1 },
+        next() { this.active = this.active === this.items.length - 1 ? 0 : this.active + 1 },
+        pos(i) {
             let diff = i - this.active;
-            if (diff < -(this.items.length/2)) diff += this.items.length;
-            if (diff > (this.items.length/2))  diff -= this.items.length;
+            if (diff < -(this.items.length / 2)) diff += this.items.length;
+            if (diff > (this.items.length / 2))  diff -= this.items.length;
             return diff;
-            }
-        }"
-        x-init="setInterval(() => next(), 3500)"
-        class="relative flex justify-center items-center h-80 select-none"
-        style="perspective: 900px;"
-        >
-        <button @click="prev()" class="absolute left-0 z-20 w-9 h-9 rounded-full bg-white/20 hover:bg-white/40 text-white flex items-center justify-center transition backdrop-blur-sm border border-white/30">
-            ‹
-        </button>
+        }
+    }"
+    x-init="setInterval(() => next(), 3500)"
+    class="relative flex justify-center items-center h-80 select-none"
+    style="perspective: 900px;">
 
-        <template x-for="(item, i) in items" :key="i">
-            <div
+    <button @click="prev()" class="absolute left-0 z-20 w-9 h-9 rounded-full bg-white/20 hover:bg-white/40 text-white flex items-center justify-center transition backdrop-blur-sm border border-white/30">‹</button>
+
+    <template x-for="(item, i) in items" :key="i">
+        <div
             :style="{
                 position: 'absolute',
                 transition: 'all 0.5s cubic-bezier(0.4,0,0.2,1)',
@@ -202,40 +198,35 @@
                 zIndex: 10 - Math.abs(pos(i)),
                 pointerEvents: pos(i) === 0 ? 'auto' : 'none',
             }"
-            class="w-52 h-72 bg-white rounded-3xl shadow-2xl flex flex-col items-center justify-center p-5"
-            >
-            <div class="w-32 h-32 bg-brand-cream rounded-full flex items-center justify-center mb-4 overflow-hidden px-2">
-                <template x-if="item.emoji.includes('/')">
-                    <img :src="item.emoji" class="w-24 h-24 object-contain">
+            class="w-52 h-72 bg-white rounded-3xl shadow-2xl flex flex-col items-center justify-center p-5">
+
+            <div class="w-32 h-32 bg-brand-cream rounded-full flex items-center justify-center mb-4 overflow-hidden">
+                <template x-if="item.foto">
+                    <img :src="item.foto" class="w-24 h-24 object-contain">
                 </template>
-                
-                <template x-if="!item.emoji.includes('/')">
-                    <span class="text-6xl" x-text="item.emoji"></span>
+                <template x-if="!item.foto">
+                    <span class="text-5xl">🍢</span>
                 </template>
             </div>
 
             <p class="font-display text-brand-red text-xl text-center leading-tight uppercase" x-text="item.name"></p>
             <p class="text-gray-500 text-xs mt-1 font-body" x-text="item.label"></p>
-            
             <div class="mt-3 bg-brand-yellow text-brand-darkred font-display text-lg px-5 py-1.5 rounded-full shadow-sm" x-text="item.price"></div>
-            </div>
-        </template>
+        </div>
+    </template>
 
-        <button @click="next()" class="absolute right-0 z-20 w-9 h-9 rounded-full bg-white/20 hover:bg-white/40 text-white flex items-center justify-center transition backdrop-blur-sm border border-white/30">
-            ›
-        </button>
+    <button @click="next()" class="absolute right-0 z-20 w-9 h-9 rounded-full bg-white/20 hover:bg-white/40 text-white flex items-center justify-center transition backdrop-blur-sm border border-white/30">›</button>
 
-        <div class="absolute -bottom-8 left-0 right-0 flex justify-center gap-2">
-            <template x-for="(item, i) in items" :key="i">
+    <div class="absolute -bottom-8 left-0 right-0 flex justify-center gap-2">
+        <template x-for="(item, i) in items" :key="i">
             <button
                 @click="active = i"
                 :class="active === i ? 'bg-brand-yellow w-5' : 'bg-white/40 w-2'"
-                class="h-2 rounded-full transition-all duration-300"
-            ></button>
-            </template>
-        </div>
+                class="h-2 rounded-full transition-all duration-300">
+            </button>
+        </template>
     </div>
-
+</div>
     
   </section>
 
@@ -282,89 +273,107 @@
     </div>
   </section>
 
-    <!-- PROMO CARDS -->
+   <!-- PROMO CARDS -->
+  @if(isset($identitas) && $identitas->promo)
   <section class="bg-brand-cream py-16">
-    <div class="max-w-6xl mx-auto px-6">
-      <div class="text-center mb-10">
-        <span class="text-brand-red font-body font-bold text-sm tracking-widest uppercase">Penawaran Terbatas</span>
-        <h2 class="font-display text-brand-red text-5xl mt-2">PROMO SPESIAL</h2>
-        <div class="w-16 h-1 bg-brand-yellow mx-auto mt-3 rounded-full"></div>
+      <div class="max-w-6xl mx-auto px-6">
+          <div class="text-center mb-10">
+              <span class="text-brand-red font-body font-bold text-sm tracking-widest uppercase">Penawaran Terbatas</span>
+              <h2 class="font-display text-brand-red text-5xl mt-2">PROMO SPESIAL</h2>
+              <div class="w-16 h-1 bg-brand-yellow mx-auto mt-3 rounded-full"></div>
+          </div>
+          <div class="flex justify-center">
+              <img src="{{ asset('storage/' . $identitas->promo) }}"
+                  alt="Promo Spesial"
+                  class="rounded-3xl shadow-xl max-w-2xl w-full object-cover">
+          </div>
       </div>
-      <div class="grid md:grid-cols-2 gap-6">
- 
-        <!-- Promo Card 1 -->
-        <div class="bg-brand-red rounded-3xl overflow-hidden shadow-lg card-hover flex flex-col">
-            <img src="{{ asset('img/promo2.jpg') }}" class="w-full">
-        </div>
- 
-        <!-- Promo Card 2 -->
-        <div class="rounded-3xl overflow-hidden shadow-lg card-hover flex flex-col">
-            <img src="{{ asset('img/promo1.jpg') }}" class="w-full">
-        </div>
- 
-      </div>
-    </div>
   </section>
+  @endif
+
 
   <!-- FOOTER -->
   <footer class="bg-white border-t-4 border-brand-red pt-12 pb-0">
-    <div class="max-w-6xl mx-auto px-6">
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-8 pb-10">
- 
-        <!-- Logo + desc -->
-        <div class="col-span-2 md:col-span-1">
-          <div class="rounded-xl px-4 py-2 inline-block mb-4">
-            <img src="{{ asset('img/logo.png') }}" class="w-full h-10">
+      <div class="max-w-6xl mx-auto px-6">
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-8 pb-10">
+
+              <!-- Logo + desc -->
+              <div class="col-span-2 md:col-span-1">
+                  <div class="rounded-xl inline-block mb-4">
+                      @if(isset($identitas) && $identitas->logo)
+                          <img src="{{ asset('storage/' . $identitas->logo) }}"
+                              alt="{{ $identitas->nama_brand ?? 'Logo' }}"
+                              class="h-10 w-auto">
+                      @endif
+                  </div>
+                  @if(isset($identitas) && $identitas->deskripsi_brand)
+                      <p class="font-body text-gray-500 text-sm leading-relaxed">
+                          {{ $identitas->deskripsi_brand }}
+                      </p>
+                  @endif
+              </div>
+
+              <!-- Navigation -->
+              <div>
+                  <h4 class="font-display text-brand-red text-xl mb-4">Navigation</h4>
+                  <ul class="space-y-2">
+                      <li><a href="{{ route('home') }}"    class="font-body text-gray-500 text-sm hover:text-brand-red transition">Home</a></li>
+                      <li><a href="{{ route('menu') }}"    class="font-body text-gray-500 text-sm hover:text-brand-red transition">Menu</a></li>
+                      <li><a href="{{ route('contact') }}" class="font-body text-gray-500 text-sm hover:text-brand-red transition">Contact</a></li>
+                      <li><a href="{{ route('about') }}"   class="font-body text-gray-500 text-sm hover:text-brand-red transition">Location</a></li>
+                  </ul>
+              </div>
+
+              <!-- Get in Touch -->
+              <div>
+                  <h4 class="font-display text-brand-red text-xl mb-4">Get in Touch</h4>
+                  <ul class="space-y-2">
+                      @if(isset($identitas) && $identitas->link_ig)
+                          <li>
+                              <a href="{{ $identitas->link_ig }}" target="_blank"
+                                class="font-body text-gray-500 text-sm hover:text-brand-red transition flex items-center gap-2">
+                                  <img src="{{ asset('img/ig.png') }}" class="h-5 w-5 object-contain">
+                                  {{ $identitas->nama_ig ?? '@tahubakso.morojoyo' }}
+                              </a>
+                          </li>
+                      @endif
+                      @if(isset($identitas) && $identitas->link_wa)
+                          <li>
+                              <a href="{{ $identitas->link_wa }}" target="_blank"
+                                class="font-body text-gray-500 text-sm hover:text-brand-red transition flex items-center gap-2">
+                                  <img src="{{ asset('img/wa.png') }}" class="h-5 w-5 object-contain">
+                                  {{ $identitas->nomor_whatsapp ?? '' }}
+                              </a>
+                          </li>
+                      @endif
+                  </ul>
+              </div>
+
+              <!-- Jam Buka -->
+              <div>
+                  <h4 class="font-display text-brand-red text-xl mb-4">Jam Buka</h4>
+                  @if(isset($identitas))
+                      <ul class="space-y-1">
+                          <li class="font-body text-gray-500 text-sm">Setiap Hari</li>
+                          <li class="font-body text-brand-red text-sm font-bold">
+                              {{ $identitas->jam_buka ?? '10:00' }} – {{ $identitas->jam_tutup ?? '21:00' }} WIB
+                          </li>
+                      </ul>
+                  @endif
+              </div>
+
           </div>
-          <p class="font-body text-gray-500 text-sm leading-relaxed">
-            Jl MT. Haryono No.43,<br/>
-            Ketawanggede, Kec. Lowokwaru,<br/>
-            Kota Malang, Jawa Timur 65145
-          </p>
-        </div>
- 
-        <!-- Navigation -->
-        <div>
-          <h4 class="font-display text-brand-red text-xl mb-4">Navigation</h4>
-          <ul class="space-y-2">
-            <li><a href="{{ route('home') }}" class="font-body text-gray-500 text-sm hover:text-brand-red transition">Home</a></li>
-            <li><a href="{{ route('menu') }}" class="font-body text-gray-500 text-sm hover:text-brand-red transition">Menu</a></li>
-            <li><a href="{{ route('contact') }}" class="font-body text-gray-500 text-sm hover:text-brand-red transition">Contact</a></li>
-            <li><a href="{{ route('about') }}" class="font-body text-gray-500 text-sm hover:text-brand-red transition">Location</a></li>
-          </ul>
-        </div>
- 
-        <!-- Get in Touch -->
-        <div>
-          <h4 class="font-display text-brand-red text-xl mb-4">Get in Touch</h4>
-          <ul class="space-y-2">
-            <li><a href="https://instagram.com" class="font-body text-gray-500 text-sm hover:text-brand-red transition flex items-center gap-2"><span><img src="{{ asset('img/ig.png') }}" class="w-full h-5"></span> @tahubakso.morojoyo</a></li>
-            <li><a href="https://wa.me/62812" class="font-body text-gray-500 text-sm hover:text-brand-red transition flex items-center gap-2"><span><img src="{{ asset('img/wa.png') }}" class="w-full h-5"></span> +62 812-XXXX-XXXX</a></li>
-            <li><a href="https://maps.google.com" class="font-body text-gray-500 text-sm hover:text-brand-red transition flex items-center gap-2"><span><img src="{{ asset('img/gmap.png') }}" class="w-full h-5"></span> Google Maps</a></li>
-          </ul>
-        </div>
- 
-        <!-- Jam Buka -->
-        <div>
-          <h4 class="font-display text-brand-red text-xl mb-4">Jam Buka</h4>
-          <ul class="space-y-2">
-            <li class="font-body text-gray-500 text-sm">Senin – Sabtu</li>
-            <li class="font-body text-brand-red text-sm font-bold">07.00 – 18.00 WIB</li>
-            <li class="font-body text-gray-500 text-sm mt-2">Minggu</li>
-            <li class="font-body text-brand-red text-sm font-bold">08.00 – 15.00 WIB</li>
-          </ul>
-        </div>
- 
       </div>
-    </div>
- 
-    <!-- Copyright bar -->
-    <div class="bg-brand-red">
-      <div class="max-w-6xl mx-auto px-6 py-4 flex flex-col md:flex-row items-center justify-between gap-2">
-        <p class="font-body text-white text-sm">Copyright © 2026 Kelompok 4</p>
-        <p class="font-body text-red-200 text-xs">Tahu Bakso Morojoyo — Malang, Jawa Timur</p>
+
+      <!-- Copyright bar -->
+      <div class="bg-brand-red">
+          <div class="max-w-6xl mx-auto px-6 py-4 flex flex-col md:flex-row items-center justify-between gap-2">
+              <p class="font-body text-white text-sm">Copyright © 2026 Kelompok 4</p>
+              <p class="font-body text-red-200 text-xs">
+                  {{ isset($identitas) ? $identitas->nama_brand : 'Tahu Bakso Morojoyo' }} — Malang, Jawa Timur
+              </p>
+          </div>
       </div>
-    </div>
   </footer>
 
 </body>
