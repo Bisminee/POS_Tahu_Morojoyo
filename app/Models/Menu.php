@@ -21,7 +21,6 @@ class Menu extends Model
         'namaMenu',
     ];
 
-    // Accessor otomatis ikut tampil
     protected $appends = ['deskripsi'];
 
     public function hargas(): HasMany
@@ -33,16 +32,14 @@ class Menu extends Model
     {
         return $this->hasMany(MenuComposition::class, 'menu_id', 'idMenu');
     }
+
     public function menuDetails(): HasMany
     {
         return $this->hasMany(MenuDetail::class, 'idMenu', 'idMenu');
     }
 
-    // ✅ FIX #2: Tambahkan relationLoaded() guard
     public function getDeskripsiAttribute(): string
     {
-        // Jika relasi belum di-load, jangan trigger query baru
-        // (mencegah N+1 di konteks yang tidak punya eager load)
         if (! $this->relationLoaded('menuDetails')) {
             return '';
         }

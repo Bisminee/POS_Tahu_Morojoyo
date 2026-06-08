@@ -11,14 +11,23 @@ class RedirectByRole
 {
     public function handle(Request $request, Closure $next): Response
     {
-        if (
-            Auth::check() &&
-            Auth::user()->role === 'kasir' &&
-            !$request->is('cashier*') &&       // ← pakai wildcard
-            !$request->is('admin/login*') &&   // ← jangan redirect saat di halaman login
-            !$request->is('admin/logout*')     // ← jangan redirect saat logout
-        ) {
-            return redirect('/cashier/pos');
+        if (!Auth::check()) {
+            return $next($request);
+        }
+
+        $user = Auth::user();
+
+        if ($user->role === 'kasir') {
+            // Halaman absensi selalu boleh diakses
+            if ($request->is('absensi*')) {
+                return $next($request);
+            }
+
+            // Kasir hanya boleh akses halaman cashier & absensi
+            // Tidak perlu cek sudah absen atau belum untuk akses POS
+            if (!$request->is('cashier*')) {
+                return redirect('/cashier/pos');
+            }
         }
 
         return $next($request);

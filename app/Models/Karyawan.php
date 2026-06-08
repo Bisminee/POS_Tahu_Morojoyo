@@ -3,20 +3,49 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Karyawan extends Model
 {
     protected $table = 'karyawans';
+
     protected $primaryKey = 'idKaryawan';
+
+    public $incrementing = true;
+
+    protected $keyType = 'int';
 
     protected $fillable = [
         'nama',
         'no_telp',
+        'user_id',
+        'cabang_id',
+        'face_photo',
+        'face_descriptor',
+        'is_active',
     ];
 
-    public function cabangs(): HasMany
+    protected $casts = [
+        'face_descriptor' => 'array',
+        'is_active' => 'boolean',
+    ];
+
+    public function user()
     {
-        return $this->hasMany(Cabang::class, 'Karyawan', 'idKaryawan');
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
+    public function cabang()
+    {
+        return $this->belongsTo(Cabang::class, 'cabang_id', 'idCabang');
+    }
+
+    public function shifts()
+    {
+        return $this->hasMany(Shift::class, 'karyawan_id', 'idKaryawan');
+    }
+
+    public function attendances()
+    {
+        return $this->hasMany(Attendance::class, 'karyawan_id', 'idKaryawan');
     }
 }

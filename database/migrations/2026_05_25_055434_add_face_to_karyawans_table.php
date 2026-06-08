@@ -6,13 +6,11 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
-        Schema::table('menus', function (Blueprint $table) {
-            $table->boolean('is_active')->nullable();
+        Schema::table('karyawans', function (Blueprint $table) {
+            $table->string('face_photo')->nullable();
+            $table->json('face_descriptor')->nullable();
         });
     }
 
@@ -21,8 +19,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('menus', function (Blueprint $table) {
-            $table->dropColumn(['is_active']);
+        Schema::table('karyawans', function (Blueprint $table) {
+            //
         });
     }
 };

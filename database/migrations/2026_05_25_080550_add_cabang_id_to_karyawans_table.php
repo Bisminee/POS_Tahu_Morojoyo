@@ -8,16 +8,16 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('menus', function (Blueprint $table) {
-            $table->string('foto')->nullable();
-            $table->string('tagline')->nullable();
+        Schema::table('karyawans', function (Blueprint $table) {
+            $table->unsignedBigInteger('cabang_id')->nullable()->after('user_id');
         });
     }
 
     public function down(): void
     {
-        Schema::table('menus', function (Blueprint $table) {
-            $table->dropColumn(['foto', 'tagline', 'deskripsi']);
+        Schema::table('karyawans', function (Blueprint $table) {
+            $table->dropColumn('cabang_id');
         });
     }
+    
 };

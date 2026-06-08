@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Cabang extends Model
 {
     protected $table = 'cabangs';
+
     protected $primaryKey = 'idCabang';
 
     protected $fillable = [
@@ -24,6 +25,6 @@ class Cabang extends Model
 
     public function stokPcs(): HasMany
     {
-        return $this->hasMany(StokPcs::class, 'id_cabang', 'idCabang');
+        return $this->hasMany(Shift::class, 'cabang_id', 'idCabang');
     }
 }

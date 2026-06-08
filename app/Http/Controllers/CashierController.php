@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Harga;
 use App\Models\Menu;
+use App\Models\Shift;
 use App\Models\StokPcs;
 use App\Models\Transaction;
 use App\Models\TransactionItem;
@@ -13,30 +14,91 @@ use Illuminate\Support\Facades\DB;
 
 class CashierController extends Controller
 {
+    public function showLoginForm()
+    {
+        return view('cashier.login');
+    }
+
+    public function login(Request $request)
+    {
+        $request->validate([
+            'email'    => ['required', 'email'],
+            'password' => ['required', 'string'],
+        ]);
+
+        $credentials = $request->only('email', 'password');
+
+        if (!Auth::attempt($credentials, $request->boolean('remember'))) {
+            return back()
+                ->withErrors(['email' => 'Email atau password salah.'])
+                ->onlyInput('email');
+        }
+
+        $request->session()->regenerate();
+        $request->session()->forget(['selected_shift_id', 'selected_cashier_name']);
+
+        if (Auth::user()->role !== 'kasir') {
+            Auth::logout();
+
+            return back()
+                ->withErrors(['email' => 'Hanya kasir yang dapat masuk ke POS.'])
+                ->onlyInput('email');
+        }
+
+        return redirect()->route('attendance.index');
+    }
+
+    protected function getSelectedShift(): ?Shift
+    {
+        $shiftId = session('selected_shift_id');
+        if ($shiftId) {
+            /** @var Shift|null */
+            return Shift::with('karyawan')->find((int) $shiftId);
+        }
+        return null;
+    }
+
+    protected function setSelectedShift(Shift $shift): void
+    {
+        session()->put('selected_shift_id', $shift->id);
+
+        session()->put(
+            'selected_cashier_name',
+            $shift->karyawan?->nama ?? 'Kasir'
+        );
+
+        session()->save();
+    }
+
+
+    protected function getActiveCashierUserId(): int
+    {
+        return Auth::id();
+    }
+
     public function pos(Request $request)
     {
         $menus = Menu::with(['menuDetails.pcsTahu', 'hargas'])->get();
-
-        $paymentMethods = ['normal', 'gofood', 'shopeefood'];
-
-        // FIX Bug 3: key by id_pcs supaya ->get() bekerja di blade
+        $paymentMethods = ['cash', 'qris', 'gofood', 'shopeefood'];
         $stocks = StokPcs::with('pcsTahu')->get()->keyBy(fn($s) => $s->pcsTahu?->id_pcs ?? $s->id_pcs);
 
         $receipt = null;
         if ($request->session()->has('receipt_id')) {
-            $receipt = Transaction::with('items')
-                ->find($request->session()->get('receipt_id'));
+            $receipt = Transaction::with('items')->find($request->session()->get('receipt_id'));
         }
 
-        // FIX Bug 3: hitung stats hari ini dari DB
-        $todayTransactions = Transaction::whereDate('created_at', today())->count();
+        // Gunakan Carbon::today() dengan timezone yang sama dengan APP_TIMEZONE
+        $today = \Carbon\Carbon::today(config('app.timezone'));
 
-        $todaySales = Transaction::whereDate('created_at', today())
-            ->sum('total');
+        $todayTransactions = Transaction::whereDate('created_at', $today)->count();
+        $todaySales        = Transaction::whereDate('created_at', $today)->sum('total');
+        $todayItems        = TransactionItem::whereHas(
+            'transaction',
+            fn($q) =>
+            $q->whereDate('created_at', $today)
+        )->sum('qty');
 
-        $todayItems = \App\Models\TransactionItem::whereHas('transaction', function ($q) {
-            $q->whereDate('created_at', today());
-        })->sum('qty');
+        $selectedShift = $this->getSelectedShift();
 
         return view('cashier.pos', compact(
             'menus',
@@ -46,8 +108,40 @@ class CashierController extends Controller
             'todaySales',
             'todayTransactions',
             'todayItems',
+            'selectedShift'
         ));
     }
+
+    public function showShiftSelection()
+    {
+        $todayShifts = Shift::with(['karyawan', 'cabang'])
+            ->whereDate('tanggal', today())
+            ->get();
+
+        $shift = $this->getSelectedShift();
+
+        return view('cashier.shift-selection', [
+            'todayShifts' => $todayShifts,
+            'shift' => $shift,
+        ]);
+    }
+
+    public function selectShift(Request $request)
+    {
+        $request->validate(['shift_id' => 'required|exists:shifts,id']);
+
+        $shift = Shift::with(['karyawan', 'cabang'])->find($request->shift_id);
+        if (!$shift) {
+            return redirect()->route('cashier.select-shift')
+                ->withErrors(['shift_id' => 'Shift tidak ditemukan.']);
+        }
+
+        $this->setSelectedShift($shift);
+
+        return redirect()->route('cashier.select-shift')
+            ->with('status', 'Shift dipilih. Silakan lanjutkan verifikasi wajah.');
+    }
+
 
     public function checkout(Request $request)
     {
@@ -97,21 +191,34 @@ class CashierController extends Controller
                 continue;
             }
 
-            // FIX Bug 1: frontend pakai key 'menuId', bukan 'menu_id'
             $menuId = $row['menuId'] ?? $row['menu_id'] ?? null;
             if (!$menuId) continue;
 
             $menu = Menu::with(['menuDetails.pcsTahu', 'hargas'])->find($menuId);
             if (!$menu) continue;
 
-            $hargaModel = $menu->hargas->first();
+            $paymentMethodMap = [
+                'normal'     => ['take_away_cash', 'take_away_qris'],
+                'cash'       => ['take_away_cash'],
+                'qris'       => ['take_away_qris'],
+                'gofood'     => ['gofood'],
+                'shopeefood' => ['shopeefood'],
+            ];
+
+            $targetMethods = $paymentMethodMap[$data['payment_method']]
+                ?? $paymentMethodMap['normal'];
+
+            $hargaModel = $menu->hargas
+                ->whereIn('metode_payment', $targetMethods)
+                ->first();
+
+            if (!$hargaModel) {
+                $hargaModel = $menu->hargas->first();
+            }
+
             if (!$hargaModel) continue;
 
-            $unitPrice = match ($data['payment_method']) {
-                'gofood'     => floatval($hargaModel->harga_gofood    ?? 0),
-                'shopeefood' => floatval($hargaModel->harga_shopeefood ?? 0),
-                default      => floatval($hargaModel->harga_normal     ?? 0),
-            };
+            $unitPrice = floatval($hargaModel->harga ?? 0);
 
             $subtotal = $unitPrice * $quantity;
 
@@ -153,7 +260,7 @@ class CashierController extends Controller
 
         try {
             $transaction = Transaction::create([
-                'user_id'        => Auth::id(),
+                'user_id'        => $this->getActiveCashierUserId(),
                 'payment_method' => $data['payment_method'],
                 'discount'       => $discount,
                 'sub_total'      => $subTotal,
@@ -228,13 +335,20 @@ class CashierController extends Controller
             $client->addScope(\Google\Service\Sheets::SPREADSHEETS);
             $service = new \Google\Service\Sheets($client);
 
+            // ── Nama cabang untuk prefix tab ──
+            $user       = Auth::user();
+            $cabangName = $user->cabang?->namaCabang ?? 'Cabang';
+
+            $tabRingkasan = "Ringkasan Harian - {$cabangName}";
+            $tabDetail    = "Detail Transaksi - {$cabangName}";
+            $tabMutasi    = "Mutasi Stok - {$cabangName}";
+
             // ════════════════════════════════════════════
-            // TAB 1 — "Ringkasan Harian"
-            // Kolom: Tanggal | Kasir | Jml Transaksi | Item Terjual | Total Diskon | Total Penjualan
+            // TAB 1 — "Ringkasan Harian - {Cabang}"
             // ════════════════════════════════════════════
-            $tabRingkasan = 'Ringkasan Harian';
             $this->ensureSheetHeader($service, $spreadsheetId, $tabRingkasan, [
                 'Tanggal',
+                'Cabang',
                 'Kasir',
                 'Jumlah Transaksi',
                 'Item Terjual',
@@ -245,20 +359,21 @@ class CashierController extends Controller
             $ringkasan = $req->input('ringkasan', []);
             $tanggal   = $ringkasan['tanggal'] ?? '';
 
-            $existing = $service->spreadsheets_values->get($spreadsheetId, $tabRingkasan . '!A:A');
+            $existing     = $service->spreadsheets_values->get($spreadsheetId, $tabRingkasan . '!A:A');
             $existingRows = $existing->getValues() ?? [];
 
             $targetRow = null;
             foreach ($existingRows as $rowIdx => $rowData) {
-                if (($rowData[0] ?? '') === $tanggal && $rowIdx > 0) { // skip header (index 0)
-                    $targetRow = $rowIdx + 1; // Sheets row number (1-based)
+                if (($rowData[0] ?? '') === $tanggal && $rowIdx > 0) {
+                    $targetRow = $rowIdx + 1;
                     break;
                 }
             }
 
-            $rowData = new \Google\Service\Sheets\ValueRange([
+            $ringkasanRow = new \Google\Service\Sheets\ValueRange([
                 'values' => [[
                     $tanggal,
+                    $cabangName,
                     $ringkasan['kasir']            ?? '',
                     $ringkasan['jumlah_transaksi'] ?? 0,
                     $ringkasan['item_terjual']     ?? 0,
@@ -271,22 +386,19 @@ class CashierController extends Controller
                 $service->spreadsheets_values->update(
                     $spreadsheetId,
                     $tabRingkasan . '!A' . $targetRow,
-                    $rowData,
+                    $ringkasanRow,
                     ['valueInputOption' => 'USER_ENTERED']
                 );
             } else {
-                $this->appendRows($service, $spreadsheetId, $tabRingkasan, $rowData->getValues());
+                $this->appendRows($service, $spreadsheetId, $tabRingkasan, $ringkasanRow->getValues());
             }
 
             // ════════════════════════════════════════════
-            // TAB 2 — "Detail Transaksi"
-            // Kolom: Tanggal | No.Transaksi | Kasir | Metode Bayar |
-            //        Nama Item | Custom? | Qty | Harga Satuan | Subtotal Item |
-            //        Diskon Transaksi | Total Transaksi | Bahan Dikurangi
+            // TAB 2 — "Detail Transaksi - {Cabang}"
             // ════════════════════════════════════════════
-            $tabDetail = 'Detail Transaksi';
             $this->ensureSheetHeader($service, $spreadsheetId, $tabDetail, [
                 'Tanggal',
+                'Cabang',
                 'No. Transaksi',
                 'Kasir',
                 'Metode Bayar',
@@ -300,9 +412,10 @@ class CashierController extends Controller
                 'Bahan Dikurangi'
             ]);
 
-            $detailRows = $req->input('detail_transaksi', []);
+            $detailRows      = $req->input('detail_transaksi', []);
             $detailFormatted = array_map(fn($row) => [
                 $row['tanggal']          ?? '',
+                $cabangName,
                 $row['no_transaksi']     ?? '',
                 $row['kasir']            ?? '',
                 $row['metode_bayar']     ?? '',
@@ -321,21 +434,21 @@ class CashierController extends Controller
             }
 
             // ════════════════════════════════════════════
-            // TAB 3 — "Mutasi Stok"
-            // Kolom: Tanggal | Nama Bahan | Stok Awal | Total Dikurangi | Stok Akhir
+            // TAB 3 — "Mutasi Stok - {Cabang}"
             // ════════════════════════════════════════════
-            $tabMutasi = 'Mutasi Stok';
             $this->ensureSheetHeader($service, $spreadsheetId, $tabMutasi, [
                 'Tanggal',
+                'Cabang',
                 'Nama Bahan',
                 'Stok Awal',
                 'Total Dikurangi Hari Ini',
                 'Stok Akhir'
             ]);
 
-            $mutasiRows = $req->input('mutasi_stok', []);
+            $mutasiRows      = $req->input('mutasi_stok', []);
             $mutasiFormatted = array_map(fn($row) => [
                 $row['tanggal']         ?? '',
+                $cabangName,
                 $row['nama_bahan']      ?? '',
                 $row['stok_awal']       ?? 0,
                 $row['total_dikurangi'] ?? 0,
@@ -348,7 +461,7 @@ class CashierController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Data berhasil dikirim ke 3 tab Google Sheets!'
+                'message' => "Data berhasil dikirim ke 3 tab Google Sheets ({$cabangName})!"
             ]);
         } catch (\Exception $e) {
             return response()->json([
@@ -358,8 +471,93 @@ class CashierController extends Controller
         }
     }
 
+    public function createSpreadsheet(Request $req)
+    {
+        try {
+            $keyPath = storage_path('app/google-service-account.json');
+
+            if (!file_exists($keyPath)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'File service account tidak ditemukan.'
+                ], 500);
+            }
+
+            $client = new \Google\Client();
+            $client->setAuthConfig($keyPath);
+            $client->addScope(\Google\Service\Sheets::SPREADSHEETS);
+            $client->addScope(\Google\Service\Drive::DRIVE);
+
+            $sheetsService = new \Google\Service\Sheets($client);
+            $driveService  = new \Google\Service\Drive($client);
+
+            $user  = Auth::user();
+            $tahun = now()->format('Y');
+            $title = "Laporan POS - {$tahun}";
+
+            $spreadsheet = new \Google\Service\Sheets\Spreadsheet([
+                'properties' => ['title' => $title]
+            ]);
+
+            $created = $sheetsService->spreadsheets->create($spreadsheet);
+            $newId   = $created->getSpreadsheetId();
+
+            // Share ke email user yang login supaya bisa dibuka di browser
+            $shareEmail = $req->input('share_to_email') ?: $user->email;
+            if ($shareEmail) {
+                $permission = new \Google\Service\Drive\Permission([
+                    'type'         => 'user',
+                    'role'         => 'writer',
+                    'emailAddress' => $shareEmail,
+                ]);
+                $driveService->permissions->create($newId, $permission, [
+                    'sendNotificationEmail' => false,
+                ]);
+            }
+
+            return response()->json([
+                'success'        => true,
+                'spreadsheet_id' => $newId,
+                'url'            => "https://docs.google.com/spreadsheets/d/{$newId}/edit",
+                'message'        => "Spreadsheet \"{$title}\" berhasil dibuat dan dibagikan ke {$shareEmail}.",
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    private function ensureSheetExists(\Google\Service\Sheets $service, string $spreadsheetId, string $tab): void
+    {
+        $spreadsheet    = $service->spreadsheets->get($spreadsheetId);
+        $existingSheets = collect($spreadsheet->getSheets())
+            ->map(fn($s) => $s->getProperties()->getTitle())
+            ->toArray();
+
+        if (!in_array($tab, $existingSheets)) {
+            $requests = [
+                new \Google\Service\Sheets\Request([
+                    'addSheet' => [
+                        'properties' => ['title' => $tab]
+                    ]
+                ])
+            ];
+
+            $batchUpdate = new \Google\Service\Sheets\BatchUpdateSpreadsheetRequest([
+                'requests' => $requests
+            ]);
+
+            $service->spreadsheets->batchUpdate($spreadsheetId, $batchUpdate);
+        }
+    }
+
     private function ensureSheetHeader(\Google\Service\Sheets $service, string $spreadsheetId, string $tab, array $headers): void
     {
+        // Auto-create tab kalau belum ada
+        $this->ensureSheetExists($service, $spreadsheetId, $tab);
+
         try {
             $existing = $service->spreadsheets_values->get($spreadsheetId, $tab . '!A1:A1');
             $rows     = $existing->getValues();
@@ -399,6 +597,6 @@ class CashierController extends Controller
 
         $request->session()->regenerateToken();
 
-        return redirect('/admin/login');
+        return redirect()->route('login');
     }
 }

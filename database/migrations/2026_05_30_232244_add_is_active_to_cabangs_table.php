@@ -6,19 +6,20 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
+    /**
+     * Run the migrations.
+     */
     public function up(): void
     {
         Schema::table('cabangs', function (Blueprint $table) {
-            $table->text('link_gmaps')->nullable();
-            $table->text('detail_alamat')->nullable();
-            $table->string('foto')->nullable();
+            $table->boolean('is_active')->default(true)->after('alamat');
         });
     }
 
     public function down(): void
     {
         Schema::table('cabangs', function (Blueprint $table) {
-            $table->dropColumn(['link_gmaps', 'detail_alamat', 'foto']);
+            $table->dropColumn('is_active');
         });
     }
 };

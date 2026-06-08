@@ -1439,8 +1439,8 @@
                     <p>Sistem penjualan harian, inventori stok, dan checkout.</p>
                 </div>
                 <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-                    <span class="badge">{{ auth()->user()->name }}</span>
-                    <span class="badge badge-green">{{ auth()->user()->role }}</span>
+                    <span class="badge">{{ $selectedShift?->user->name ?? auth()->user()->name }}</span>
+                    <span class="badge badge-green">{{ $selectedShift ? 'Kasir shift' : auth()->user()->role }}</span>
 
                     <button type="button" class="btn-laporan-topbar" onclick="openLaporanModal()">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
@@ -1460,6 +1460,19 @@
                         </svg>
                         Sync Sheets
                     </button>
+                    <button type="button" class="btn-laporan-topbar" onclick="openRiwayatModal()"
+                        style="background:#f5f3ff;color:#6d28d9;border-color:#ddd6fe">
+                        📋 Riwayat
+                    </button>
+
+                    {{-- Tambahkan di dalam div topbar, sebelum tombol Keluar --}}
+                    <a href="{{ route('attendance.index') }}"
+                        style="display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:99px;
+          background:#fef3c7;color:#92400e;border:1px solid #fde68a;font-size:12px;
+          font-weight:600;text-decoration:none;transition:background .15s"
+                        onmouseover="this.style.background='#fde68a'" onmouseout="this.style.background='#fef3c7'">
+                        👤 Absensi
+                    </a>
 
                     <form action="{{ route('logout') }}" method="POST">
                         @csrf
@@ -1546,6 +1559,20 @@
                     @endforeach
                 </div>
             </div>
+            {{-- ═══ MODAL 6 — RIWAYAT TRANSAKSI ═══ --}}
+            <div class="overlay" id="modal-riwayat" style="display:none"
+                onclick="closeModalOutside(event,'modal-riwayat')">
+                <div class="modal modal-wide">
+                    <div class="modal-head">
+                        <div>
+                            <h2>📋 Riwayat Transaksi Hari Ini</h2>
+                            <p id="riwayat-tanggal">—</p>
+                        </div>
+                        <button class="modal-close" onclick="closeModal('modal-riwayat')">✕</button>
+                    </div>
+                    <div id="riwayat-list" style="max-height:60vh;overflow-y:auto"></div>
+                </div>
+            </div>
 
             {{-- Menu cards --}}
             <div class="card">
@@ -1590,8 +1617,9 @@
         {{-- ══ RIGHT PANEL — CART ══ --}}
         <div class="pos-right">
             <div class="rp-header">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                    stroke-linejoin="round">
                     <circle cx="9" cy="21" r="1" />
                     <circle cx="20" cy="21" r="1" />
                     <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
@@ -1608,50 +1636,18 @@
             </div>
 
             <div class="custom-section" id="custom-section">
-                <div class="ct">Custom Menu</div>
-                <input id="custom-name" class="input-sm" type="text" placeholder="Nama menu custom...">
+                <div class="ct">Menu Tambahan</div>
+                <input id="custom-name" class="input-sm" type="text"
+                    placeholder="Nama item (mis: Saus Extra, Ongkir)">
                 <div class="custom-row" style="margin-top:6px">
                     <input id="custom-price" class="input-sm" type="number" min="0"
                         placeholder="Harga (Rp)">
                     <input id="custom-qty" class="input-sm" type="number" min="1" value="1"
                         style="max-width:64px">
                 </div>
-
-                {{-- Pilih metode pembayaran untuk custom (inherit dari active pay, tapi bisa override) --}}
-                {{-- Pilih bahan stok yang dikurangi — multi bahan --}}
-                <div style="margin-top:8px">
-                    <div
-                        style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#9ca3af;margin-bottom:6px">
-                        Bahan Stok yang Dikurangi
-                    </div>
-                    <div id="custom-bahan-list">
-                        {{-- Row pertama selalu ada --}}
-                        <div class="custom-bahan-row" style="display:flex;gap:6px;margin-bottom:5px">
-                            <select class="input-sm custom-bahan-select" style="flex:2">
-                                <option value=""> Pilih bahan </option>
-                                @foreach ($stocks as $s)
-                                    <option value="{{ $s->pcsTahu?->id_pcs ?? $s->id_pcs }}"
-                                        data-name="{{ $s->pcsTahu?->nama_pcs ?? '—' }}"
-                                        data-stock="{{ $s->jumlah_stok }}">
-                                        {{ $s->pcsTahu?->nama_pcs ?? '—' }} (stok: {{ $s->jumlah_stok }})
-                                    </option>
-                                @endforeach
-                            </select>
-                            <input class="input-sm custom-bahan-qty" type="number" min="1" value="1"
-                                style="max-width:56px" placeholder="Qty">
-                            <button type="button" class="btn-bahan-remove"
-                                style="background:#fef2f2;border:1px solid #fecaca;color:#dc2626;border-radius:8px;padding:0 10px;font-size:16px;cursor:pointer;line-height:1"
-                                onclick="removeBahanRow(this)">−</button>
-                        </div>
-                    </div>
-                    <button type="button" onclick="addBahanRow()"
-                        style="font-size:11px;font-weight:600;color:#4f46e5;background:#eef2ff;border:1px solid #c7d2fe;border-radius:8px;padding:4px 12px;cursor:pointer;margin-top:2px">
-                        + Tambah Bahan
-                    </button>
-                </div>
-
-                <button class="btn-add-custom" style="width:100%;margin-top:10px" onclick="addCustomMenu()">+ Tambah
-                    ke Keranjang</button>
+                <button class="btn-add-custom" style="width:100%;margin-top:10px" onclick="addCustomMenu()">
+                    + Tambah ke Keranjang
+                </button>
             </div>
 
             <div class="cart-summary" id="cart-summary" style="display:none">
@@ -1758,6 +1754,13 @@
                     </div>
                     <div style="font-weight:700;color:#059669;margin-top:4px" id="co-change">Rp0</div>
                 </div>
+            </div>
+            <div style="background:#f8fafc;border-radius:12px;padding:14px;border:1px solid #e9eaec;margin-top:14px">
+                <div
+                    style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#9ca3af;margin-bottom:10px">
+                    Konfirmasi Metode Pembayaran
+                </div>
+                <div id="co-pay-methods" style="display:flex;gap:8px;flex-wrap:wrap"></div>
             </div>
             <div class="modal-actions">
                 <button class="btn-modal-cancel" id="btn-cancel-checkout"
@@ -1915,9 +1918,9 @@
                         'name' => $menu->namaMenu,
                         'desc' => $menu->deskripsi,
                         'prices' => [
-                            'normal' => (float) (optional($menu->hargas->first())->harga_normal ?? 0),
-                            'gofood' => (float) (optional($menu->hargas->first())->harga_gofood ?? 0),
-                            'shopeefood' => (float) (optional($menu->hargas->first())->harga_shopeefood ?? 0),
+                            'normal' => (float) ($menu->hargas->whereIn('metode_payment', ['take_away_cash', 'take_away_qris'])->first()?->harga ?? 0),
+                            'gofood' => (float) ($menu->hargas->where('metode_payment', 'gofood')->first()?->harga ?? 0),
+                            'shopeefood' => (float) ($menu->hargas->where('metode_payment', 'shopeefood')->first()?->harga ?? 0),
                         ],
                         'details' => $menu->menuDetails
                             ->map(function ($d) use ($stocks) {
@@ -1992,7 +1995,7 @@
         const MENU_DATA = @json($menuData);
         const STOCK_LIST = @json($stockList); // ← baru, untuk custom menu bahan selector
         const STOCK_SNAPSHOT = @json($stockSnapshot); // ← baru, untuk Mutasi Stok sheet
-        const KASIR_NAME = @json(auth()->user()->name ?? '—');
+        const KASIR_NAME = @json($selectedShift?->user->name ?? (auth()->user()->name ?? '—'));
         const TANGGAL_HARI = @json(now()->translatedFormat('d F Y'));
         const CHECKOUT_URL = "{{ route('cashier.pos.checkout') }}";
         const SYNC_SHEETS_URL = "{{ url('/cashier/sync-sheets') }}";
@@ -2022,10 +2025,125 @@
         const BRAND = 'Warung Tahu Bakso';
         const ADDRESS = 'Jl. Contoh No.1, Malang';
         const METHOD_LABELS = {
-            normal: 'Normal (Tunai / Transfer)',
+            cash: 'Tunai',
+            qris: 'QRIS',
             gofood: 'GoFood',
             shopeefood: 'ShopeeFood',
         };
+
+        // ── RIWAYAT TRANSAKSI ──
+        function openRiwayatModal() {
+            document.getElementById('riwayat-tanggal').textContent = TANGGAL_HARI;
+            const list = document.getElementById('riwayat-list');
+
+            if (!todayTrxList.length) {
+                list.innerHTML = '<p style="color:#9ca3af;font-size:13px;padding:16px">Belum ada transaksi hari ini.</p>';
+                openModal('modal-riwayat');
+                return;
+            }
+
+            list.innerHTML = [...todayTrxList].reverse().map(t => `
+        <div style="border:1px solid #e9eaec;border-radius:12px;padding:14px;margin-bottom:10px">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+                <div>
+                    <span style="font-weight:700;font-size:13px">${trxNo(t.id)}</span>
+                    <span style="font-size:11px;color:#9ca3af;margin-left:8px">${t.created_at}</span>
+                </div>
+                <div style="display:flex;gap:8px;align-items:center">
+                    <span style="font-size:12px;background:#eef2ff;color:#4338ca;padding:2px 10px;border-radius:99px">
+                        ${METHOD_LABELS[t.payment_method] ?? t.payment_method}
+                    </span>
+                    <span style="font-weight:700;color:#059669">${fmt(t.total)}</span>
+                    <button onclick="cetakUlang(${t.id})"
+                        style="padding:5px 12px;border-radius:8px;border:1px solid #e5e7eb;background:#fff;font-size:11px;font-weight:600;cursor:pointer;color:#374151">
+                        🖨 Cetak
+                    </button>
+                </div>
+            </div>
+            <div style="font-size:12px;color:#6b7280">
+                ${(t.items || []).map(i => `${i.nama_item} ×${i.qty} = ${fmt(i.subtotal)}`).join(' &nbsp;·&nbsp; ')}
+            </div>
+            ${t.discount > 0 ? `<div style="font-size:11px;color:#d97706;margin-top:4px">Diskon: ${fmt(t.discount)}</div>` : ''}
+        </div>
+    `).join('');
+
+            openModal('modal-riwayat');
+        }
+
+        function cetakUlang(trxId) {
+            const t = todayTrxList.find(x => x.id === trxId);
+            if (!t) return;
+
+            // Isi ulang struk dengan data transaksi lama
+            document.getElementById('rc-datetime').textContent = t.created_at;
+            document.getElementById('rc-trxno').textContent = trxNo(t.id);
+            document.getElementById('rc-method').textContent = METHOD_LABELS[t.payment_method] ?? t.payment_method;
+            document.getElementById('rc-items').innerHTML = (t.items || []).map(item => `
+        <div class="rc-item-row">
+            <div>
+                <div class="rc-item-name">${item.nama_item}</div>
+                <div class="rc-item-detail">${item.qty} x ${fmt(item.unit_price)}</div>
+            </div>
+            <div class="rc-item-sub">${fmt(item.subtotal)}</div>
+        </div>`).join('');
+            document.getElementById('rc-sub').textContent = fmt(t.sub_total);
+            document.getElementById('rc-disc').textContent = fmt(t.discount);
+            document.getElementById('rc-total').textContent = fmt(t.total);
+            document.getElementById('rc-paid').textContent = fmt(t.money_paid ?? t.total);
+            document.getElementById('rc-change').textContent = fmt(Math.max(0, (t.money_paid ?? t.total) - t.total));
+
+            closeModal('modal-riwayat');
+            openModal('modal-receipt');
+        }
+
+        function setCheckoutPayment(btn, method) {
+            document.querySelectorAll('#co-pay-methods .pay-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            // Update currentPay dan hitung ulang total
+            setPaymentMethod(method);
+            // Update tampilan total di modal checkout
+            const disc = Math.max(0, parseFloat(document.getElementById('discount').value) || 0);
+            const sub = cart.reduce((s, i) => s + i.subtotal, 0);
+            const total = Math.max(0, sub - disc);
+            const paid = parseFloat(document.getElementById('money-paid').value) || 0;
+            document.getElementById('co-total').textContent = fmt(total);
+            document.getElementById('co-change').textContent = fmt(Math.max(0, paid - total));
+            document.getElementById('co-method').textContent = METHOD_LABELS[method] ?? method;
+        }
+
+        function setPaymentMethod(method) {
+            currentPay = method;
+            // Update tombol di panel utama juga
+            document.querySelectorAll('#pay-methods .pay-btn').forEach(b => {
+                b.classList.toggle('active', b.dataset.method === method);
+            });
+            // Recalculate harga cart
+            cart = cart.map(item => {
+                if (item.custom) return item;
+                const m = MENU_DATA.find(x => x.id === item.menuId);
+                if (!m) return item;
+                const up = getPrice(m);
+                return {
+                    ...item,
+                    unitPrice: up,
+                    subtotal: up * item.qty
+                };
+            });
+            renderMenuPrices();
+            renderCart();
+        }
+
+        // ── FIX updateStats agar sinkron dengan DB ──
+        // Ganti fungsi updateStats yang ada:
+        function updateStats() {
+            const totalSales = todayTrxList.reduce((s, t) => s + (t.total || 0), 0);
+            const totalTrx = todayTrxList.length;
+            const totalItems = todayTrxList.reduce((s, t) =>
+                s + (t.items || []).reduce((si, i) => si + (i.qty || 0), 0), 0);
+            document.getElementById('stat-sales').textContent = fmt(totalSales);
+            document.getElementById('stat-trx').textContent = totalTrx;
+            document.getElementById('stat-items').textContent = totalItems;
+        }
 
         function fmt(n) {
             return 'Rp' + Number(n || 0).toLocaleString('id-ID', {
@@ -2162,80 +2280,18 @@
             renderCart();
         }
 
-        /* ══════════════════════════════════════════════
-           CUSTOM MENU — Multi bahan
-        ══════════════════════════════════════════════ */
-
-        function addBahanRow() {
-            const list = document.getElementById('custom-bahan-list');
-            const row = document.createElement('div');
-            row.className = 'custom-bahan-row';
-            row.style.cssText = 'display:flex;gap:6px;margin-bottom:5px';
-            row.innerHTML = `
-            <select class="input-sm custom-bahan-select" style="flex:2">
-                <option value=""> Pilih bahan</option>
-                ${STOCK_LIST.map(s =>
-                    `<option value="${s.pcs_id}" data-name="${s.pcs_name}" data-stock="${s.stock}">
-                                                        ${s.pcs_name} (stok: ${s.stock})
-                                                    </option>`
-                ).join('')}
-            </select>
-            <input class="input-sm custom-bahan-qty" type="number" min="1" value="1"
-                   style="max-width:56px" placeholder="Qty">
-            <button type="button" class="btn-bahan-remove"
-                    style="background:#fef2f2;border:1px solid #fecaca;color:#dc2626;border-radius:8px;padding:0 10px;font-size:16px;cursor:pointer;line-height:1"
-                    onclick="removeBahanRow(this)">−</button>`;
-            list.appendChild(row);
-        }
-
-        function removeBahanRow(btn) {
-            const rows = document.querySelectorAll('.custom-bahan-row');
-            if (rows.length <= 1) {
-                // Kalau tinggal 1, reset saja jangan dihapus
-                const row = btn.closest('.custom-bahan-row');
-                row.querySelector('.custom-bahan-select').value = '';
-                row.querySelector('.custom-bahan-qty').value = 1;
-                return;
-            }
-            btn.closest('.custom-bahan-row').remove();
-        }
-
-        function getBahanRows() {
-            const rows = document.querySelectorAll('.custom-bahan-row');
-            const result = [];
-            rows.forEach(row => {
-                const sel = row.querySelector('.custom-bahan-select');
-                const qtyEl = row.querySelector('.custom-bahan-qty');
-                const pcsId = sel.value;
-                if (!pcsId) return;
-                const opt = sel.options[sel.selectedIndex];
-                const pcsName = opt.dataset.name || '—';
-                const stock = parseInt(opt.dataset.stock || '0');
-                const qty = Math.max(1, parseInt(qtyEl.value) || 1);
-                result.push({
-                    pcs_id: pcsId,
-                    pcs_name: pcsName,
-                    qty,
-                    stock
-                });
-            });
-            return result;
-        }
-
         function addCustomMenu() {
             const name = document.getElementById('custom-name').value.trim();
             const price = parseFloat(document.getElementById('custom-price').value) || 0;
             const qty = Math.max(1, parseInt(document.getElementById('custom-qty').value) || 1);
             if (!name) {
-                alert('Masukkan nama custom menu.');
+                alert('Masukkan nama item tambahan.');
                 return;
             }
             if (price <= 0) {
                 alert('Masukkan harga yang valid.');
                 return;
             }
-
-            const details = getBahanRows(); // bisa kosong (tidak ada bahan)
 
             cart.push({
                 menuId: null,
@@ -2244,17 +2300,12 @@
                 unitPrice: price,
                 subtotal: price * qty,
                 custom: true,
-                details, // sama strukturnya dengan menu biasa: [{pcs_id, pcs_name, qty, stock}]
+                details: [], // tidak ada bahan stok
             });
 
-            // Reset form
             document.getElementById('custom-name').value = '';
             document.getElementById('custom-price').value = '';
             document.getElementById('custom-qty').value = 1;
-            // Reset bahan ke 1 row kosong
-            const list = document.getElementById('custom-bahan-list');
-            list.innerHTML = '';
-            addBahanRow();
 
             renderCart();
         }
@@ -2326,12 +2377,14 @@
                 alert('Keranjang masih kosong. Tambahkan menu terlebih dahulu.');
                 return;
             }
+
             const disc = Math.max(0, parseFloat(document.getElementById('discount').value) || 0);
             const sub = cart.reduce((s, i) => s + i.subtotal, 0);
             const total = Math.max(0, sub - disc);
             const paid = parseFloat(document.getElementById('money-paid').value) || 0;
             const change = Math.max(0, paid - total);
 
+            // Stok impact
             const stockImpact = {};
             cart.forEach(item => {
                 (item.details || []).forEach(d => {
@@ -2344,6 +2397,7 @@
                     stockImpact[key].used += d.qty * item.qty;
                 });
             });
+
             const coStocks = document.getElementById('co-stocks');
             coStocks.innerHTML = '';
             if (!Object.keys(stockImpact).length) {
@@ -2353,20 +2407,41 @@
                 Object.entries(stockImpact).forEach(([name, v]) => {
                     const sisa = v.stock - v.used;
                     coStocks.innerHTML += `
-                    <div class="${mStkClass(sisa)}" style="margin-bottom:6px">
-                        <h5>${name}</h5>
-                        <span>Sisa saat ini: <strong>${v.stock} pcs</strong> dikurangi ${v.used} pcs  sisa <strong>${sisa} pcs</strong>${sisa <= 20 ? ' ⚠' : ''}</span>
-                    </div>`;
+                <div class="${mStkClass(sisa)}" style="margin-bottom:6px">
+                    <h5>${name}</h5>
+                    <span>Sisa: <strong>${v.stock} pcs</strong> − ${v.used} pcs = <strong>${sisa} pcs</strong>${sisa <= 20 ? ' ⚠' : ''}</span>
+                </div>`;
                 });
             }
+
+            // Items list
             document.getElementById('co-items').innerHTML = cart.map(item => `
-            <li>
-                <div><div class="cn">${item.name}</div><div class="cq">x${item.qty}</div></div>
-                <div class="cs">${fmt(item.subtotal)}</div>
-            </li>`).join('');
+        <li>
+            <div><div class="cn">${item.name}</div><div class="cq">x${item.qty}</div></div>
+            <div class="cs">${fmt(item.subtotal)}</div>
+        </li>`).join('');
+
             document.getElementById('co-total').textContent = fmt(total);
             document.getElementById('co-change').textContent = fmt(change);
             document.getElementById('co-method').textContent = METHOD_LABELS[currentPay] ?? currentPay;
+
+            // Render tombol konfirmasi metode
+            const coPayMethods = document.getElementById('co-pay-methods');
+            if (coPayMethods) {
+                const methods = ['cash', 'qris', 'gofood', 'shopeefood'];
+                const labels = {
+                    cash: 'Cash',
+                    qris: 'QRIS',
+                    gofood: 'GoFood',
+                    shopeefood: 'ShopeeFood'
+                };
+                coPayMethods.innerHTML = methods.map(m => `
+            <button class="pay-btn ${currentPay === m ? 'active' : ''}"
+                onclick="setCheckoutPayment(this, '${m}')"
+                data-method="${m}">${labels[m]}</button>
+        `).join('');
+            }
+
             openModal('modal-checkout');
         }
 
@@ -2763,11 +2838,9 @@
         }
 
         // Init
-        // Init
         renderMenuPrices();
         renderCart();
         loadSheetsConfig();
-        addBahanRow();
 
         // Tandai semua transaksi yang sudah ada di DB saat halaman dimuat
         // supaya tidak ikut di-sync ulang di sesi ini
@@ -2788,6 +2861,47 @@
             const merged = [...new Set([...alreadySynced, ...existingIds])];
             localStorage.setItem('synced_trx_ids', JSON.stringify(merged));
         })();
+
+        const CREATE_SHEET_URL = "{{ route('cashier.create-spreadsheet') }}";
+
+        async function createNewSpreadsheet() {
+            const btn = document.getElementById('btn-create-sheet');
+            btn.disabled = true;
+            btn.textContent = 'Membuat spreadsheet...';
+            showSyncStatus('sync-status-modal', 'wait', '⏳ Membuat spreadsheet baru...');
+
+            try {
+                const res = await fetch(CREATE_SHEET_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': CSRF_TOKEN,
+                        'Accept': 'application/json',
+                    },
+                    body: JSON.stringify({})
+                });
+                const data = await res.json();
+                if (!data.success) throw new Error(data.message);
+
+                // Auto-isi spreadsheet ID
+                document.getElementById('sheets-id-input').value = data.spreadsheet_id;
+                saveSheetsId();
+
+                showSyncStatus('sync-status-modal', 'ok',
+                    `✅ ${data.message} — <a href="${data.url}" target="_blank" style="color:#0369a1">Buka Spreadsheet</a>`
+                );
+                // Render HTML di status (karena ada tag <a>)
+                document.getElementById('sync-status-modal').innerHTML =
+                    `✅ ${data.message} &nbsp;<a href="${data.url}" target="_blank" style="color:#0369a1;font-weight:600">→ Buka Spreadsheet</a>`;
+                document.getElementById('sync-status-modal').style.display = '';
+
+            } catch (err) {
+                showSyncStatus('sync-status-modal', 'err', '❌ ' + err.message);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '+ Buat Spreadsheet Baru (Auto Share ke Akun Saya)';
+            }
+        }
     </script>
 
 </x-layouts.app>

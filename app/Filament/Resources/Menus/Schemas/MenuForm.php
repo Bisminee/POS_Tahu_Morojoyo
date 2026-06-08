@@ -2,12 +2,13 @@
 
 namespace App\Filament\Resources\Menus\Schemas;
 
+use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Repeater;
-use Filament\Schemas\Schema;
-use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Textarea;
+use Filament\Schemas\Schema;
 
 class MenuForm
 {
@@ -20,22 +21,48 @@ class MenuForm
                 ->required()
                 ->maxLength(255),
 
-            TextInput::make('tagline')
-                ->label('Tagline')
-                ->maxLength(255),
-
-            Textarea::make('deskripsi')
-                ->label('Deskripsi')
-                ->rows(3),
-
             FileUpload::make('foto')
-                ->label('Foto Menu')
+                ->label('Foto Produk')
                 ->image()
                 ->directory('menus')
                 ->disk('public'),
 
+            TextInput::make('tagline_product')
+                ->label('Tagline Product')
+                ->maxLength(255),
+
+            Textarea::make('deskripsi_produk')
+                ->label('Deskripsi Produk')
+                ->rows(4),
+
+            Placeholder::make('deskripsi')
+                ->label('Isi Menu (otomatis)')
+                ->content(fn ($record) => $record?->deskripsi ?? '—')
+                ->visibleOn('edit'),
+
+            Repeater::make('menuDetails')
+                ->relationship()
+                ->label('Detail Menu')
+                ->schema([
+                    Select::make('id_pcs')
+                        ->label('Jenis Barang')
+                        ->relationship('pcsTahu', 'nama_pcs')
+                        ->searchable()
+                        ->preload()
+                        ->required(),
+
+                    TextInput::make('jumlah_pakai')
+                        ->label('Jumlah Pakai')
+                        ->numeric()
+                        ->minValue(1)
+                        ->required(),
+                ])
+                ->columns(2)
+                ->defaultItems(1)
+                ->collapsible(),
+
             Repeater::make('compositions')
-                ->label('Komposisi Menu / Pengurangan Stok')
+                ->label('Komposisi Menu')
                 ->relationship('compositions')
                 ->schema([
                     Select::make('pcs_tahu_id')
@@ -57,8 +84,8 @@ class MenuForm
                 ->defaultItems(1)
                 ->addActionLabel('Tambah Komposisi')
                 ->reorderable(false)
-                ->collapsible()
-                ->defaultItems(1),
+                ->collapsible(),
+
         ]);
     }
 }

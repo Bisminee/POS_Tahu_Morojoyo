@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use App\Models\MenuDetail;
 
@@ -16,12 +17,12 @@ class MenuComposition extends Model
         'jumlah_pakai',
     ];
 
-    public function menu()
+    public function menu(): BelongsTo
     {
         return $this->belongsTo(Menu::class, 'menu_id', 'idMenu');
     }
 
-    public function pcsTahu()
+    public function pcsTahu(): BelongsTo
     {
         return $this->belongsTo(PcsTahu::class, 'pcs_tahu_id', 'id_pcs');
     }
