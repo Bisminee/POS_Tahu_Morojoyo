@@ -100,18 +100,17 @@
 
   <!-- NAVBAR -->
   <nav class="sticky top-0 z-50 bg-white border-b-4 border-brand-red shadow-md">
-    <div class="max-w-6xl mx-auto px-6 py-3 flex items-center justify-between">
+    <div class="max-w-6xl mx-auto px-6 py-5 flex items-center justify-between">
       <a href="#home" class="flex items-center gap-2 group">
-        <div class="bg-brand-red rounded-xl px-4 py-2 group-hover:bg-brand-darkred transition-colors">
-          <p class="text-brand-yellow text-[9px] font-display tracking-[0.25em] text-center leading-none">· TAHU BAKSO ·</p>
-          <p class="text-brand-yellow font-display text-2xl leading-none tracking-wider">MOROJOYO</p>
-        </div>
+          @if(isset($identitas) && $identitas->logo)
+            <img src="{{ asset('storage/' . $identitas->logo) }}" alt="{{ $identitas->nama_brand ?? 'Logo' }}"class="h-10 w-auto">
+          @endif
       </a>
       <ul class="hidden md:flex items-center gap-8">
-        <li><a href="{{ route('home') }}" class="nav-link font-body text-gray-600 font-semibold text-sm tracking-wide hover:text-brand-red transition-colors">Home</a></li>
-        <li><a href="{{ route('menu') }}" class="nav-link font-body text-gray-600 font-semibold text-sm tracking-wide hover:text-brand-red transition-colors">Menu</a></li>
+        <li><a href="{{ route('home') }}" class="nav-link font-body text-gray-600 font-bold text-sm tracking-wide hover:text-brand-red transition-colors">Home</a></li>
+        <li><a href="{{ route('menu') }}" class="nav-link  font-body text-gray-600 font-semibold text-sm tracking-wide hover:text-brand-red transition-colors">Menu</a></li>
         <li><a href="{{ route('contact') }}" class="nav-link font-body text-gray-600 font-semibold text-sm tracking-wide hover:text-brand-red transition-colors">Contact</a></li>
-        <li><a href="{{ route('about') }}" class="nav-link active font-body text-gray-800 font-bold text-sm tracking-wide hover:text-brand-red transition-colors">Location</a></li>
+        <li><a href="{{ route('about') }}" class="nav-link active font-body text-gray-800 font-semibold text-sm tracking-wide hover:text-brand-red transition-colors">Location</a></li>
         <li>
           <a href="#menu" class="bg-brand-red text-white font-bold text-sm px-5 py-2 rounded-full hover:bg-brand-darkred transition-colors shadow-md">
             Pesan Sekarang
@@ -128,125 +127,173 @@
       </button>
     </div>
     <div x-show="menuOpen" x-transition class="md:hidden bg-white border-t border-gray-100 px-6 py-4 flex flex-col gap-4">
-      <a href="#home" class="font-bold text-brand-red text-sm">Home</a>
-      <a href="#menu" class="font-semibold text-gray-700 text-sm">Menu</a>
-      <a href="#contact" class="font-semibold text-gray-700 text-sm">Contact</a>
-      <a href="#location" class="font-semibold text-gray-700 text-sm">Location</a>
-      <a href="#menu" class="bg-brand-red text-white font-bold text-sm px-5 py-2 rounded-full text-center">Pesan Sekarang</a>
+      <a href="{{ route('home') }}" class="font-bold text-brand-red text-sm">Home</a>
+      <a href="{{ route('menu') }}" class="font-semibold text-gray-700 text-sm">Menu</a>
+      <a href="{{ route('contact') }}" class="font-semibold text-gray-700 text-sm">Contact</a>
+      <a href="{{ route('about') }}" class="font-semibold text-gray-700 text-sm">Location</a>
+      <a href="" class="bg-brand-red text-white font-bold text-sm px-5 py-2 rounded-full text-center">Pesan Sekarang</a>
     </div>
   </nav>
 
 
 <!-- LOCATION -->
-  <section id="location" class="bg-brand-red py-20">
+<section id="location" class="bg-brand-cream py-20">
     <div class="max-w-6xl mx-auto px-6">
-      <div class="text-center mb-14">
-        <span class="text-brand-yellow font-body font-bold text-sm tracking-widest uppercase">Temukan Kami</span>
-        <h2 class="font-display text-white text-5xl mt-2">LOKASI</h2>
-        <div class="w-16 h-1 bg-brand-yellow mx-auto mt-3 rounded-full"></div>
-      </div>
-      <div class="grid md:grid-cols-2 gap-10 items-center">
-        <div class="text-white space-y-6">
-          <div>
-            <h3 class="font-display text-brand-yellow text-3xl mb-2">TAHU BAKSO MOROJOYO</h3>
-            <p class="font-body text-red-100 leading-relaxed">
-              Jl. Morojoyo No. XX, Kecamatan Sukun,<br/>
-              Kota Malang, Jawa Timur 65148
-            </p>
-          </div>
-          <div class="grid grid-cols-2 gap-4">
-            <div class="bg-brand-darkred rounded-2xl p-4">
-              <p class="font-display text-brand-yellow text-4xl">10+</p>
-              <p class="font-body text-red-200 text-sm">Tahun Berdiri</p>
-            </div>
-            <div class="bg-brand-darkred rounded-2xl p-4">
-              <p class="font-display text-brand-yellow text-4xl">500+</p>
-              <p class="font-body text-red-200 text-sm">Pelanggan/Hari</p>
-            </div>
-            <div class="bg-brand-darkred rounded-2xl p-4">
-              <p class="font-display text-brand-yellow text-4xl">20+</p>
-              <p class="font-body text-red-200 text-sm">Varian Menu</p>
-            </div>
-            <div class="bg-brand-darkred rounded-2xl p-4">
-              <p class="font-display text-brand-yellow text-4xl">⭐ 4.9</p>
-              <p class="font-body text-red-200 text-sm">Rating Pelanggan</p>
-            </div>
-          </div>
-          <a href="https://maps.google.com" target="_blank" class="inline-block bg-brand-yellow text-brand-darkred font-display text-xl px-8 py-3 rounded-full hover:brightness-110 transition shadow-lg">
-            📍 Buka di Google Maps
-          </a>
+        <div class="text-center mb-14">
+            <span class="text-brand-red font-body font-bold text-sm tracking-widest uppercase">Temukan Kami</span>
+            <h2 class="font-display text-brand-red text-5xl mt-2">LOKASI CABANG</h2>
+            <div class="w-16 h-1 bg-brand-yellow mx-auto mt-3 rounded-full"></div>
         </div>
-        <div class="bg-brand-darkred rounded-3xl overflow-hidden h-72 flex items-center justify-center relative shadow-2xl">
-          <div class="absolute inset-0 opacity-20" style="background-image: repeating-linear-gradient(0deg,transparent,transparent 30px,rgba(255,255,255,.1) 30px,rgba(255,255,255,.1) 31px),repeating-linear-gradient(90deg,transparent,transparent 30px,rgba(255,255,255,.1) 30px,rgba(255,255,255,.1) 31px);"></div>
-          <div class="text-center relative z-10">
-            <span class="text-6xl block mb-3">📍</span>
-            <p class="font-display text-white text-2xl">MALANG, JAWA TIMUR</p>
-            <p class="text-red-200 font-body text-sm mt-1">Klik untuk buka Google Maps</p>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
 
-    <!-- FOOTER -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            @forelse ($cabangs as $cabang)
+                <div class="bg-brand-darkred rounded-3xl overflow-hidden shadow-xl card-hover border border-red-700 flex flex-col">
+
+                    {{-- Foto Cabang --}}
+                    @if($cabang->foto)
+                        <img src="{{ asset('storage/' . $cabang->foto) }}"
+                             alt="{{ $cabang->namaCabang }}"
+                             class="w-full h-44 object-cover">
+                    @else
+                        <div class="w-full h-44 bg-red-800 flex items-center justify-center">
+                            <span class="text-5xl">🏪</span>
+                        </div>
+                    @endif
+
+                    <div class="p-5 flex flex-col gap-3 flex-1">
+
+                        {{-- Nomor + Nama --}}
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-full bg-brand-yellow flex items-center justify-center flex-shrink-0">
+                                <span class="font-display text-brand-darkred text-base leading-none">
+                                    {{ $loop->iteration }}
+                                </span>
+                            </div>
+                            <h3 class="font-display text-brand-yellow text-xl leading-tight tracking-wide">
+                                {{ $cabang->namaCabang }}
+                            </h3>
+                        </div>
+
+                        <div class="w-full h-px bg-red-600"></div>
+
+                        {{-- Alamat --}}
+                        <div class="flex items-start gap-2">
+                            <span class="text-brand-yellow mt-0.5 flex-shrink-0">📍</span>
+                            <div>
+                                <p class="font-body text-red-100 text-sm leading-relaxed">
+                                    {{ $cabang->alamat }}
+                                </p>
+                                @if($cabang->detail_alamat)
+                                    <p class="font-body text-red-300 text-xs mt-1 leading-relaxed">
+                                        {{ $cabang->detail_alamat }}
+                                    </p>
+                                @endif
+                            </div>
+                        </div>
+
+                        {{-- Tombol Maps --}}
+                        <a href="{{ $cabang->link_gmaps ?? 'https://maps.google.com/?q=' . urlencode($cabang->alamat) }}"
+                           target="_blank"
+                           class="mt-auto inline-flex items-center justify-center gap-2
+                                  bg-brand-yellow text-brand-darkred font-display text-base
+                                  px-5 py-2.5 rounded-full hover:brightness-110
+                                  transition shadow-md w-full text-center">
+                            📍 Buka di Google Maps
+                        </a>
+                    </div>
+                </div>
+            @empty
+                <div class="col-span-3 text-center text-brand-red font-body py-10">
+                    <span class="text-4xl block mb-3">🏪</span>
+                    Belum ada cabang terdaftar.
+                </div>
+            @endforelse
+        </div>
+    </div>
+</section>
+
+  <!-- FOOTER -->
   <footer class="bg-white border-t-4 border-brand-red pt-12 pb-0">
-    <div class="max-w-6xl mx-auto px-6">
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-8 pb-10">
- 
-        <!-- Logo + desc -->
-        <div class="col-span-2 md:col-span-1">
-          <div class="rounded-xl px-4 py-2 inline-block mb-4">
-            <img src="{{ asset('img/logo.png') }}" class="w-full h-10">
+      <div class="max-w-6xl mx-auto px-6">
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-8 pb-10">
+
+              <!-- Logo + desc -->
+              <div class="col-span-2 md:col-span-1">
+                  <div class="rounded-xl inline-block mb-4">
+                      @if(isset($identitas) && $identitas->logo)
+                          <img src="{{ asset('storage/' . $identitas->logo) }}"
+                              alt="{{ $identitas->nama_brand ?? 'Logo' }}"
+                              class="h-10 w-auto">
+                      @endif
+                  </div>
+                  @if(isset($identitas) && $identitas->deskripsi_brand)
+                      <p class="font-body text-gray-500 text-sm leading-relaxed">
+                          {{ $identitas->deskripsi_brand }}
+                      </p>
+                  @endif
+              </div>
+
+              <!-- Navigation -->
+              <div>
+                  <h4 class="font-display text-brand-red text-xl mb-4">Navigation</h4>
+                  <ul class="space-y-2">
+                      <li><a href="{{ route('home') }}"    class="font-body text-gray-500 text-sm hover:text-brand-red transition">Home</a></li>
+                      <li><a href="{{ route('menu') }}"    class="font-body text-gray-500 text-sm hover:text-brand-red transition">Menu</a></li>
+                      <li><a href="{{ route('contact') }}" class="font-body text-gray-500 text-sm hover:text-brand-red transition">Contact</a></li>
+                      <li><a href="{{ route('about') }}"   class="font-body text-gray-500 text-sm hover:text-brand-red transition">Location</a></li>
+                  </ul>
+              </div>
+
+              <!-- Get in Touch -->
+              <div>
+                  <h4 class="font-display text-brand-red text-xl mb-4">Get in Touch</h4>
+                  <ul class="space-y-2">
+                      @if(isset($identitas) && $identitas->link_ig)
+                          <li>
+                              <a href="{{ $identitas->link_ig }}" target="_blank"
+                                class="font-body text-gray-500 text-sm hover:text-brand-red transition flex items-center gap-2">
+                                  <img src="{{ asset('img/ig.png') }}" class="h-5 w-5 object-contain">
+                                  {{ $identitas->nama_ig ?? '@tahubakso.morojoyo' }}
+                              </a>
+                          </li>
+                      @endif
+                      @if(isset($identitas) && $identitas->link_wa)
+                          <li>
+                              <a href="{{ $identitas->link_wa }}" target="_blank"
+                                class="font-body text-gray-500 text-sm hover:text-brand-red transition flex items-center gap-2">
+                                  <img src="{{ asset('img/wa.png') }}" class="h-5 w-5 object-contain">
+                                  {{ $identitas->nomor_whatsapp ?? '' }}
+                              </a>
+                          </li>
+                      @endif
+                  </ul>
+              </div>
+
+              <!-- Jam Buka -->
+              <div>
+                  <h4 class="font-display text-brand-red text-xl mb-4">Jam Buka</h4>
+                  @if(isset($identitas))
+                      <ul class="space-y-1">
+                          <li class="font-body text-gray-500 text-sm">Setiap Hari</li>
+                          <li class="font-body text-brand-red text-sm font-bold">
+                              {{ $identitas->jam_buka ?? '10:00' }} – {{ $identitas->jam_tutup ?? '21:00' }} WIB
+                          </li>
+                      </ul>
+                  @endif
+              </div>
+
           </div>
-          <p class="font-body text-gray-500 text-sm leading-relaxed">
-            Jl MT. Haryono No.43,<br/>
-            Ketawanggede, Kec. Lowokwaru,<br/>
-            Kota Malang, Jawa Timur 65145
-          </p>
-        </div>
- 
-        <!-- Navigation -->
-        <div>
-          <h4 class="font-display text-brand-red text-xl mb-4">Navigation</h4>
-          <ul class="space-y-2">
-            <li><a href="{{ route('home') }}" class="font-body text-gray-500 text-sm hover:text-brand-red transition">Home</a></li>
-            <li><a href="{{ route('menu') }}" class="font-body text-gray-500 text-sm hover:text-brand-red transition">Menu</a></li>
-            <li><a href="{{ route('contact') }}" class="font-body text-gray-500 text-sm hover:text-brand-red transition">Contact</a></li>
-            <li><a href="{{ route('about') }}" class="font-body text-gray-500 text-sm hover:text-brand-red transition">Location</a></li>
-          </ul>
-        </div>
- 
-        <!-- Get in Touch -->
-        <div>
-          <h4 class="font-display text-brand-red text-xl mb-4">Get in Touch</h4>
-          <ul class="space-y-2">
-            <li><a href="https://instagram.com" class="font-body text-gray-500 text-sm hover:text-brand-red transition flex items-center gap-2"><span><img src="{{ asset('img/ig.png') }}" class="w-full h-5"></span> @tahubakso.morojoyo</a></li>
-            <li><a href="https://wa.me/62812" class="font-body text-gray-500 text-sm hover:text-brand-red transition flex items-center gap-2"><span><img src="{{ asset('img/wa.png') }}" class="w-full h-5"></span> +62 812-XXXX-XXXX</a></li>
-            <li><a href="https://maps.google.com" class="font-body text-gray-500 text-sm hover:text-brand-red transition flex items-center gap-2"><span><img src="{{ asset('img/gmap.png') }}" class="w-full h-5"></span> Google Maps</a></li>
-          </ul>
-        </div>
- 
-        <!-- Jam Buka -->
-        <div>
-          <h4 class="font-display text-brand-red text-xl mb-4">Jam Buka</h4>
-          <ul class="space-y-2">
-            <li class="font-body text-gray-500 text-sm">Senin – Sabtu</li>
-            <li class="font-body text-brand-red text-sm font-bold">07.00 – 18.00 WIB</li>
-            <li class="font-body text-gray-500 text-sm mt-2">Minggu</li>
-            <li class="font-body text-brand-red text-sm font-bold">08.00 – 15.00 WIB</li>
-          </ul>
-        </div>
- 
       </div>
-    </div>
- 
-    <!-- Copyright bar -->
-    <div class="bg-brand-red">
-      <div class="max-w-6xl mx-auto px-6 py-4 flex flex-col md:flex-row items-center justify-between gap-2">
-        <p class="font-body text-white text-sm">Copyright © 2026 Kelompok 4</p>
-        <p class="font-body text-red-200 text-xs">Tahu Bakso Morojoyo — Malang, Jawa Timur</p>
+
+      <!-- Copyright bar -->
+      <div class="bg-brand-red">
+          <div class="max-w-6xl mx-auto px-6 py-4 flex flex-col md:flex-row items-center justify-between gap-2">
+              <p class="font-body text-white text-sm">Copyright © 2026 Kelompok 4</p>
+              <p class="font-body text-red-200 text-xs">
+                  {{ isset($identitas) ? $identitas->nama_brand : 'Tahu Bakso Morojoyo' }} — Malang, Jawa Timur
+              </p>
+          </div>
       </div>
-    </div>
   </footer>
 
 </body>
