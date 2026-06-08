@@ -585,7 +585,7 @@
                             // Kirim juga distance hasil pencocokan frontend
                             // Server bisa pakai ini sebagai double-check
                             face_distance: currentDistance,
-                            foto_base64: fotoBase64,
+                            // foto_base64: fotoBase64,
                         }),
                     });
 

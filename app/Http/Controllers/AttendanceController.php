@@ -170,7 +170,7 @@ class AttendanceController extends Controller
             'karyawan_id'  => $karyawan->idKaryawan,
             'jam_masuk'    => $jamMasuk,
             'status_masuk' => $statusMasuk,
-            'foto_masuk'   => $request->input('foto_base64'),
+            // 'foto_masuk'   => $request->input('foto_base64'),
         ]);
 
         $telat = $jamMasuk->diffInMinutes($jamMulaiShift);
@@ -282,14 +282,14 @@ class AttendanceController extends Controller
             'foto_base64' => 'required|string',
         ]);
 
-        $fotoPath = $this->saveBase64Photo(
-            $request->input('foto_base64'),
-            $karyawan->idKaryawan,
-            'ref'
-        );
+        // $fotoPath = $this->saveBase64Photo(
+        //     $request->input('foto_base64'),
+        //     $karyawan->idKaryawan,
+        //     'ref'
+        // );
 
         $karyawan->update([
-            'face_photo' => $fotoPath,
+            // 'face_photo' => $fotoPath,
             'face_descriptor' => $request->input('face_descriptor'),
         ]);
 
