@@ -76,7 +76,9 @@ class MenuForm
                         ->label('Jumlah Pakai')
                         ->numeric()
                         ->minValue(1)
+                        ->default(1)
                         ->required(),
+
                 ])
                 ->columns(2)
                 ->defaultItems(1)

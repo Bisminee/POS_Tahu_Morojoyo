@@ -19,6 +19,7 @@ use Illuminate\View\Middleware\ShareErrorsFromSession;
 use App\Filament\Pages\Auth\Login;
 use App\Filament\Auth\LoginResponse;
 
+
 class LoginPanelProvider extends PanelProvider
 {
     public function panel(Panel $panel): Panel

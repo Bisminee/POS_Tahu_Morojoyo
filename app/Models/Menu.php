@@ -5,10 +5,15 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use App\Models\MenuComposition;
+use App\Models\MenuDetail;
+
 
 class Menu extends Model
 {
     protected $table = 'menus';
+    protected $attributes = [
+        'is_active' => true,
+    ];
 
     protected $primaryKey = 'idMenu';
 
