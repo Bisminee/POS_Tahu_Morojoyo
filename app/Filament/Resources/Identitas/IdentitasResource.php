@@ -28,6 +28,7 @@ class IdentitasResource extends Resource
     protected static ?string $model = Identitas::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBuildingStorefront;
+    protected static string | \UnitEnum | null $navigationGroup = 'Master Data';
 
     protected static ?string $navigationLabel = 'Identitas';
     protected static ?string $modelLabel = 'Identitas';

@@ -351,7 +351,7 @@ class AttendanceController extends Controller
 
         $search = $request->input('search');
 
-        $karyawans = \App\Models\Karyawan::with(['cabang', 'user'])
+        $karyawans = Karyawan::with(['cabang', 'user'])
             ->when($search, fn($q) => $q->where('nama', 'like', "%{$search}%"))
             ->orderBy('nama')
             ->get();
