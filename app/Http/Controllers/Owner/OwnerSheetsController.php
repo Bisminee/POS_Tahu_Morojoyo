@@ -24,8 +24,10 @@ class OwnerSheetsController extends Controller
         $today   = \Carbon\Carbon::today(config('app.timezone'));
         $cabangs = Cabang::orderBy('namaCabang')->get();
 
+        $shiftBoundary = $today->copy()->setTime(15, 0);
+
         // Stats per cabang (hari ini)
-        $statsPerCabang = $cabangs->map(function ($cabang) use ($today) {
+        $statsPerCabang = $cabangs->map(function ($cabang) use ($today, $shiftBoundary) {
             // Ambil semua user kasir di cabang ini
             $userIds = User::where('cabang_id', $cabang->idCabang)->pluck('id');
 
@@ -33,12 +35,17 @@ class OwnerSheetsController extends Controller
                 ->whereDate('created_at', $today)
                 ->get();
 
+            $shift1Sales = $trx->filter(fn($t) => $t->created_at->lte($shiftBoundary))->sum('total');
+            $shift2Sales = $trx->filter(fn($t) => $t->created_at->gt($shiftBoundary))->sum('total');
+
             return [
-                'id'     => $cabang->idCabang,
-                'nama'   => $cabang->namaCabang,
-                'trx'    => $trx->count(),
-                'sales'  => $trx->sum('total'),
-                'items'  => TransactionItem::whereIn('transaction_id', $trx->pluck('id'))->sum('qty'),
+                'id'           => $cabang->idCabang,
+                'nama'         => $cabang->namaCabang,
+                'trx'          => $trx->count(),
+                'sales'        => $trx->sum('total'),
+                'shift1_sales' => $shift1Sales,
+                'shift2_sales' => $shift2Sales,
+                'items'        => TransactionItem::whereIn('transaction_id', $trx->pluck('id'))->sum('qty'),
             ];
         });
 
@@ -50,6 +57,12 @@ class OwnerSheetsController extends Controller
                 'transaction',
                 fn($q) => $q->whereDate('created_at', $today)
             )->sum('qty'),
+            'shift1_sales' => Transaction::whereDate('created_at', $today)
+                ->whereTime('created_at', '<=', $shiftBoundary->format('H:i:s'))
+                ->sum('total'),
+            'shift2_sales' => Transaction::whereDate('created_at', $today)
+                ->whereTime('created_at', '>', $shiftBoundary->format('H:i:s'))
+                ->sum('total'),
         ];
 
         return view('owner.sheets.index', compact('statsAll', 'statsPerCabang', 'cabangs'));

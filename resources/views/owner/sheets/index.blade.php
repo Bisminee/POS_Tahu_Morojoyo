@@ -113,7 +113,7 @@
         /* STAT */
         .stat-row {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns: repeat(4, 1fr);
             gap: 12px
         }
 
@@ -516,8 +516,12 @@
                     <div class="s-val s-green">Rp{{ number_format($statsAll['today_sales'] ?? 0, 0, ',', '.') }}</div>
                 </div>
                 <div class="stat-card">
-                    <div class="s-label">Jumlah Transaksi</div>
-                    <div class="s-val s-red">{{ $statsAll['today_trx'] ?? 0 }}</div>
+                    <div class="s-label">Shift 1</div>
+                    <div class="s-val s-red">Rp{{ number_format($statsAll['shift1_sales'] ?? 0, 0, ',', '.') }}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="s-label">Shift 2</div>
+                    <div class="s-val s-amber">Rp{{ number_format($statsAll['shift2_sales'] ?? 0, 0, ',', '.') }}</div>
                 </div>
                 <div class="stat-card">
                     <div class="s-label">Menu Terjual</div>
@@ -538,6 +542,8 @@
                             <tr>
                                 <th>Cabang</th>
                                 <th style="text-align:right">Transaksi</th>
+                                <th style="text-align:right">Shift 1</th>
+                                <th style="text-align:right">Shift 2</th>
                                 <th style="text-align:right">Item Terjual</th>
                                 <th style="text-align:right">Total Penjualan</th>
                             </tr>
@@ -549,6 +555,12 @@
                                         <span class="cabang-badge">🏪 {{ $s['nama'] }}</span>
                                     </td>
                                     <td style="text-align:right;font-weight:800;color:#C0271A">{{ $s['trx'] }}</td>
+                                    <td style="text-align:right;font-weight:800;color:#059669">
+                                        Rp{{ number_format($s['shift1_sales'] ?? 0, 0, ',', '.') }}
+                                    </td>
+                                    <td style="text-align:right;font-weight:800;color:#059669">
+                                        Rp{{ number_format($s['shift2_sales'] ?? 0, 0, ',', '.') }}
+                                    </td>
                                     <td style="text-align:right;font-weight:700;color:#d97706">{{ $s['items'] }}</td>
                                     <td style="text-align:right;font-weight:800;color:#059669">
                                         Rp{{ number_format($s['sales'], 0, ',', '.') }}

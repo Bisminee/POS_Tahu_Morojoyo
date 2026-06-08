@@ -196,6 +196,49 @@
             height: 14px;
         }
 
+        .shift-report {
+            min-width: 260px;
+            max-width: 320px;
+            background: rgba(255, 255, 255, 0.12);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            border-radius: 14px;
+            padding: 12px 14px;
+            display: grid;
+            gap: 6px;
+            font-size: 12px;
+            color: #fff;
+        }
+
+        .shift-report-title {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 13px;
+            letter-spacing: .1em;
+            text-transform: uppercase;
+            color: #F5C518;
+        }
+
+        .shift-report-line {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+        }
+
+        .shift-report-line:last-child {
+            border-bottom: none;
+        }
+
+        .shift-report-line strong {
+            font-weight: 800;
+            color: #F5C518;
+        }
+
+        .shift-report-line.shift-total strong {
+            color: #fff;
+        }
+
         /* ── STAT CARDS ── */
         .stat-row {
             display: grid;
@@ -1492,17 +1535,55 @@
                 </div>
 
                 <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-                    
+                    <button id="btn-toggle-shift-report" class="btn-laporan-topbar" onclick="toggleShiftReport()">
+                        Laporan Shift
+                    </button>
 
                     <button id="btn-shift" class="btn-laporan-topbar" style="background:#16a34a;color:white"
                         onclick="handleShiftButton()">
                         Awali Shift 1
                     </button>
+                </div>
 
+                <div class="shift-report" id="shift-report" style="display:none">
+                    <div class="shift-report-title">Laporan Shift Realtime</div>
+                    <div class="shift-report-line">
+                        <span>Status Shift</span>
+                        <strong id="shift-current">Belum dimulai</strong>
+                    </div>
+                    <div class="shift-report-line">
+                        <span>Cash</span>
+                        <strong id="shift-cash">Rp0</strong>
+                    </div>
+                    <div class="shift-report-line">
+                        <span>QRIS</span>
+                        <strong id="shift-qris">Rp0</strong>
+                    </div>
+                    <div class="shift-report-line">
+                        <span>GoFood</span>
+                        <strong id="shift-gofood">Rp0</strong>
+                    </div>
+                    <div class="shift-report-line">
+                        <span>ShopeeFood</span>
+                        <strong id="shift-shopeefood">Rp0</strong>
+                    </div>
+                    <div class="shift-report-line shift-total">
+                        <span>Shift 1</span>
+                        <strong id="shift1-total">Rp0</strong>
+                    </div>
+                    <div class="shift-report-line shift-total">
+                        <span>Shift 2</span>
+                        <strong id="shift2-total">Rp0</strong>
+                    </div>
+                    <button id="btn-reset-shift-report" class="btn-laporan-topbar" onclick="resetShiftReportData()" style="margin-top:12px; font-size:12px; padding:8px 12px; background:#000; color:#fff; border-radius:8px;">
+                        Reset Laporan Shift
+                    </button>
+                </div>
+
+                <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
                     <button type="button" class="btn-laporan-topbar" onclick="openRiwayatModal()">
                         Riwayat Pesanan
                     </button>
-
                     <a href="{{ route('attendance.reset') }}"
                         style="display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:99px;
                         background:rgba(245,197,24,0.15);color:#F5C518;border:1px solid rgba(245,197,24,0.35);
@@ -1512,10 +1593,9 @@
                         Absensi Karyawan
                     </a>
 
-                    <form action="{{ route('logout') }}" method="POST">
-                        @csrf
-                        <button type="submit" class="btn-logout">Keluar</button>
-                    </form>
+                    <a href="/admin/login" class="btn-logout" style="display:inline-flex;align-items:center;justify-content:center;text-decoration:none;">
+                        Keluar
+                    </a>
                 </div>
             </div>
 
@@ -1950,6 +2030,7 @@
 
             $todayTrxFull = \App\Models\Transaction::with('items')
                 ->whereDate('created_at', today())
+                ->when(auth()->user()?->cabang_id, fn($q, $idCabang) => $q->where('id_cabang', $idCabang))
                 ->get()
                 ->map(
                     fn($t) => [
@@ -2002,6 +2083,7 @@
         let activeMenu = null;
         let modalQty = 1;
         let currentPay = 'normal';
+        let currentPaymentMethod = 'cash';
         let lastTrxSnapshot = null;
         let stockMutasiMap = {};
 
@@ -2022,6 +2104,7 @@
             gofood: 'GoFood',
             shopeefood: 'ShopeeFood'
         };
+        const KASIR_ID = @json(auth()->user()->id ?? null);
 
         function openRiwayatModal() {
             document.getElementById('riwayat-tanggal').textContent = TANGGAL_HARI;
@@ -2095,8 +2178,12 @@
         }
 
         function setPaymentMethod(method) {
-            currentPay = method;
+            currentPaymentMethod = method;
+            currentPay = (method === 'cash' || method === 'qris') ? 'normal' : method;
             document.querySelectorAll('#pay-methods .pay-btn').forEach(b => {
+                b.classList.toggle('active', b.dataset.method === method);
+            });
+            document.querySelectorAll('#co-pay-methods .pay-btn').forEach(b => {
                 b.classList.toggle('active', b.dataset.method === method);
             });
             cart = cart.map(item => {
@@ -2159,6 +2246,7 @@
         function setPayment(btn, method) {
             document.querySelectorAll('.pay-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
+            currentPaymentMethod = method;
             currentPay = (method === 'cash' || method === 'qris') ? 'normal' : method;
             cart = cart.map(item => {
                 if (item.custom) return item;
@@ -2365,9 +2453,13 @@
                 `
                 <li><div><div class="cn">${item.name}</div><div class="cq">x${item.qty}</div></div><div class="cs">${fmt(item.subtotal)}</div></li>`
             ).join('');
+            if (!['cash','qris','gofood','shopeefood'].includes(currentPaymentMethod)) {
+                currentPaymentMethod = 'cash';
+                currentPay = 'normal';
+            }
             document.getElementById('co-total').textContent = fmt(total);
             document.getElementById('co-change').textContent = fmt(change);
-            document.getElementById('co-method').textContent = METHOD_LABELS[currentPay] ?? currentPay;
+            document.getElementById('co-method').textContent = METHOD_LABELS[currentPaymentMethod] ?? currentPaymentMethod;
             const coPayMethods = document.getElementById('co-pay-methods');
             if (coPayMethods) {
                 const methods = ['cash', 'qris', 'gofood', 'shopeefood'];
@@ -2378,7 +2470,7 @@
                     shopeefood: 'ShopeeFood'
                 };
                 coPayMethods.innerHTML = methods.map(m =>
-                    `<button class="pay-btn ${currentPay === m ? 'active' : ''}" onclick="setCheckoutPayment(this, '${m}')" data-method="${m}">${labels[m]}</button>`
+                    `<button class="pay-btn ${currentPaymentMethod === m ? 'active' : ''}" onclick="setCheckoutPayment(this, '${m}')" data-method="${m}">${labels[m]}</button>`
                 ).join('');
             }
             openModal('modal-checkout');
@@ -2398,7 +2490,7 @@
             try {
                 const formData = new FormData();
                 formData.append('_token', CSRF_TOKEN);
-                formData.append('payment_method', currentPay);
+                formData.append('payment_method', currentPaymentMethod);
                 formData.append('discount', disc);
                 formData.append('cart', JSON.stringify(cart));
                 const response = await fetch(CHECKOUT_URL, {
@@ -2415,7 +2507,7 @@
                 lastTrxSnapshot = {
                     id: newId,
                     created_at: nowStr(),
-                    payment_method: currentPay,
+                    payment_method: currentPaymentMethod,
                     sub_total: sub,
                     discount: disc,
                     total,
@@ -2490,7 +2582,7 @@
         function showReceipt(sub, disc, total, paid, change, id) {
             document.getElementById('rc-datetime').textContent = nowStr();
             document.getElementById('rc-trxno').textContent = trxNo(id);
-            document.getElementById('rc-method').textContent = METHOD_LABELS[currentPay] ?? currentPay;
+            document.getElementById('rc-method').textContent = METHOD_LABELS[currentPaymentMethod] ?? currentPaymentMethod;
             document.getElementById('rc-items').innerHTML = cart.map(item => `
                 <div class="rc-item-row">
                     <div>
@@ -2613,26 +2705,52 @@
                 'Mar': 2,
                 'Apr': 3,
                 'Mei': 4,
+                'Mei.': 4,
+                'Juni': 5,
                 'Jun': 5,
                 'Jul': 6,
                 'Agu': 7,
+                'Agus': 7,
                 'Sep': 8,
                 'Okt': 9,
                 'Nov': 10,
-                'Des': 11
+                'Des': 11,
+                'Desember': 11,
+                'Januari': 0,
+                'Februari': 1,
+                'Maret': 2,
+                'April': 3,
+                'Juli': 6,
+                'September': 8,
+                'Oktober': 9
             };
 
-            const parts = dateStr.trim().split(' ');
-            const day = parseInt(parts[0]);
-            const monthStr = parts[1];
-            const year = parseInt(parts[2]);
-            const time = parts[3].split(':');
-            const hour = parseInt(time[0]);
-            const minute = parseInt(time[1]);
+            const trimmed = String(dateStr || '').trim();
+            if (!trimmed) return new Date(NaN);
 
-            const month = months[monthStr] !== undefined ? months[monthStr] : 0;
+            const isoDate = new Date(trimmed);
+            if (!isNaN(isoDate.getTime())) return isoDate;
 
-            return new Date(year, month, day, hour, minute, 0);
+            const parts = trimmed.split(' ');
+            if (parts.length >= 4) {
+                const day = parseInt(parts[0], 10);
+                const monthStr = parts[1];
+                const year = parseInt(parts[2], 10);
+                const time = parts[3].split(':');
+                const hour = parseInt(time[0], 10);
+                const minute = parseInt(time[1] || '0', 10);
+                const month = months[monthStr] !== undefined ? months[monthStr] : 0;
+                return new Date(year, month, day, hour, minute, 0);
+            }
+
+            if (trimmed.includes('-')) {
+                const [datePart, timePart] = trimmed.split(' ');
+                const [year, month, day] = datePart.split('-').map(x => parseInt(x, 10));
+                const [hour, minute] = (timePart || '00:00').split(':').map(x => parseInt(x, 10));
+                return new Date(year, month - 1, day, hour, minute, 0);
+            }
+
+            return new Date(trimmed);
         }
 
         /**
@@ -2832,9 +2950,130 @@
         }
 
         // ── SHIFT STATE ──
-        const SHIFT_KEY = 'shift_state_' + TANGGAL_HARI;
+        const SHIFT_KEY = 'shift_state_' + TANGGAL_HARI + '_' + (KASIR_ID ?? 'guest');
+        const SHIFT_TIMES_KEY = 'shift_times_' + TANGGAL_HARI + '_' + (KASIR_ID ?? 'guest');
         let shiftState = localStorage.getItem(SHIFT_KEY) || 'belum';
-        // nilai: 'belum' | 'shift1_aktif' | 'shift1_selesai' | 'shift2_aktif' | 'shift2_selesai'
+        let shiftTimes = loadShiftTimes();
+
+        function normalizeShiftTimes(data) {
+            return {
+                shift1: {
+                    start: data?.shift1?.start || null,
+                    end: data?.shift1?.end || null,
+                },
+                shift2: {
+                    start: data?.shift2?.start || null,
+                    end: data?.shift2?.end || null,
+                },
+            };
+        }
+
+        function loadShiftTimes() {
+            const saved = localStorage.getItem(SHIFT_TIMES_KEY);
+            if (!saved) return normalizeShiftTimes({});
+            try {
+                return normalizeShiftTimes(JSON.parse(saved));
+            } catch {
+                return normalizeShiftTimes({});
+            }
+        }
+
+        function saveShiftTimes() {
+            localStorage.setItem(SHIFT_TIMES_KEY, JSON.stringify(shiftTimes));
+        }
+
+        function formatTimeLabel(isoString) {
+            if (!isoString) return '—';
+            const d = new Date(isoString);
+            return d.toLocaleTimeString('id-ID', {
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        function filterTransactionsForShift(transactions, shiftKey) {
+            const shift = shiftTimes[shiftKey];
+            if (!shift || !shift.start) return [];
+            const start = new Date(shift.start);
+            const end = shift.end ? new Date(shift.end) : new Date();
+            return transactions.filter(trx => {
+                const trxDate = parseTransactionDate(trx.created_at);
+                return trxDate >= start && trxDate <= end;
+            });
+        }
+
+        function normalizePaymentMethod(method) {
+            const m = String(method || '').trim().toLowerCase();
+            if (m === 'tunai') return 'cash';
+            if (m === 'go food' || m === 'gofood') return 'gofood';
+            if (m === 'shopee food' || m === 'shopeefood') return 'shopeefood';
+            if (m === 'qris') return 'qris';
+            if (m === 'cash') return 'cash';
+            return m;
+        }
+
+        function computeMethodTotals(transactions) {
+            return ['cash', 'qris', 'gofood', 'shopeefood'].reduce((acc, method) => {
+                acc[method] = transactions.reduce((sum, trx) => {
+                    const trxMethod = normalizePaymentMethod(trx.payment_method);
+                    return sum + ((trxMethod === method) ? (trx.total || 0) : 0);
+                }, 0);
+                return acc;
+            }, {
+                cash: 0,
+                qris: 0,
+                gofood: 0,
+                shopeefood: 0
+            });
+        }
+
+        function computeCurrentShiftMethodTotals() {
+            if (shiftState === 'shift1_aktif') {
+                return computeMethodTotals(filterTransactionsForShift(todayTrxList, 'shift1'));
+            }
+            if (shiftState === 'shift2_aktif') {
+                return computeMethodTotals(filterTransactionsForShift(todayTrxList, 'shift2'));
+            }
+            return {
+                cash: 0,
+                qris: 0,
+                gofood: 0,
+                shopeefood: 0
+            };
+        }
+
+        function computeShiftTotal(shiftKey) {
+            const shift = shiftTimes[shiftKey];
+            if (!shift || !shift.start) return 0;
+            const start = new Date(shift.start);
+            const end = shift.end ? new Date(shift.end) : new Date();
+            return todayTrxList.reduce((sum, trx) => {
+                const trxDate = parseTransactionDate(trx.created_at);
+                if (trxDate >= start && trxDate <= end) {
+                    return sum + (trx.total || 0);
+                }
+                return sum;
+            }, 0);
+        }
+
+        function buildShiftLabel() {
+            if (shiftState === 'belum') {
+                return 'Shift belum dimulai';
+            }
+            if (shiftState === 'shift1_aktif') {
+                return `Shift 1 aktif sejak ${formatTimeLabel(shiftTimes.shift1.start)}`;
+            }
+            if (shiftState === 'shift1_selesai') {
+                return `Shift 1 selesai ${formatTimeLabel(shiftTimes.shift1.end)} · Siap mulai Shift 2`;
+            }
+            if (shiftState === 'shift2_aktif') {
+                return `Shift 2 aktif sejak ${formatTimeLabel(shiftTimes.shift2.start)}`;
+            }
+            if (shiftState === 'shift2_selesai') {
+                return `Shift 2 selesai ${formatTimeLabel(shiftTimes.shift2.end)}`;
+            }
+            return 'Status shift tidak diketahui';
+        }
 
         const SHIFT_CONFIG = {
             belum: {
@@ -2873,6 +3112,7 @@
             btn.disabled = cfg.next === null;
             btn.style.opacity = cfg.next === null ? '0.6' : '1';
             btn.style.cursor = cfg.next === null ? 'not-allowed' : 'pointer';
+            renderShiftReport();
         }
 
         function handleShiftButton() {
@@ -2888,9 +3128,64 @@
 
             if (!confirm(confirmMsg[shiftState] || 'Lanjutkan?')) return;
 
-            shiftState = cfg.next;
+            const now = new Date().toISOString();
+            if (shiftState === 'belum') {
+                shiftTimes.shift1.start = now;
+                shiftState = 'shift1_aktif';
+            } else if (shiftState === 'shift1_aktif') {
+                shiftTimes.shift1.end = now;
+                shiftState = 'shift1_selesai';
+            } else if (shiftState === 'shift1_selesai') {
+                shiftTimes.shift2.start = now;
+                shiftState = 'shift2_aktif';
+            } else if (shiftState === 'shift2_aktif') {
+                shiftTimes.shift2.end = now;
+                shiftState = 'shift2_selesai';
+            }
+
             localStorage.setItem(SHIFT_KEY, shiftState);
+            saveShiftTimes();
             renderShiftButton();
+        }
+
+        function resetShiftReportData() {
+            if (!confirm('Reset ulang laporan shift untuk demo?')) return;
+            shiftState = 'belum';
+            shiftTimes = normalizeShiftTimes({});
+            localStorage.removeItem(SHIFT_KEY);
+            localStorage.removeItem(SHIFT_TIMES_KEY);
+            renderShiftButton();
+            renderShiftReport();
+        }
+
+        function renderShiftReport() {
+            const totals = computeCurrentShiftMethodTotals();
+            document.getElementById('shift-cash').textContent = fmt(totals.cash);
+            document.getElementById('shift-qris').textContent = fmt(totals.qris);
+            document.getElementById('shift-gofood').textContent = fmt(totals.gofood);
+            document.getElementById('shift-shopeefood').textContent = fmt(totals.shopeefood);
+            document.getElementById('shift1-total').textContent = fmt(computeShiftTotal('shift1'));
+            document.getElementById('shift2-total').textContent = fmt(computeShiftTotal('shift2'));
+            document.getElementById('shift-current').textContent = buildShiftLabel();
+        }
+
+        function toggleShiftReport() {
+            const el = document.getElementById('shift-report');
+            if (!el) return;
+            const isOpen = el.style.display !== 'none';
+            el.style.display = isOpen ? 'none' : 'grid';
+            if (!isOpen) renderShiftReport();
+        }
+
+        function updateStats() {
+            const totalSales = todayTrxList.reduce((s, t) => s + (t.total || 0), 0);
+            const totalTrx = todayTrxList.length;
+            const totalItems = todayTrxList.reduce((s, t) =>
+                s + (t.items || []).reduce((si, i) => si + (i.qty || 0), 0), 0);
+            document.getElementById('stat-sales').textContent = fmt(totalSales);
+            document.getElementById('stat-trx').textContent = totalTrx;
+            document.getElementById('stat-items').textContent = totalItems;
+            renderShiftReport();
         }
 
         // Init shift button saat halaman dimuat
