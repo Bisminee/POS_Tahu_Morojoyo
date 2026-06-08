@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Harga;
 use App\Models\Menu;
 use App\Models\Shift;
 use App\Models\StokPcs;
@@ -197,28 +196,24 @@ class CashierController extends Controller
             $menu = Menu::with(['menuDetails.pcsTahu', 'hargas'])->find($menuId);
             if (!$menu) continue;
 
-            $paymentMethodMap = [
-                'normal'     => ['take_away_cash', 'take_away_qris'],
-                'cash'       => ['take_away_cash'],
-                'qris'       => ['take_away_qris'],
-                'gofood'     => ['gofood'],
-                'shopeefood' => ['shopeefood'],
-            ];
-
-            $targetMethods = $paymentMethodMap[$data['payment_method']]
-                ?? $paymentMethodMap['normal'];
-
-            $hargaModel = $menu->hargas
-                ->whereIn('metode_payment', $targetMethods)
-                ->first();
+            // Struktur tabel hargas yang baru sudah tidak memakai kolom
+            // metode_payment dan harga. Sekarang 1 menu memiliki 1 baris harga
+            // dengan kolom: harga_normal, harga_gofood, harga_shopeefood.
+            $hargaModel = $menu->hargas->first();
 
             if (!$hargaModel) {
-                $hargaModel = $menu->hargas->first();
+                continue;
             }
 
-            if (!$hargaModel) continue;
+            $unitPrice = match ($data['payment_method']) {
+                'gofood'     => floatval($hargaModel->harga_gofood ?? 0),
+                'shopeefood' => floatval($hargaModel->harga_shopeefood ?? 0),
+                default      => floatval($hargaModel->harga_normal ?? 0),
+            };
 
-            $unitPrice = floatval($hargaModel->harga ?? 0);
+            if ($unitPrice <= 0) {
+                continue;
+            }
 
             $subtotal = $unitPrice * $quantity;
 
