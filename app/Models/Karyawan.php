@@ -6,13 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Karyawan extends Model
 {
-    protected $table = 'karyawans';
-
     protected $primaryKey = 'idKaryawan';
-
-    public $incrementing = true;
-
-    protected $keyType = 'int';
 
     protected $fillable = [
         'nama',
@@ -25,23 +19,17 @@ class Karyawan extends Model
     ];
 
     protected $casts = [
-        'face_descriptor' => 'array',
         'is_active' => 'boolean',
     ];
-
-    public function user()
-    {
-        return $this->belongsTo(User::class, 'user_id');
-    }
 
     public function cabang()
     {
         return $this->belongsTo(Cabang::class, 'cabang_id', 'idCabang');
     }
 
-    public function shifts()
+    public function user()
     {
-        return $this->hasMany(Shift::class, 'karyawan_id', 'idKaryawan');
+        return $this->belongsTo(User::class, 'user_id');
     }
 
     public function attendances()

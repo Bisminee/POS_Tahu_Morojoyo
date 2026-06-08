@@ -1474,6 +1474,17 @@
                         👤 Absensi
                     </a>
 
+                    <form action="{{ route('attendance.clock-out') }}" method="POST"
+    onsubmit="return confirm('Yakin ingin menyelesaikan shift dan mencatat absen pulang?')">
+    @csrf
+    <button type="submit"
+        style="display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:99px;
+        background:#fef2f2;color:#b91c1c;border:1px solid #fecaca;font-size:12px;
+        font-weight:600;cursor:pointer;font-family:inherit">
+        ⏱ Selesai Shift
+    </button>
+</form>
+
                     <form action="{{ route('logout') }}" method="POST">
                         @csrf
                         <button type="submit" class="btn-logout">Keluar</button>
