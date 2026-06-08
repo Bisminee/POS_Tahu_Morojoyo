@@ -190,32 +190,4 @@ class MenuResource extends Resource
                 'hargas',
             ]);
     }
-
-    public static function canViewAny(): bool
-    {
-        $user = Auth::user();
-
-        return $user && ! $user->isKasir();
-    }
-
-    public static function canCreate(): bool
-    {
-        $user = Auth::user();
-
-        return $user && ! $user->isKasir();
-    }
-
-    public static function canEdit($record): bool
-    {
-        $user = Auth::user();
-
-        return $user && ! $user->isKasir();
-    }
-
-    public static function canDelete($record): bool
-    {
-        $user = Auth::user();
-
-        return $user && ! $user->isKasir();
-    }
 }
