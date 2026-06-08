@@ -295,6 +295,14 @@
         $faceDescriptorRaw = $shift?->karyawan?->face_descriptor ?? null;
     @endphp
 
+    <pre>
+shift: {{ $shift?->id }}
+karyawan: {{ $shift?->karyawan?->nama }}
+face_descriptor: {{ $faceDescriptorRaw ? 'ADA' : 'NULL' }}
+cabang_id shift: {{ $shift?->cabang_id }}
+cabang_id user: {{ auth()->user()->cabang_id }}
+</pre>
+
     <div class="abs-wrap">
         <div class="abs-card">
 

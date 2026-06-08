@@ -5,6 +5,9 @@ use App\Http\Controllers\CashierController;
 use App\Http\Controllers\ShiftController;
 use App\Http\Controllers\GuestController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Middleware\ValidateShiftSession;
+use App\Http\Controllers\Owner\OwnerSheetsController;
+
 
 Route::get('/', [GuestController::class, 'home'])->name('home');
 Route::get('/menu', [GuestController::class, 'menu'])->name('menu');
@@ -18,12 +21,15 @@ Route::middleware('guest')->group(function () {
 });
 
 // ── Auth ────────────────────────────────────────────────────────────────────
-Route::middleware(['auth'])->group(function () {
+Route::middleware(['auth', ValidateShiftSession::class])->group(function () {
 
     Route::post('/logout', [CashierController::class, 'logout'])->name('logout');
 
     // ── Absensi (kasir) ──────────────────────────────────────────────────────
     Route::get('/absensi', [AttendanceController::class, 'index'])->name('attendance.index');
+    Route::get('/absensi/reset', [AttendanceController::class, 'resetAndGoToAbsensi'])
+        ->name('attendance.reset')
+        ->middleware('auth');
     Route::post('/absensi/pilih-shift', [AttendanceController::class, 'selectShift'])->name('attendance.select-shift');
     Route::post('/absensi/clock-in', [AttendanceController::class, 'clockIn'])->name('attendance.clock-in');
     Route::post('/absensi/clock-out', [AttendanceController::class, 'clockOut'])->name('attendance.clock-out');
@@ -44,7 +50,20 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/cashier/sync-sheets', [CashierController::class, 'syncToSheets'])->name('cashier.sync-sheets');
     Route::post('/cashier/create-spreadsheet', [CashierController::class, 'createSpreadsheet'])->name('cashier.create-spreadsheet');
 
+
     // ── Owner ────────────────────────────────────────────────────────────────
+
+    Route::prefix('owner')->name('owner.')->middleware(['auth'])->group(function () {
+
+        // ── Google Sheets ──
+        Route::get('sheets',           [OwnerSheetsController::class, 'index'])->name('sheets.index');
+        // GET untuk menampilkan form create
+        Route::get('sheets/create',    [OwnerSheetsController::class, 'create'])->name('sheets.create');
+        // POST untuk handle buat spreadsheet baru (AJAX dari form)
+        Route::post('sheets/store',    [OwnerSheetsController::class, 'createSpreadsheet'])->name('sheets.store');
+        // POST untuk sync ke sheets
+        Route::post('sheets/sync',     [OwnerSheetsController::class, 'sync'])->name('sheets.sync');
+    });
 
     // Dashboard absensi
     Route::get('/owner/absensi', [AttendanceController::class, 'ownerDashboard'])->name('attendance.owner');

@@ -20,31 +20,35 @@ class AttendanceController extends Controller
     public function index()
     {
         $user = Auth::user();
-
         $selectedShiftId = session('selected_shift_id');
         $shift = null;
-
-        // Ambil cabang login
         $cabangId = $user->cabang_id;
 
-        // Ambil shift hari ini sesuai cabang
-        $todayShifts = Shift::with([
-            'karyawan',
-            'cabang',
-        ])
+        // ✅ FILTER PENTING: Hanya ambil shift yang punya karyawan dengan user_id = user login
+        // Sebelumnya: WHERE cabang_id (ambil semua shift cabang, padahal banyak karyawan)
+        // Sesudah: JOIN dengan karyawan & user untuk filter per user
+
+        $todayShifts = Shift::with(['karyawan', 'cabang'])
             ->where('cabang_id', $cabangId)
             ->whereDate('tanggal', now()->toDateString())
+            ->whereHas('karyawan') // pastikan shift punya karyawan
             ->get()
             ->filter(fn($s) => $this->isShiftActive($s));
 
         // Kalau sudah pilih shift
         if ($selectedShiftId) {
-            $shift = Shift::with([
-                'karyawan',
-                'cabang',
-            ])->find($selectedShiftId);
+            $shift = Shift::with(['karyawan', 'cabang'])->find($selectedShiftId);
 
             if (!$shift) {
+                session()->forget('selected_shift_id');
+                $shift = null;
+            } elseif (!$this->isShiftActive($shift)) {
+                session()->forget('selected_shift_id');
+                $shift = null;
+            } elseif (!$shift->karyawan) {
+                session()->forget('selected_shift_id');
+                $shift = null;
+            } elseif ($shift->cabang_id !== $user->cabang_id) {
                 session()->forget('selected_shift_id');
                 $shift = null;
             }
@@ -59,26 +63,35 @@ class AttendanceController extends Controller
         ]);
     }
 
-    /**
-     * Pilih shift dari form dropdown
-     */
+    public function resetAndGoToAbsensi()
+    {
+        session()->forget('selected_shift_id');
+        session()->save();
+        return redirect()->route('attendance.index');
+    }
+
     public function selectShift(Request $request)
     {
         $request->validate(['shift_id' => 'required|exists:shifts,id']);
 
         $shift = Shift::with(['karyawan', 'cabang'])->find($request->shift_id);
 
-        if (!$shift) {
+        if (!$shift || !$shift->karyawan) {
             return redirect()->route('attendance.index')
-                ->withErrors(['shift_id' => 'Shift tidak ditemukan']);
+                ->withErrors(['shift_id' => 'Shift tidak valid.']);
+        }
+
+        if ($shift->cabang_id !== auth()->user()->cabang_id) {
+            return redirect()->route('attendance.index')
+                ->withErrors(['shift_id' => 'Shift bukan milik cabang Anda.']);
         }
 
         session(['selected_shift_id' => $shift->id]);
-        session()->save();
+        session()->save(); // ← pastikan ada ini
 
-        return redirect()->route('attendance.index')
-            ->with('success', 'Shift dipilih. Silakan lanjutkan verifikasi wajah.');
+        return redirect()->route('attendance.index');
     }
+
 
     public function clockIn(Request $request): JsonResponse
     {
@@ -93,40 +106,70 @@ class AttendanceController extends Controller
         $shift   = Shift::with('karyawan')->find($shiftId);
 
         if (!$shift) {
-            return response()->json(['success' => false, 'message' => 'Shift tidak ditemukan. Pilih shift dulu.']);
+            return response()->json([
+                'success' => false,
+                'message' => 'Shift tidak ditemukan. Pilih shift dulu.'
+            ]);
         }
 
         $karyawan = $shift->karyawan;
 
-        // ── VALIDASI FACE DESCRIPTOR ─────────────────────────────────────────
-        if (!$karyawan->face_descriptor) {
-            return response()->json(['success' => false, 'message' => 'Karyawan belum mendaftarkan wajah.']);
+        // ✅ VALIDASI KETAT:
+        // Pastikan karyawan di shift = user yang sedang login
+        if (!$karyawan) {
+            session()->forget('selected_shift_id');
+            return response()->json([
+                'success' => false,
+                'message' => 'Data karyawan tidak ditemukan.',
+            ], 403);
         }
 
-        $incomingDescriptor = $request->input('face_descriptor'); // array[128]
+        if ($shift->cabang_id !== $user->cabang_id) {
+            session()->forget('selected_shift_id');
+            return response()->json([
+                'success' => false,
+                'message' => 'Shift ini bukan milik cabang Anda.',
+            ], 403);
+        }
+
+        // ── VALIDASI FACE DESCRIPTOR ─────────────────────────────────────────
+        if (!$karyawan->face_descriptor) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Karyawan belum mendaftarkan wajah.'
+            ]);
+        }
+
+        $incomingDescriptor = $request->input('face_descriptor');
         $frontendDistance   = (float) $request->input('face_distance', 1.0);
         $THRESHOLD          = 0.40;
 
         if (!is_array($incomingDescriptor) || count($incomingDescriptor) !== 128) {
-            return response()->json(['success' => false, 'message' => 'Data wajah tidak valid.']);
+            return response()->json([
+                'success' => false,
+                'message' => 'Data wajah tidak valid.'
+            ]);
         }
 
-        // Decode descriptor terdaftar
         $registeredRaw = is_string($karyawan->face_descriptor)
             ? json_decode($karyawan->face_descriptor, true)
             : (array) $karyawan->face_descriptor;
 
         if (!is_array($registeredRaw) || count($registeredRaw) !== 128) {
-            return response()->json(['success' => false, 'message' => 'Data wajah karyawan rusak. Hubungi owner.']);
+            return response()->json([
+                'success' => false,
+                'message' => 'Data wajah karyawan rusak. Hubungi owner.'
+            ]);
         }
 
-        // ── DOUBLE-CHECK DISTANCE DI SERVER ──────────────────────────────────
         $distance = $this->euclideanDistance(
             array_values($incomingDescriptor),
             array_values($registeredRaw)
         );
 
         Log::info('Face verification', [
+            'user_id'           => $user->id,
+            'karyawan_id'       => $karyawan->idKaryawan,
             'karyawan'          => $karyawan->nama,
             'distance_server'   => round($distance, 4),
             'distance_frontend' => round($frontendDistance, 4),
@@ -227,7 +270,7 @@ class AttendanceController extends Controller
 
     public function verified(Request $request)
     {
-        Log::info('✅ VERIFIED ROUTE HIT - Redirecting to cashier.pos');
+        Log::info('VERIFIED ROUTE HIT - Redirecting to cashier.pos');
         return redirect()->route('cashier.pos');
     }
 
@@ -261,6 +304,10 @@ class AttendanceController extends Controller
             'jenis_keluar' => $request->input('jenis_keluar', 'manual'),
             'catatan' => $request->input('catatan'),
         ]);
+
+        // 👇 TAMBAHAN: Clear session shift
+        session()->forget('selected_shift_id');
+        session()->save();
 
         return response()->json([
             'success' => true,

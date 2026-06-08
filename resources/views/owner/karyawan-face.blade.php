@@ -259,7 +259,7 @@
                 if (det) {
                     lastDescriptor = Array.from(det.descriptor);
                     guide.className = 'face-guide detected';
-                    camStatus.textContent = '✓ Wajah terdeteksi — siap disimpan';
+                    camStatus.textContent = 'Wajah terdeteksi — siap disimpan';
                     btn.disabled = false;
                 } else {
                     lastDescriptor = null;
@@ -301,17 +301,17 @@
                 statusBox.className = 'status ' + (data.success ? 'status-ok' : 'status-err');
                 statusBox.textContent = data.message;
                 statusBox.style.display = '';
-                if (data.success) btn.textContent = '✅ Tersimpan';
+                if (data.success) btn.textContent = 'Tersimpan';
                 else {
                     btn.disabled = false;
-                    btn.textContent = '📸 Ambil & Simpan Face ID';
+                    btn.textContent = 'Ambil & Simpan Face ID';
                 }
             } catch (e) {
                 statusBox.className = 'status status-err';
                 statusBox.textContent = 'Gagal koneksi. Coba lagi.';
                 statusBox.style.display = '';
                 btn.disabled = false;
-                btn.textContent = '📸 Ambil & Simpan Face ID';
+                btn.textContent = 'Ambil & Simpan Face ID';
             }
         }
 
