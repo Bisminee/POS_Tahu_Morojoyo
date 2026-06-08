@@ -114,5 +114,17 @@ return [
         'address' => env('MAIL_FROM_ADDRESS', 'hello@example.com'),
         'name' => env('MAIL_FROM_NAME', env('APP_NAME', 'Laravel')),
     ],
+    'smtp' => [
+    'transport' => 'smtp',
+    'host' => env('MAIL_HOST', 'smtp.mailgun.org'),
+    // ... baris lainnya tetap
+    'stream' => [
+        'ssl' => [
+            'allow_self_signed' => true,
+            'verify_peer' => false,
+            'verify_peer_name' => false,
+        ],
+    ],
+],
 
 ];
