@@ -32,7 +32,6 @@ class User extends Authenticatable implements FilamentUser
         return in_array($this->role, [
             'owner',
             'manager',
-            'kasir',
         ]);
     }
 
