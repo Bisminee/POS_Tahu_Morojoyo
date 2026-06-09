@@ -100,17 +100,16 @@
 
   <!-- NAVBAR -->
   <nav class="sticky top-0 z-50 bg-white border-b-4 border-brand-red shadow-md">
-    <div class="max-w-6xl mx-auto px-6 py-3 flex items-center justify-between">
+    <div class="max-w-6xl mx-auto px-6 py-5 flex items-center justify-between">
       <a href="#home" class="flex items-center gap-2 group">
-        <div class="bg-brand-red rounded-xl px-4 py-2 group-hover:bg-brand-darkred transition-colors">
-          <p class="text-brand-yellow text-[9px] font-display tracking-[0.25em] text-center leading-none">· TAHU BAKSO ·</p>
-          <p class="text-brand-yellow font-display text-2xl leading-none tracking-wider">MOROJOYO</p>
-        </div>
+          @if(isset($identitas) && $identitas->logo)
+            <img src="{{ asset('storage/' . $identitas->logo) }}" alt="{{ $identitas->nama_brand ?? 'Logo' }}"class="h-10 w-auto">
+          @endif
       </a>
       <ul class="hidden md:flex items-center gap-8">
-        <li><a href="{{ route('home') }}" class="nav-link font-body text-gray-600 font-semibold text-sm tracking-wide hover:text-brand-red transition-colors">Home</a></li>
+        <li><a href="{{ route('home') }}" class="nav-link font-body text-gray-600 font-bold text-sm tracking-wide hover:text-brand-red transition-colors">Home</a></li>
         <li><a href="{{ route('menu') }}" class="nav-link font-body text-gray-600 font-semibold text-sm tracking-wide hover:text-brand-red transition-colors">Menu</a></li>
-        <li><a href="{{ route('contact') }}" class="nav-link active font-body text-gray-800 font-bold text-sm tracking-wide hover:text-brand-red transition-colors">Contact</a></li>
+        <li><a href="{{ route('contact') }}" class="nav-link active font-body text-gray-800 font-semibold text-sm tracking-wide hover:text-brand-red transition-colors">Contact</a></li>
         <li><a href="{{ route('about') }}" class="nav-link font-body text-gray-600 font-semibold text-sm tracking-wide hover:text-brand-red transition-colors">Location</a></li>
         <li>
           <a href="#menu" class="bg-brand-red text-white font-bold text-sm px-5 py-2 rounded-full hover:bg-brand-darkred transition-colors shadow-md">
@@ -128,130 +127,209 @@
       </button>
     </div>
     <div x-show="menuOpen" x-transition class="md:hidden bg-white border-t border-gray-100 px-6 py-4 flex flex-col gap-4">
-      <a href="#home" class="font-bold text-brand-red text-sm">Home</a>
-      <a href="#menu" class="font-semibold text-gray-700 text-sm">Menu</a>
-      <a href="#contact" class="font-semibold text-gray-700 text-sm">Contact</a>
-      <a href="#location" class="font-semibold text-gray-700 text-sm">Location</a>
-      <a href="#menu" class="bg-brand-red text-white font-bold text-sm px-5 py-2 rounded-full text-center">Pesan Sekarang</a>
+      <a href="{{ route('home') }}" class="font-bold text-brand-red text-sm">Home</a>
+      <a href="{{ route('menu') }}" class="font-semibold text-gray-700 text-sm">Menu</a>
+      <a href="{{ route('contact') }}" class="font-semibold text-gray-700 text-sm">Contact</a>
+      <a href="{{ route('about') }}" class="font-semibold text-gray-700 text-sm">Location</a>
+      <a href="" class="bg-brand-red text-white font-bold text-sm px-5 py-2 rounded-full text-center">Pesan Sekarang</a>
     </div>
   </nav>
 
 <!-- CONTACT -->
-  <section id="contact" class="bg-white py-20">
+<section id="contact" class="bg-brand-cream py-20">
     <div class="max-w-6xl mx-auto px-6">
-      <div class="text-center mb-14">
-        <span class="text-brand-red font-body font-bold text-sm tracking-widest uppercase">Hubungi Kami</span>
-        <h2 class="font-display text-brand-red text-5xl mt-2">KONTAK</h2>
-        <div class="w-16 h-1 bg-brand-yellow mx-auto mt-3 rounded-full"></div>
-      </div>
-      <div class="grid md:grid-cols-2 gap-12 items-start">
-        <div class="space-y-6">
-          <div class="flex items-start gap-4">
-            <div class="w-12 h-12 bg-brand-red rounded-xl flex items-center justify-center flex-shrink-0">
-              <span class="text-xl"><img src="{{ asset('img/wa.png') }}" class="w-full h-5"></span>
-            </div>
-            <div>
-              <h4 class="font-display text-brand-red text-xl">WHATSAPP</h4>
-              <p class="text-gray-600 font-body">+62 812-XXXX-XXXX</p>
-              <a href="https://wa.me/62812" class="text-brand-red text-sm font-bold hover:underline">Chat Sekarang →</a>
-            </div>
-          </div>
-          <div class="flex items-start gap-4">
-            <div class="w-12 h-12 bg-brand-red rounded-xl flex items-center justify-center flex-shrink-0">
-              <span class="text-xl"><img src="{{ asset('img/ig.png') }}" class="w-full h-5"></span>
-            </div>
-            <div>
-              <h4 class="font-display text-brand-red text-xl">INSTAGRAM</h4>
-              <p class="text-gray-600 font-body">@tahubakso.morojoyo</p>
-              <a href="#" class="text-brand-red text-sm font-bold hover:underline">Follow Kami →</a>
-            </div>
-          </div>
-          <div class="flex items-start gap-4">
-            <div class="w-12 h-12 bg-brand-red rounded-xl flex items-center justify-center flex-shrink-0">
-              <span class="text-xl"><img src="{{ asset('img/jam.png') }}" class="w-full h-5"></span>
-            </div>
-            <div>
-              <h4 class="font-display text-brand-red text-xl">JAM BUKA</h4>
-              <p class="text-gray-600 font-body">Senin – Sabtu: 07.00 – 18.00 WIB</p>
-              <p class="text-gray-600 font-body">Minggu: 08.00 – 15.00 WIB</p>
-            </div>
-          </div>
+        <div class="text-center mb-14">
+            <span class="text-brand-red font-body font-bold text-sm tracking-widest uppercase">Hubungi Kami</span>
+            <h2 class="font-display text-brand-red text-5xl mt-2">KONTAK</h2>
+            <div class="w-16 h-1 bg-brand-yellow mx-auto mt-3 rounded-full"></div>
         </div>
-        <div class="bg-brand-cream rounded-3xl p-8">
-          <h3 class="font-display text-brand-red text-2xl mb-6">KIRIM PESAN</h3>
-          <div class="space-y-4">
-            <input type="text" placeholder="Nama Anda" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 font-body text-sm focus:outline-none focus:border-brand-red transition"/>
-            <input type="tel" placeholder="Nomor WhatsApp" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 font-body text-sm focus:outline-none focus:border-brand-red transition"/>
-            <textarea rows="4" placeholder="Pesan atau pertanyaan Anda..." class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 font-body text-sm focus:outline-none focus:border-brand-red transition resize-none"></textarea>
-            <button class="w-full bg-brand-red text-white font-display text-xl py-3 rounded-xl hover:bg-brand-darkred transition shadow-lg">
-              KIRIM PESAN
-            </button>
-          </div>
+
+        <div class="grid md:grid-cols-2 gap-12 items-start">
+
+            {{-- Info Kontak --}}
+            <div class="space-y-6">
+                {{-- WhatsApp --}}
+                @if(isset($identitas) && $identitas->nomor_whatsapp)
+                <div class="flex items-start gap-4">
+                    <div class="w-12 h-12 bg-brand-red rounded-xl flex items-center justify-center flex-shrink-0">
+                        <img src="{{ asset('img/wa.png') }}" class="w-6 h-6 object-contain">
+                    </div>
+                    <div>
+                        <h4 class="font-display text-brand-red text-xl">WHATSAPP</h4>
+                        <p class="text-gray-600 font-body">{{ $identitas->nomor_whatsapp }}</p>
+                        @if($identitas->link_wa)
+                            <a href="{{ $identitas->link_wa }}" target="_blank"
+                               class="text-brand-red text-sm font-bold hover:underline">
+                                Chat Sekarang →
+                            </a>
+                        @endif
+                    </div>
+                </div>
+                @endif
+
+                {{-- Instagram --}}
+                @if(isset($identitas) && $identitas->nama_ig)
+                <div class="flex items-start gap-4">
+                    <div class="w-12 h-12 bg-brand-red rounded-xl flex items-center justify-center flex-shrink-0">
+                        <img src="{{ asset('img/ig.png') }}" class="w-6 h-6 object-contain">
+                    </div>
+                    <div>
+                        <h4 class="font-display text-brand-red text-xl">INSTAGRAM</h4>
+                        <p class="text-gray-600 font-body">{{ $identitas->nama_ig }}</p>
+                        @if($identitas->link_ig)
+                            <a href="{{ $identitas->link_ig }}" target="_blank"
+                               class="text-brand-red text-sm font-bold hover:underline">
+                                Follow Kami →
+                            </a>
+                        @endif
+                    </div>
+                </div>
+                @endif
+
+                {{-- Jam Buka --}}
+                @if(isset($identitas) && $identitas->jam_buka)
+                <div class="flex items-start gap-4">
+                    <div class="w-12 h-12 bg-brand-red rounded-xl flex items-center justify-center flex-shrink-0">
+                        <img src="{{ asset('img/jam.png') }}" class="w-6 h-6 object-contain">
+                    </div>
+                    <div>
+                        <h4 class="font-display text-brand-red text-xl">JAM BUKA</h4>
+                        <p class="text-gray-600 font-body">
+                            Setiap Hari: {{ $identitas->jam_buka }} – {{ $identitas->jam_tutup }} WIB
+                        </p>
+                    </div>
+                </div>
+                @endif
+            </div>
+
+            {{-- Form Kirim Pesan → WA --}}
+            <div class="bg-white rounded-3xl p-8 shadow-md"
+                 x-data="{ nama: '', nomor: '', pesan: '' }">
+                <h3 class="font-display text-brand-red text-2xl mb-6">KIRIM PESAN</h3>
+                <div class="space-y-4">
+                    <input
+                        type="text"
+                        placeholder="Nama Anda"
+                        x-model="nama"
+                        class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 font-body text-sm focus:outline-none focus:border-brand-red transition"/>
+
+                    <input
+                        type="tel"
+                        placeholder="Nomor WhatsApp Anda"
+                        x-model="nomor"
+                        class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 font-body text-sm focus:outline-none focus:border-brand-red transition"/>
+
+                    <textarea
+                        rows="4"
+                        placeholder="Pesan atau pertanyaan Anda..."
+                        x-model="pesan"
+                        class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 font-body text-sm focus:outline-none focus:border-brand-red transition resize-none">
+                    </textarea>
+
+                    <button
+                        @click="
+                            if (!nama || !nomor || !pesan) {
+                                alert('Mohon isi semua field terlebih dahulu.');
+                                return;
+                            }
+                            const teks = `Halo Tahu Bakso Morojoyo! 👋\n\nNama: ${nama}\nNomor: ${nomor}\n\nPesan:\n${pesan}`;
+                            const waNumber = '{{ isset($identitas) && $identitas->nomor_whatsapp ? preg_replace("/[^0-9]/", "", $identitas->nomor_whatsapp) : "" }}';
+                            const url = 'https://wa.me/' + waNumber + '?text=' + encodeURIComponent(teks);
+                            window.open(url, '_blank');
+                        "
+                        class="w-full bg-brand-red text-white font-display text-xl py-3 rounded-xl hover:bg-brand-darkred transition shadow-lg">
+                        KIRIM PESAN VIA WHATSAPP
+                    </button>
+                </div>
+            </div>
+
         </div>
-      </div>
     </div>
-  </section>
+</section>
 
   
   <!-- FOOTER -->
   <footer class="bg-white border-t-4 border-brand-red pt-12 pb-0">
-    <div class="max-w-6xl mx-auto px-6">
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-8 pb-10">
- 
-        <!-- Logo + desc -->
-        <div class="col-span-2 md:col-span-1">
-          <div class="rounded-xl px-4 py-2 inline-block mb-4">
-            <img src="{{ asset('img/logo.png') }}" class="w-full h-10">
+      <div class="max-w-6xl mx-auto px-6">
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-8 pb-10">
+
+              <!-- Logo + desc -->
+              <div class="col-span-2 md:col-span-1">
+                  <div class="rounded-xl inline-block mb-4">
+                      @if(isset($identitas) && $identitas->logo)
+                          <img src="{{ asset('storage/' . $identitas->logo) }}"
+                              alt="{{ $identitas->nama_brand ?? 'Logo' }}"
+                              class="h-10 w-auto">
+                      @endif
+                  </div>
+                  @if(isset($identitas) && $identitas->deskripsi_brand)
+                      <p class="font-body text-gray-500 text-sm leading-relaxed">
+                          {{ $identitas->deskripsi_brand }}
+                      </p>
+                  @endif
+              </div>
+
+              <!-- Navigation -->
+              <div>
+                  <h4 class="font-display text-brand-red text-xl mb-4">Navigation</h4>
+                  <ul class="space-y-2">
+                      <li><a href="{{ route('home') }}"    class="font-body text-gray-500 text-sm hover:text-brand-red transition">Home</a></li>
+                      <li><a href="{{ route('menu') }}"    class="font-body text-gray-500 text-sm hover:text-brand-red transition">Menu</a></li>
+                      <li><a href="{{ route('contact') }}" class="font-body text-gray-500 text-sm hover:text-brand-red transition">Contact</a></li>
+                      <li><a href="{{ route('about') }}"   class="font-body text-gray-500 text-sm hover:text-brand-red transition">Location</a></li>
+                  </ul>
+              </div>
+
+              <!-- Get in Touch -->
+              <div>
+                  <h4 class="font-display text-brand-red text-xl mb-4">Get in Touch</h4>
+                  <ul class="space-y-2">
+                      @if(isset($identitas) && $identitas->link_ig)
+                          <li>
+                              <a href="{{ $identitas->link_ig }}" target="_blank"
+                                class="font-body text-gray-500 text-sm hover:text-brand-red transition flex items-center gap-2">
+                                  <img src="{{ asset('img/ig.png') }}" class="h-5 w-5 object-contain">
+                                  {{ $identitas->nama_ig ?? '@tahubakso.morojoyo' }}
+                              </a>
+                          </li>
+                      @endif
+                      @if(isset($identitas) && $identitas->link_wa)
+                          <li>
+                              <a href="{{ $identitas->link_wa }}" target="_blank"
+                                class="font-body text-gray-500 text-sm hover:text-brand-red transition flex items-center gap-2">
+                                  <img src="{{ asset('img/wa.png') }}" class="h-5 w-5 object-contain">
+                                  {{ $identitas->nomor_whatsapp ?? '' }}
+                              </a>
+                          </li>
+                      @endif
+                  </ul>
+              </div>
+
+              <!-- Jam Buka -->
+              <div>
+                  <h4 class="font-display text-brand-red text-xl mb-4">Jam Buka</h4>
+                  @if(isset($identitas))
+                      <ul class="space-y-1">
+                          <li class="font-body text-gray-500 text-sm">Setiap Hari</li>
+                          <li class="font-body text-brand-red text-sm font-bold">
+                              {{ $identitas->jam_buka ?? '10:00' }} – {{ $identitas->jam_tutup ?? '21:00' }} WIB
+                          </li>
+                      </ul>
+                  @endif
+              </div>
+
           </div>
-          <p class="font-body text-gray-500 text-sm leading-relaxed">
-            Jl MT. Haryono No.43,<br/>
-            Ketawanggede, Kec. Lowokwaru,<br/>
-            Kota Malang, Jawa Timur 65145
-          </p>
-        </div>
- 
-        <!-- Navigation -->
-        <div>
-          <h4 class="font-display text-brand-red text-xl mb-4">Navigation</h4>
-          <ul class="space-y-2">
-            <li><a href="{{ route('home') }}" class="font-body text-gray-500 text-sm hover:text-brand-red transition">Home</a></li>
-            <li><a href="{{ route('menu') }}" class="font-body text-gray-500 text-sm hover:text-brand-red transition">Menu</a></li>
-            <li><a href="{{ route('contact') }}" class="font-body text-gray-500 text-sm hover:text-brand-red transition">Contact</a></li>
-            <li><a href="{{ route('about') }}" class="font-body text-gray-500 text-sm hover:text-brand-red transition">Location</a></li>
-          </ul>
-        </div>
- 
-        <!-- Get in Touch -->
-        <div>
-          <h4 class="font-display text-brand-red text-xl mb-4">Get in Touch</h4>
-          <ul class="space-y-2">
-            <li><a href="https://instagram.com" class="font-body text-gray-500 text-sm hover:text-brand-red transition flex items-center gap-2"><span><img src="{{ asset('img/ig.png') }}" class="w-full h-5"></span> @tahubakso.morojoyo</a></li>
-            <li><a href="https://wa.me/62812" class="font-body text-gray-500 text-sm hover:text-brand-red transition flex items-center gap-2"><span><img src="{{ asset('img/wa.png') }}" class="w-full h-5"></span> +62 812-XXXX-XXXX</a></li>
-            <li><a href="https://maps.google.com" class="font-body text-gray-500 text-sm hover:text-brand-red transition flex items-center gap-2"><span><img src="{{ asset('img/gmap.png') }}" class="w-full h-5"></span> Google Maps</a></li>
-          </ul>
-        </div>
- 
-        <!-- Jam Buka -->
-        <div>
-          <h4 class="font-display text-brand-red text-xl mb-4">Jam Buka</h4>
-          <ul class="space-y-2">
-            <li class="font-body text-gray-500 text-sm">Senin – Sabtu</li>
-            <li class="font-body text-brand-red text-sm font-bold">07.00 – 18.00 WIB</li>
-            <li class="font-body text-gray-500 text-sm mt-2">Minggu</li>
-            <li class="font-body text-brand-red text-sm font-bold">08.00 – 15.00 WIB</li>
-          </ul>
-        </div>
- 
       </div>
-    </div>
- 
-    <!-- Copyright bar -->
-    <div class="bg-brand-red">
-      <div class="max-w-6xl mx-auto px-6 py-4 flex flex-col md:flex-row items-center justify-between gap-2">
-        <p class="font-body text-white text-sm">Copyright © 2026 Kelompok 4</p>
-        <p class="font-body text-red-200 text-xs">Tahu Bakso Morojoyo — Malang, Jawa Timur</p>
+
+      <!-- Copyright bar -->
+      <div class="bg-brand-red">
+          <div class="max-w-6xl mx-auto px-6 py-4 flex flex-col md:flex-row items-center justify-between gap-2">
+              <p class="font-body text-white text-sm">Copyright © 2026 Kelompok 4</p>
+              <p class="font-body text-red-200 text-xs">
+                  {{ isset($identitas) ? $identitas->nama_brand : 'Tahu Bakso Morojoyo' }} — Malang, Jawa Timur
+              </p>
+          </div>
       </div>
-    </div>
   </footer>
 
 </body>

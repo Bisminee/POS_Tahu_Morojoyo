@@ -2,13 +2,14 @@
 
 use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\CashierController;
-use App\Http\Controllers\ShiftController;
 use App\Http\Controllers\GuestController;
+use App\Http\Controllers\ShiftController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Middleware\ValidateShiftSession;
 use App\Http\Controllers\Owner\OwnerSheetsController;
 
 
+// ── Guest pages ─────────────────────────────────────────────────────────────
 Route::get('/', [GuestController::class, 'home'])->name('home');
 Route::get('/menu', [GuestController::class, 'menu'])->name('menu');
 Route::get('/about', [GuestController::class, 'about'])->name('about');
@@ -84,4 +85,11 @@ Route::middleware(['auth', ValidateShiftSession::class])->group(function () {
 
     Route::post('/owner/karyawan/{karyawan}/face', [AttendanceController::class, 'saveFaceDataForKaryawan'])
         ->name('owner.karyawan.save-face');
+
+    // ── Owner: Rekap absensi ────────────────────────────────────────────────
+    Route::get('/owner/absensi', [AttendanceController::class, 'ownerDashboard'])
+        ->name('attendance.owner');
+
+    Route::get('/owner/absensi/export', [AttendanceController::class, 'exportAbsensiCsv'])
+        ->name('attendance.export');
 });

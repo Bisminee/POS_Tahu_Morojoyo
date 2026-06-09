@@ -15,6 +15,7 @@ class HargaResource extends Resource
     protected static ?string $model = Harga::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBanknotes;
+    protected static string | \UnitEnum | null $navigationGroup = 'Master Data';
 
     protected static ?string $recordTitleAttribute = null;
 

@@ -28,6 +28,7 @@ class IdentitasResource extends Resource
     protected static ?string $model = Identitas::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBuildingStorefront;
+    protected static string | \UnitEnum | null $navigationGroup = 'Master Data';
 
     protected static ?string $navigationLabel = 'Identitas';
     protected static ?string $modelLabel = 'Identitas';
@@ -39,7 +40,6 @@ class IdentitasResource extends Resource
     {
         return $schema
             ->components([
-
                 TextInput::make('nama_brand')
                     ->label('Nama Brand')
                     ->required()
@@ -80,6 +80,7 @@ class IdentitasResource extends Resource
                 FileUpload::make('logo')
                     ->label('Logo')
                     ->image()
+                    ->disk('public')
                     ->directory('logo')
                     ->imagePreviewHeight('150')
                     ->nullable(),
@@ -87,19 +88,20 @@ class IdentitasResource extends Resource
                 FileUpload::make('promo')
                     ->label('Promo')
                     ->image()
+                    ->disk('public')
                     ->directory('promo')
                     ->imagePreviewHeight('150')
                     ->nullable(),
-            ]);
+            ]); // ← ini yang hilang
     }
 
     public static function table(Table $table): Table
     {
         return $table
             ->columns([
-
                 ImageColumn::make('logo')
-                    ->label('Logo'),
+                    ->label('Logo')
+                    ->disk('public'),
 
                 TextColumn::make('nama_brand')
                     ->label('Nama Brand')
@@ -143,33 +145,25 @@ class IdentitasResource extends Resource
 
     public static function canViewAny(): bool
     {
-        /** @var \App\Models\User|null $user */
         $user = Auth::user();
-
         return $user && $user->role !== 'karyawan';
     }
 
     public static function canCreate(): bool
     {
-        /** @var \App\Models\User|null $user */
         $user = Auth::user();
-
         return $user && $user->role !== 'karyawan';
     }
 
     public static function canEdit($record): bool
     {
-        /** @var \App\Models\User|null $user */
         $user = Auth::user();
-
         return $user && $user->role !== 'karyawan';
     }
 
     public static function canDelete($record): bool
     {
-        /** @var \App\Models\User|null $user */
         $user = Auth::user();
-
         return $user && $user->role !== 'karyawan';
     }
 }

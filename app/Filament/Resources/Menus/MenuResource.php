@@ -32,7 +32,7 @@ class MenuResource extends Resource
     protected static ?string $model = Menu::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBookOpen;
-
+    protected static string | \UnitEnum | null $navigationGroup = 'Master Data';
     protected static ?string $recordTitleAttribute = 'namaMenu';
 
     protected static ?string $navigationLabel = 'Menu';
@@ -189,33 +189,5 @@ class MenuResource extends Resource
                 'compositions.pcsTahu',
                 'hargas',
             ]);
-    }
-
-    public static function canViewAny(): bool
-    {
-        $user = Auth::user();
-
-        return $user && ! $user->isKasir();
-    }
-
-    public static function canCreate(): bool
-    {
-        $user = Auth::user();
-
-        return $user && ! $user->isKasir();
-    }
-
-    public static function canEdit($record): bool
-    {
-        $user = Auth::user();
-
-        return $user && ! $user->isKasir();
-    }
-
-    public static function canDelete($record): bool
-    {
-        $user = Auth::user();
-
-        return $user && ! $user->isKasir();
     }
 }

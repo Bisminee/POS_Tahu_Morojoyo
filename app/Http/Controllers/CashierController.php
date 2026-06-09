@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Harga;
+use App\Models\Attendance;
 use App\Models\Menu;
 use App\Models\Shift;
 use App\Models\StokPcs;
@@ -35,7 +35,13 @@ class CashierController extends Controller
         }
 
         $request->session()->regenerate();
-        $request->session()->forget(['selected_shift_id', 'selected_cashier_name']);
+        $request->session()->forget([
+            'selected_shift_id',
+            'selected_cashier_name',
+            'active_attendance_id',
+            'active_karyawan_id',
+            'active_karyawan_name',
+        ]);
 
         if (Auth::user()->role !== 'kasir') {
             Auth::logout();
@@ -157,6 +163,13 @@ class CashierController extends Controller
 
     public function checkout(Request $request)
     {
+        if (!$this->getActiveAttendance()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Transaksi ditolak. Kasir belum absen masuk menggunakan Face ID.',
+            ], 403);
+        }
+
         $data = $request->validate([
             'payment_method' => ['required', 'string'],
             'discount'       => ['nullable', 'numeric', 'min:0'],

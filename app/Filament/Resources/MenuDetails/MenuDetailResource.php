@@ -18,6 +18,7 @@ class MenuDetailResource extends Resource
     protected static ?string $model = MenuDetail::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedListBullet;
+    protected static string | \UnitEnum | null $navigationGroup = 'Master Data';
 
     protected static ?string $recordTitleAttribute = null;
 
