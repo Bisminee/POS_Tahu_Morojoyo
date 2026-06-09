@@ -13,54 +13,28 @@ class CheckAttendance
     {
         $user = $request->user();
 
-        // Kalau bukan kasir, biarkan lanjut.
         if (!$user || $user->role !== 'kasir') {
             return $next($request);
         }
 
-        $activeAttendanceId = session('active_attendance_id');
-
-        if ($activeAttendanceId) {
-            $attendance = Attendance::with('karyawan')
-                ->where('id', $activeAttendanceId)
-                ->where('user_id', $user->id)
-                ->whereDate('tanggal', today())
-                ->whereNotNull('jam_masuk')
-                ->whereNull('jam_pulang')
-                ->first();
-
-            if ($this->isValidFaceAttendance($attendance)) {
-                session([
-                    'active_attendance_id' => $attendance->id,
-                    'active_karyawan_id' => $attendance->karyawan_id,
-                    'active_karyawan_name' => $attendance->karyawan?->nama,
-                ]);
-
-                return $next($request);
-            }
-
-            session()->forget([
-                'active_attendance_id',
-                'active_karyawan_id',
-                'active_karyawan_name',
-            ]);
-        }
-
-        // Kalau session hilang, cek database.
-        // Tetapi hanya attendance yang benar-benar dibuat lewat Face ID yang boleh lolos.
-        $attendance = Attendance::with('karyawan')
+        $activeAttendances = Attendance::with('karyawan')
             ->where('user_id', $user->id)
             ->whereDate('tanggal', today())
             ->whereNotNull('jam_masuk')
             ->whereNull('jam_pulang')
-            ->latest()
-            ->first();
+            ->get();
 
-        if ($this->isValidFaceAttendance($attendance)) {
+        $validAttendances = $activeAttendances->filter(function ($attendance) {
+            return $this->isValidFaceAttendance($attendance);
+        });
+
+        if ($validAttendances->count() > 0) {
+            $firstAttendance = $validAttendances->first();
+
             session([
-                'active_attendance_id' => $attendance->id,
-                'active_karyawan_id' => $attendance->karyawan_id,
-                'active_karyawan_name' => $attendance->karyawan?->nama,
+                'active_attendance_id' => $firstAttendance->id,
+                'active_karyawan_id' => $firstAttendance->karyawan_id,
+                'active_karyawan_name' => $firstAttendance->karyawan?->nama,
             ]);
 
             return $next($request);
@@ -87,27 +61,19 @@ class CheckAttendance
             return false;
         }
 
-        // Karyawan wajib punya Face ID terdaftar.
         if (!$this->hasValidFaceDescriptor($attendance->karyawan->face_descriptor)) {
             return false;
         }
 
-        // Attendance wajib punya foto masuk hasil scan Face ID.
         if (!$attendance->foto_masuk) {
             return false;
         }
 
-        // Attendance wajib punya confidence masuk.
         if ($attendance->face_confidence_masuk === null) {
             return false;
         }
 
-        /*
-         * Minimal confidence.
-         * Kalau masih terlalu ketat, turunkan ke 30.
-         * Kalau ingin lebih aman, naikkan ke 50.
-         */
-        if (floatval($attendance->face_confidence_masuk) < 30) {
+        if (floatval($attendance->face_confidence_masuk) <= 0) {
             return false;
         }
 

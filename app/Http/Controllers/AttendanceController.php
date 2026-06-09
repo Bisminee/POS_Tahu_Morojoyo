@@ -10,11 +10,6 @@ use Illuminate\Support\Facades\Storage;
 
 class AttendanceController extends Controller
 {
-    /*
-    |--------------------------------------------------------------------------
-    | HALAMAN ABSENSI KASIR
-    |--------------------------------------------------------------------------
-    */
     public function index()
     {
         $user = Auth::user();
@@ -23,36 +18,39 @@ class AttendanceController extends Controller
             return redirect('/admin');
         }
 
-        $activeAttendance = Attendance::with('karyawan')
+        $activeAttendances = Attendance::with('karyawan')
             ->where('user_id', $user->id)
             ->whereDate('tanggal', today())
             ->whereNotNull('jam_masuk')
             ->whereNull('jam_pulang')
-            ->latest()
-            ->first();
+            ->orderBy('jam_masuk')
+            ->get();
 
-        if ($activeAttendance) {
-            session([
-                'active_attendance_id' => $activeAttendance->id,
-                'active_karyawan_id' => $activeAttendance->karyawan_id,
-                'active_karyawan_name' => $activeAttendance->karyawan?->nama,
-            ]);
-        }
+        $karyawanAktifIds = $activeAttendances
+            ->pluck('karyawan_id')
+            ->filter()
+            ->values()
+            ->toArray();
 
-        // Semua karyawan aktif ditampilkan, tidak difilter cabang.
         $karyawans = Karyawan::query()
             ->where('is_active', 1)
+            ->when(count($karyawanAktifIds), function ($query) use ($karyawanAktifIds) {
+                $query->whereNotIn('idKaryawan', $karyawanAktifIds);
+            })
             ->orderBy('nama')
             ->get();
 
-        return view('attendance.index', compact('karyawans', 'activeAttendance'));
+        if ($activeAttendances->count() > 0) {
+            session([
+                'active_attendance_id' => $activeAttendances->first()->id,
+                'active_karyawan_id' => $activeAttendances->first()->karyawan_id,
+                'active_karyawan_name' => $activeAttendances->first()->karyawan?->nama,
+            ]);
+        }
+
+        return view('attendance.index', compact('karyawans', 'activeAttendances'));
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | ABSEN MASUK
-    |--------------------------------------------------------------------------
-    */
     public function clockIn(Request $request)
     {
         $user = Auth::user();
@@ -74,7 +72,20 @@ class AttendanceController extends Controller
 
         if (!$this->hasValidFaceDescriptor($karyawan->face_descriptor)) {
             return back()->withErrors([
-                'face_descriptor' => "Face ID {$karyawan->nama} belum terdaftar. Silakan daftarkan Face ID terlebih dahulu di halaman owner.",
+                'face_descriptor' => "Face ID {$karyawan->nama} belum terdaftar atau datanya tidak valid. Silakan daftarkan ulang Face ID di halaman owner.",
+            ]);
+        }
+
+        $existingAttendance = Attendance::where('karyawan_id', $karyawan->idKaryawan)
+            ->whereDate('tanggal', today())
+            ->whereNotNull('jam_masuk')
+            ->whereNull('jam_pulang')
+            ->latest()
+            ->first();
+
+        if ($existingAttendance) {
+            return back()->withErrors([
+                'attendance' => "{$karyawan->nama} masih memiliki shift aktif. Silakan absen pulang terlebih dahulu.",
             ]);
         }
 
@@ -85,23 +96,13 @@ class AttendanceController extends Controller
 
         if (!$verification['verified']) {
             return back()->withErrors([
-                'face_descriptor' => 'Wajah tidak cocok dengan Face ID ' . $karyawan->nama .
-                    '. Distance: ' . $verification['distance'] .
-                    ', Confidence: ' . $verification['confidence'] . '%. Silakan scan ulang.',
-            ]);
-        }
-
-        $activeAttendance = Attendance::with('karyawan')
-            ->where('user_id', $user->id)
-            ->whereDate('tanggal', today())
-            ->whereNotNull('jam_masuk')
-            ->whereNull('jam_pulang')
-            ->latest()
-            ->first();
-
-        if ($activeAttendance) {
-            return back()->withErrors([
-                'attendance' => 'Masih ada shift aktif atas nama ' . ($activeAttendance->karyawan?->nama ?? '-') . '. Selesaikan shift terlebih dahulu.',
+                'face_descriptor' => 'Wajah tidak cocok dengan Face ID '
+                    . $karyawan->nama
+                    . '. Distance: '
+                    . $verification['distance']
+                    . ', Confidence: '
+                    . $verification['confidence']
+                    . '%. Silakan scan ulang.',
             ]);
         }
 
@@ -130,15 +131,10 @@ class AttendanceController extends Controller
         ]);
 
         return redirect()
-            ->route('cashier.pos')
-            ->with('success', "Absensi masuk berhasil. Selamat bekerja, {$karyawan->nama}!");
+            ->route('attendance.index')
+            ->with('success', "Absensi masuk {$karyawan->nama} berhasil dicatat.");
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | ABSEN PULANG
-    |--------------------------------------------------------------------------
-    */
     public function clockOut(Request $request)
     {
         $user = Auth::user();
@@ -148,34 +144,24 @@ class AttendanceController extends Controller
         }
 
         $request->validate([
+            'attendance_id' => ['required', 'exists:attendances,id'],
             'face_descriptor' => ['required', 'string'],
             'foto_base64' => ['required', 'string'],
         ]);
 
-        $attendanceId = session('active_attendance_id');
-
         $attendance = Attendance::with('karyawan')
-            ->when($attendanceId, function ($query) use ($attendanceId) {
-                $query->where('id', $attendanceId);
-            })
+            ->where('id', $request->attendance_id)
             ->where('user_id', $user->id)
             ->whereDate('tanggal', today())
             ->whereNotNull('jam_masuk')
             ->whereNull('jam_pulang')
-            ->latest()
             ->first();
 
         if (!$attendance) {
-            session()->forget([
-                'active_attendance_id',
-                'active_karyawan_id',
-                'active_karyawan_name',
-            ]);
-
             return redirect()
                 ->route('attendance.index')
                 ->withErrors([
-                    'attendance' => 'Tidak ada shift aktif yang perlu diselesaikan.',
+                    'attendance' => 'Data shift aktif tidak ditemukan atau sudah selesai.',
                 ]);
         }
 
@@ -194,8 +180,13 @@ class AttendanceController extends Controller
 
         if (!$verification['verified']) {
             return back()->withErrors([
-                'face_descriptor' => 'Wajah tidak cocok. Absen pulang ditolak. Confidence: '
-                    . $verification['confidence'] . '%. Silakan scan ulang.',
+                'face_descriptor' => 'Wajah tidak cocok dengan Face ID '
+                    . $karyawan->nama
+                    . '. Distance: '
+                    . $verification['distance']
+                    . ', Confidence: '
+                    . $verification['confidence']
+                    . '%. Absen pulang ditolak.',
             ]);
         }
 
@@ -213,26 +204,38 @@ class AttendanceController extends Controller
             'catatan' => $request->input('catatan'),
         ]);
 
-        session()->forget([
-            'active_attendance_id',
-            'active_karyawan_id',
-            'active_karyawan_name',
-        ]);
+        $remainingActiveAttendance = Attendance::with('karyawan')
+            ->where('user_id', $user->id)
+            ->whereDate('tanggal', today())
+            ->whereNotNull('jam_masuk')
+            ->whereNull('jam_pulang')
+            ->latest()
+            ->first();
+
+        if ($remainingActiveAttendance) {
+            session([
+                'active_attendance_id' => $remainingActiveAttendance->id,
+                'active_karyawan_id' => $remainingActiveAttendance->karyawan_id,
+                'active_karyawan_name' => $remainingActiveAttendance->karyawan?->nama,
+            ]);
+        } else {
+            session()->forget([
+                'active_attendance_id',
+                'active_karyawan_id',
+                'active_karyawan_name',
+            ]);
+        }
 
         return redirect()
             ->route('attendance.index')
-            ->with('success', "Shift {$karyawan->nama} selesai. Jam pulang berhasil dicatat.");
+            ->with('success', "Absen pulang {$karyawan->nama} berhasil dicatat.");
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | REKAP ABSENSI OWNER
-    |--------------------------------------------------------------------------
-    */
     public function ownerDashboard(Request $request)
     {
         $this->authorizeOwner();
 
+        $identitas = \App\Models\Identitas::first();
         $tanggalMulai = $request->input('tanggal_mulai', today()->toDateString());
         $tanggalSelesai = $request->input('tanggal_selesai', today()->toDateString());
 
@@ -245,15 +248,11 @@ class AttendanceController extends Controller
         return view('attendance.owner-dashboard', compact(
             'attendances',
             'tanggalMulai',
-            'tanggalSelesai'
+            'tanggalSelesai',
+            'identitas'
         ));
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | EXPORT REKAP ABSENSI
-    |--------------------------------------------------------------------------
-    */
     public function exportAbsensiCsv(Request $request)
     {
         $this->authorizeOwner();
@@ -277,7 +276,6 @@ class AttendanceController extends Controller
         $callback = function () use ($attendances) {
             $file = fopen('php://output', 'w');
 
-            // UTF-8 BOM agar Excel Indonesia tidak rusak encoding-nya.
             fprintf($file, chr(0xEF) . chr(0xBB) . chr(0xBF));
 
             fputcsv($file, [
@@ -312,16 +310,12 @@ class AttendanceController extends Controller
         return response()->stream($callback, 200, $headers);
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | DAFTAR FACE ID KARYAWAN OWNER
-    |--------------------------------------------------------------------------
-    */
     public function karyawanList(Request $request)
     {
         $this->authorizeOwner();
 
         $search = $request->input('search');
+        $identitas = \App\Models\Identitas::first();
 
         $karyawans = Karyawan::query()
             ->when($search, function ($query) use ($search) {
@@ -333,11 +327,6 @@ class AttendanceController extends Controller
         return view('owner.karyawan-list', compact('karyawans', 'search'));
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | SIMPAN / UPDATE FACE ID KARYAWAN
-    |--------------------------------------------------------------------------
-    */
     public function saveFaceDataForKaryawan(Request $request, Karyawan $karyawan)
     {
         $this->authorizeOwner();
@@ -381,11 +370,6 @@ class AttendanceController extends Controller
             ->with('success', "Face ID {$karyawan->nama} berhasil disimpan.");
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | HELPER: CEK FACE DESCRIPTOR VALID
-    |--------------------------------------------------------------------------
-    */
     private function hasValidFaceDescriptor(?string $descriptor): bool
     {
         if ($descriptor === null) {
@@ -411,11 +395,6 @@ class AttendanceController extends Controller
         return true;
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | HELPER: VERIFIKASI WAJAH
-    |--------------------------------------------------------------------------
-    */
     private function verifyFaceDescriptor(string $inputDescriptor, string $storedDescriptor): array
     {
         $input = json_decode($inputDescriptor, true);
@@ -454,8 +433,12 @@ class AttendanceController extends Controller
 
         $distance = sqrt($sum);
 
-        // Lebih kecil = lebih ketat.
-        $threshold = 0.70;
+        /*
+         * 0.50 = cukup aman.
+         * Jika wajah sama sering gagal, naikkan ke 0.55.
+         * Jika wajah berbeda masih lolos, turunkan ke 0.45.
+         */
+        $threshold = 0.60;
 
         $confidence = max(0, round((1 - ($distance / $threshold)) * 100, 2));
 
@@ -466,11 +449,6 @@ class AttendanceController extends Controller
         ];
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | HELPER: SIMPAN FOTO BASE64
-    |--------------------------------------------------------------------------
-    */
     private function saveBase64Photo(string $base64, int $karyawanId, string $prefix = 'face'): string
     {
         $base64 = preg_replace('/^data:image\/\w+;base64,/', '', $base64);
@@ -488,11 +466,6 @@ class AttendanceController extends Controller
         return $path;
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | HELPER: OTORISASI OWNER
-    |--------------------------------------------------------------------------
-    */
     private function authorizeOwner(): void
     {
         $user = Auth::user();

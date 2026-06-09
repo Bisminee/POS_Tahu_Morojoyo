@@ -3,20 +3,41 @@
 <x-layouts.app :title="$title">
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Nunito:wght@400;600;700;800&display=swap"
+        rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            red: '#C0271A',
+                            darkred: '#9B1E13',
+                            yellow: '#F5C518',
+                            cream: '#FFF8E7',
+                        }
+                    },
+                    fontFamily: {
+                        display: ['Bebas Neue', 'sans-serif'],
+                        body: ['Nunito', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
 
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
-        @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&display=swap');
-
         * {
             box-sizing: border-box;
         }
 
         body {
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            background: #f4f5f7;
+            font-family: 'Nunito', sans-serif;
+            background: #FFF8E7;
         }
 
+        /* ── LAYOUT ── */
         .pos-wrap {
             display: grid;
             grid-template-columns: 1fr 360px;
@@ -32,57 +53,61 @@
             display: flex;
             flex-direction: column;
             gap: 16px;
-            background: #f4f5f7;
+            background: #FFF8E7;
         }
 
         .pos-right {
-            border-left: 1px solid #e5e7eb;
+            border-left: 3px solid #C0271A;
             background: #fff;
             display: flex;
             flex-direction: column;
             overflow: hidden;
         }
 
+        /* ── CARD ── */
         .card {
             background: #fff;
             border-radius: 16px;
             padding: 18px 20px;
-            border: 1px solid #e9eaec;
+            border: 2px solid #f0d9a0;
+            box-shadow: 0 2px 8px rgba(192, 39, 26, 0.06);
         }
 
         .card-title {
-            font-size: 11px;
-            font-weight: 600;
-            letter-spacing: .1em;
-            text-transform: uppercase;
-            color: #9ca3af;
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 16px;
+            letter-spacing: .12em;
+            color: #C0271A;
             margin-bottom: 14px;
         }
 
+        /* ── TOPBAR ── */
         .topbar {
-            background: #fff;
+            background: #C0271A;
             border-radius: 16px;
             padding: 14px 20px;
-            border: 1px solid #e9eaec;
             display: flex;
             align-items: center;
             justify-content: space-between;
             flex-wrap: wrap;
             gap: 10px;
+            box-shadow: 0 4px 16px rgba(192, 39, 26, 0.25);
         }
 
         .topbar h1 {
-            font-size: 18px;
-            font-weight: 700;
-            color: #111827;
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 26px;
+            color: #F5C518;
+            letter-spacing: .1em;
         }
 
         .topbar p {
-            font-size: 12px;
-            color: #6b7280;
-            margin-top: 2px;
+            font-size: 11px;
+            color: #fecaca;
+            margin-top: 1px;
         }
 
+        /* ── BADGE ── */
         .badge {
             display: inline-flex;
             align-items: center;
@@ -90,32 +115,35 @@
             padding: 4px 12px;
             border-radius: 99px;
             font-size: 12px;
-            font-weight: 500;
-            background: #f3f4f6;
-            color: #374151;
-            border: 1px solid #e5e7eb;
+            font-weight: 700;
+            background: rgba(255, 255, 255, 0.15);
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.25);
         }
 
         .badge-green {
-            background: #dcfce7;
-            color: #15803d;
-            border-color: #bbf7d0;
+            background: #F5C518;
+            color: #9B1E13;
+            border-color: #e6b800;
         }
 
+        /* ── BUTTONS TOPBAR ── */
         .btn-logout {
             padding: 7px 16px;
             border-radius: 99px;
-            background: #fef2f2;
-            color: #dc2626;
-            border: 1px solid #fecaca;
+            background: rgba(255, 255, 255, 0.12);
+            color: #fecaca;
+            border: 1px solid rgba(255, 255, 255, 0.2);
             font-size: 12px;
-            font-weight: 600;
+            font-weight: 700;
             cursor: pointer;
             transition: background .15s;
+            font-family: 'Nunito', sans-serif;
         }
 
         .btn-logout:hover {
-            background: #fee2e2;
+            background: rgba(255, 255, 255, 0.22);
+            color: #fff;
         }
 
         .btn-laporan-topbar {
@@ -124,48 +152,42 @@
             gap: 6px;
             padding: 7px 14px;
             border-radius: 99px;
-            background: #f0fdf4;
-            color: #15803d;
-            border: 1px solid #bbf7d0;
+            background: rgba(245, 197, 24, 0.15);
+            color: #F5C518;
+            border: 1px solid rgba(245, 197, 24, 0.35);
             font-size: 12px;
-            font-weight: 600;
+            font-weight: 700;
             cursor: pointer;
             transition: background .15s;
-            font-family: inherit;
+            font-family: 'Nunito', sans-serif;
         }
 
         .btn-laporan-topbar:hover {
-            background: #dcfce7;
+            background: rgba(245, 197, 24, 0.25);
         }
 
-        .btn-laporan-topbar svg {
-            width: 14px;
-            height: 14px;
-        }
-
-        /* Google Sheets sync button */
         .btn-sheets-topbar {
             display: inline-flex;
             align-items: center;
             gap: 6px;
             padding: 7px 14px;
             border-radius: 99px;
-            background: #f0f9ff;
-            color: #0369a1;
-            border: 1px solid #bae6fd;
+            background: rgba(255, 255, 255, 0.12);
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.2);
             font-size: 12px;
-            font-weight: 600;
+            font-weight: 700;
             cursor: pointer;
             transition: background .15s;
-            font-family: inherit;
+            font-family: 'Nunito', sans-serif;
         }
 
         .btn-sheets-topbar:hover {
-            background: #e0f2fe;
+            background: rgba(255, 255, 255, 0.22);
         }
 
         .btn-sheets-topbar:disabled {
-            opacity: 0.6;
+            opacity: 0.5;
             cursor: not-allowed;
         }
 
@@ -174,6 +196,50 @@
             height: 14px;
         }
 
+        .shift-report {
+            min-width: 260px;
+            max-width: 320px;
+            background: rgba(255, 255, 255, 0.12);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            border-radius: 14px;
+            padding: 12px 14px;
+            display: grid;
+            gap: 6px;
+            font-size: 12px;
+            color: #fff;
+        }
+
+        .shift-report-title {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 13px;
+            letter-spacing: .1em;
+            text-transform: uppercase;
+            color: #F5C518;
+        }
+
+        .shift-report-line {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+        }
+
+        .shift-report-line:last-child {
+            border-bottom: none;
+        }
+
+        .shift-report-line strong {
+            font-weight: 800;
+            color: #F5C518;
+        }
+
+        .shift-report-line.shift-total strong {
+            color: #fff;
+        }
+
+        /* ── STAT CARDS ── */
         .stat-row {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -184,19 +250,22 @@
             background: #fff;
             border-radius: 16px;
             padding: 16px 18px;
-            border: 1px solid #e9eaec;
+            border: 2px solid #f0d9a0;
+            box-shadow: 0 2px 8px rgba(192, 39, 26, 0.06);
         }
 
         .stat-card .s-label {
             font-size: 11px;
             color: #9ca3af;
-            font-weight: 500;
+            font-weight: 700;
         }
 
         .stat-card .s-val {
-            font-size: 22px;
-            font-weight: 700;
+            font-size: 20px;
+            font-weight: 800;
             margin-top: 6px;
+            font-family: 'Bebas Neue', sans-serif;
+            letter-spacing: .05em;
         }
 
         .s-emerald {
@@ -204,13 +273,14 @@
         }
 
         .s-indigo {
-            color: #4f46e5;
+            color: #C0271A;
         }
 
         .s-amber {
             color: #d97706;
         }
 
+        /* ── ALERTS ── */
         .alert {
             border-radius: 14px;
             padding: 12px 16px;
@@ -255,7 +325,7 @@
         }
 
         .stock-warning-banner .swb-title {
-            font-weight: 700;
+            font-weight: 800;
             font-size: 13px;
             margin-bottom: 4px;
         }
@@ -274,7 +344,7 @@
             padding: 3px 10px;
             border-radius: 99px;
             font-size: 11px;
-            font-weight: 600;
+            font-weight: 700;
         }
 
         .swb-chip-red {
@@ -295,6 +365,7 @@
             border: 1px solid #fde68a;
         }
 
+        /* ── PAYMENT METHODS ── */
         .pay-methods {
             display: flex;
             gap: 8px;
@@ -304,27 +375,28 @@
         .pay-btn {
             padding: 8px 18px;
             border-radius: 99px;
-            border: 1.5px solid #e5e7eb;
+            border: 2px solid #f0d9a0;
             background: #fff;
             font-size: 13px;
-            font-weight: 500;
+            font-weight: 700;
             cursor: pointer;
-            color: #6b7280;
+            color: #9ca3af;
             transition: all .15s;
+            font-family: 'Nunito', sans-serif;
         }
 
         .pay-btn:hover {
-            border-color: #a5b4fc;
-            color: #4f46e5;
+            border-color: #C0271A;
+            color: #C0271A;
         }
 
         .pay-btn.active {
-            background: #eef2ff;
-            border-color: #6366f1;
-            color: #4338ca;
-            font-weight: 600;
+            background: #C0271A;
+            border-color: #C0271A;
+            color: #F5C518;
         }
 
+        /* ── MENU GRID ── */
         .menu-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(155px, 1fr));
@@ -333,8 +405,8 @@
 
         .menu-card {
             border-radius: 14px;
-            border: 1.5px solid #e9eaec;
-            background: #fafafa;
+            border: 2px solid #f0d9a0;
+            background: #FFFDF5;
             padding: 14px;
             cursor: pointer;
             transition: all .18s;
@@ -343,16 +415,16 @@
         }
 
         .menu-card:hover {
-            border-color: #6366f1;
-            background: #eef2ff;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(99, 102, 241, .12);
+            border-color: #C0271A;
+            background: #fff0ee;
+            transform: translateY(-3px);
+            box-shadow: 0 6px 16px rgba(192, 39, 26, 0.15);
         }
 
         .menu-card h3 {
             font-size: 13px;
-            font-weight: 600;
-            color: #111827;
+            font-weight: 800;
+            color: #1f1f1f;
             line-height: 1.4;
         }
 
@@ -367,11 +439,13 @@
             display: inline-block;
             margin-top: 10px;
             font-size: 14px;
-            font-weight: 700;
-            color: #059669;
+            font-weight: 800;
+            color: #C0271A;
+            font-family: 'Bebas Neue', sans-serif;
+            letter-spacing: .04em;
         }
 
-        /* ── 3-LEVEL STOCK COLORS ── */
+        /* ── STOCK GRID ── */
         .stock-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
@@ -382,52 +456,51 @@
             border-radius: 12px;
             padding: 10px 12px;
             font-size: 12px;
-            border: 1px solid;
+            border: 1.5px solid;
         }
 
         .stk h4 {
-            font-weight: 600;
+            font-weight: 800;
             font-size: 12px;
             margin-bottom: 4px;
         }
 
-        /* ≤5 → merah */
         .stk-red {
             background: #fef2f2;
             border-color: #fca5a5;
             color: #991b1b;
         }
 
-        /* ≤10 → kuning */
         .stk-yellow {
             background: #fffbeb;
             border-color: #fde68a;
             color: #92400e;
         }
 
-        /* ≤20 → oranye */
         .stk-orange {
             background: #fff7ed;
             border-color: #fed7aa;
             color: #c2410c;
         }
 
-        /* >20 → hijau */
         .stk-ok {
             background: #f0fdf4;
             border-color: #bbf7d0;
             color: #166534;
         }
 
+        /* ── RIGHT PANEL ── */
         .rp-header {
             padding: 14px 18px;
-            border-bottom: 1px solid #f0f0f0;
-            font-size: 14px;
-            font-weight: 700;
-            color: #111827;
+            border-bottom: 2px solid #f0d9a0;
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 18px;
+            letter-spacing: .1em;
+            color: #C0271A;
             display: flex;
             align-items: center;
             gap: 8px;
+            background: #FFF8E7;
         }
 
         .cart-scroll {
@@ -437,7 +510,7 @@
         }
 
         .cart-empty-box {
-            border: 1.5px dashed #d1d5db;
+            border: 2px dashed #f0d9a0;
             border-radius: 14px;
             padding: 32px 16px;
             text-align: center;
@@ -450,14 +523,14 @@
             justify-content: space-between;
             align-items: flex-start;
             padding: 9px 0;
-            border-bottom: 1px solid #f3f4f6;
+            border-bottom: 1px solid #fef3c7;
             gap: 8px;
         }
 
         .ci-name {
             font-size: 13px;
-            font-weight: 600;
-            color: #111827;
+            font-weight: 800;
+            color: #1f1f1f;
         }
 
         .ci-qty {
@@ -468,15 +541,15 @@
 
         .ci-price {
             font-size: 13px;
-            font-weight: 600;
-            color: #111827;
+            font-weight: 800;
+            color: #C0271A;
             text-align: right;
         }
 
         .ci-remove {
             font-size: 10px;
-            font-weight: 600;
-            color: #dc2626;
+            font-weight: 700;
+            color: #C0271A;
             cursor: pointer;
             margin-top: 4px;
             letter-spacing: .05em;
@@ -484,15 +557,15 @@
         }
 
         .ci-remove:hover {
-            color: #991b1b;
+            color: #9B1E13;
         }
 
         .custom-badge {
             display: inline-block;
-            background: #eef2ff;
-            color: #4338ca;
+            background: #F5C518;
+            color: #9B1E13;
             font-size: 9px;
-            font-weight: 700;
+            font-weight: 800;
             letter-spacing: .06em;
             text-transform: uppercase;
             padding: 1px 7px;
@@ -501,36 +574,36 @@
             vertical-align: middle;
         }
 
+        /* ── CUSTOM SECTION ── */
         .custom-section {
             padding: 12px 16px;
-            border-top: 1px solid #f0f0f0;
-            background: #fafafa;
+            border-top: 2px solid #f0d9a0;
+            background: #FFFDF5;
         }
 
         .custom-section .ct {
-            font-size: 11px;
-            font-weight: 700;
-            letter-spacing: .08em;
-            text-transform: uppercase;
-            color: #9ca3af;
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 14px;
+            letter-spacing: .1em;
+            color: #C0271A;
             margin-bottom: 8px;
         }
 
         .input-sm {
             width: 100%;
-            border: 1px solid #e5e7eb;
+            border: 1.5px solid #f0d9a0;
             border-radius: 10px;
             padding: 7px 10px;
             font-size: 13px;
-            font-family: inherit;
-            color: #111827;
+            font-family: 'Nunito', sans-serif;
+            color: #1f1f1f;
             background: #fff;
             outline: none;
             transition: border-color .15s;
         }
 
         .input-sm:focus {
-            border-color: #6366f1;
+            border-color: #C0271A;
         }
 
         .input-sm::placeholder {
@@ -548,26 +621,28 @@
         }
 
         .btn-add-custom {
-            background: #4f46e5;
-            color: #fff;
+            background: #C0271A;
+            color: #F5C518;
             border: none;
             border-radius: 10px;
             padding: 7px 14px;
             font-size: 12px;
-            font-weight: 600;
+            font-weight: 800;
             cursor: pointer;
             white-space: nowrap;
             transition: background .15s;
+            font-family: 'Nunito', sans-serif;
         }
 
         .btn-add-custom:hover {
-            background: #4338ca;
+            background: #9B1E13;
         }
 
+        /* ── CART SUMMARY ── */
         .cart-summary {
             padding: 12px 16px;
-            border-top: 1px solid #f0f0f0;
-            background: #fafafa;
+            border-top: 2px solid #f0d9a0;
+            background: #FFFDF5;
             font-size: 13px;
         }
 
@@ -582,6 +657,7 @@
             font-size: 12px;
             color: #9ca3af;
             white-space: nowrap;
+            font-weight: 700;
         }
 
         .sum-line {
@@ -593,24 +669,24 @@
 
         .sum-line.big {
             font-size: 15px;
-            font-weight: 700;
-            color: #111827;
+            font-weight: 800;
+            color: #C0271A;
             padding-top: 8px;
             margin-top: 4px;
-            border-top: 1px solid #e5e7eb;
+            border-top: 2px dashed #f0d9a0;
         }
 
+        /* ── MONEY SECTION ── */
         .money-section {
             padding: 10px 16px;
-            border-top: 1px solid #f0f0f0;
+            border-top: 2px solid #f0d9a0;
         }
 
         .money-section label {
-            font-size: 11px;
-            font-weight: 700;
-            letter-spacing: .08em;
-            text-transform: uppercase;
-            color: #9ca3af;
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 13px;
+            letter-spacing: .1em;
+            color: #C0271A;
             display: block;
             margin-bottom: 5px;
         }
@@ -624,36 +700,40 @@
         }
 
         .change-amt {
-            font-weight: 700;
+            font-weight: 800;
             color: #059669;
         }
 
+        /* ── CHECKOUT ── */
         .checkout-bar {
             padding: 12px 16px;
-            border-top: 1px solid #f0f0f0;
+            border-top: 2px solid #f0d9a0;
             background: #fff;
         }
 
         .btn-checkout {
             width: 100%;
-            background: #059669;
-            color: #fff;
+            background: linear-gradient(135deg, #C0271A 0%, #9B1E13 100%);
+            color: #F5C518;
             border: none;
             border-radius: 12px;
             padding: 13px;
-            font-size: 14px;
-            font-weight: 700;
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 18px;
+            letter-spacing: .1em;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 8px;
-            font-family: inherit;
-            transition: background .15s, transform .1s;
+            transition: all .15s;
+            box-shadow: 0 4px 14px rgba(192, 39, 26, 0.3);
         }
 
         .btn-checkout:hover {
-            background: #047857;
+            background: linear-gradient(135deg, #9B1E13 0%, #7a1710 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 18px rgba(192, 39, 26, 0.4);
         }
 
         .btn-checkout:active {
@@ -663,6 +743,8 @@
         .btn-checkout:disabled {
             background: #9ca3af;
             cursor: not-allowed;
+            box-shadow: none;
+            transform: none;
         }
 
         .btn-checkout svg {
@@ -670,10 +752,11 @@
             height: 18px;
         }
 
+        /* ── OVERLAY & MODALS ── */
         .overlay {
             position: fixed;
             inset: 0;
-            background: rgba(0, 0, 0, .5);
+            background: rgba(155, 30, 19, 0.45);
             z-index: 200;
             display: flex;
             align-items: center;
@@ -714,7 +797,8 @@
             max-height: 90vh;
             overflow-y: auto;
             animation: slideUp .2s ease;
-            border: 1px solid #e9eaec;
+            border: 2px solid #f0d9a0;
+            box-shadow: 0 20px 60px rgba(192, 39, 26, 0.2);
         }
 
         .modal-wide {
@@ -734,9 +818,10 @@
         }
 
         .modal-head h2 {
-            font-size: 17px;
-            font-weight: 700;
-            color: #111827;
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 22px;
+            color: #C0271A;
+            letter-spacing: .06em;
         }
 
         .modal-head p {
@@ -750,11 +835,11 @@
             width: 28px;
             height: 28px;
             border-radius: 99px;
-            background: #f3f4f6;
-            border: none;
+            background: #fef2f2;
+            border: 1px solid #fecaca;
             cursor: pointer;
-            font-size: 14px;
-            color: #6b7280;
+            font-size: 12px;
+            color: #C0271A;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -762,7 +847,7 @@
         }
 
         .modal-close:hover {
-            background: #e5e7eb;
+            background: #fee2e2;
         }
 
         .modal-section {
@@ -770,11 +855,10 @@
         }
 
         .modal-section-title {
-            font-size: 11px;
-            font-weight: 700;
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 14px;
             letter-spacing: .1em;
-            text-transform: uppercase;
-            color: #9ca3af;
+            color: #C0271A;
             margin-bottom: 10px;
         }
 
@@ -788,12 +872,12 @@
             border-radius: 10px;
             padding: 10px 12px;
             font-size: 12px;
-            border: 1px solid;
+            border: 1.5px solid;
             margin-bottom: 7px;
         }
 
         .mstk h5 {
-            font-weight: 600;
+            font-weight: 800;
             margin-bottom: 2px;
         }
 
@@ -821,18 +905,20 @@
             color: #991b1b;
         }
 
+        /* ── ORDER BOX ── */
         .order-box {
-            background: #f8fafc;
+            background: #FFF8E7;
             border-radius: 14px;
             padding: 16px;
-            border: 1px solid #e9eaec;
+            border: 2px solid #f0d9a0;
         }
 
         .price-display {
-            font-size: 22px;
-            font-weight: 700;
-            color: #059669;
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 28px;
+            color: #C0271A;
             margin: 8px 0 14px;
+            letter-spacing: .04em;
         }
 
         .qty-control {
@@ -842,51 +928,55 @@
         }
 
         .qty-btn {
-            width: 32px;
-            height: 32px;
-            border-radius: 8px;
-            border: 1px solid #e5e7eb;
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            border: 2px solid #f0d9a0;
             background: #fff;
-            font-size: 18px;
+            font-size: 20px;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: #374151;
-            line-height: 1;
-            transition: background .1s;
+            color: #C0271A;
+            font-weight: 800;
+            transition: all .1s;
         }
 
         .qty-btn:hover {
-            background: #f3f4f6;
+            background: #C0271A;
+            color: #F5C518;
+            border-color: #C0271A;
         }
 
         .qty-val {
-            font-size: 18px;
-            font-weight: 700;
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 22px;
             min-width: 32px;
             text-align: center;
+            color: #1f1f1f;
         }
 
         .btn-add-cart {
             width: 100%;
-            background: #4f46e5;
-            color: #fff;
+            background: #C0271A;
+            color: #F5C518;
             border: none;
             border-radius: 11px;
             padding: 12px;
-            font-size: 14px;
-            font-weight: 700;
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 17px;
+            letter-spacing: .08em;
             cursor: pointer;
             margin-top: 14px;
-            font-family: inherit;
             transition: background .15s;
         }
 
         .btn-add-cart:hover {
-            background: #4338ca;
+            background: #9B1E13;
         }
 
+        /* ── CONFIRM LIST ── */
         .confirm-list {
             list-style: none;
             padding: 0;
@@ -898,13 +988,13 @@
             justify-content: space-between;
             align-items: center;
             padding: 7px 0;
-            border-bottom: 1px solid #f3f4f6;
+            border-bottom: 1px solid #fef3c7;
             font-size: 13px;
         }
 
         .confirm-list li .cn {
-            font-weight: 600;
-            color: #111827;
+            font-weight: 800;
+            color: #1f1f1f;
         }
 
         .confirm-list li .cq {
@@ -913,21 +1003,23 @@
         }
 
         .confirm-list li .cs {
-            font-weight: 600;
+            font-weight: 800;
+            color: #C0271A;
         }
 
         .confirm-total-row {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            font-size: 16px;
-            font-weight: 700;
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 20px;
             padding-top: 10px;
             margin-top: 6px;
-            border-top: 2px solid #111827;
-            color: #111827;
+            border-top: 3px solid #C0271A;
+            color: #C0271A;
         }
 
+        /* ── MODAL ACTIONS ── */
         .modal-actions {
             display: flex;
             gap: 10px;
@@ -938,18 +1030,18 @@
             flex: 1;
             padding: 11px;
             border-radius: 11px;
-            border: 1.5px solid #e5e7eb;
+            border: 2px solid #f0d9a0;
             background: #fff;
             font-size: 13px;
-            font-weight: 600;
+            font-weight: 700;
             cursor: pointer;
             color: #374151;
-            font-family: inherit;
+            font-family: 'Nunito', sans-serif;
             transition: background .15s;
         }
 
         .btn-modal-cancel:hover {
-            background: #f3f4f6;
+            background: #FFF8E7;
         }
 
         .btn-modal-confirm {
@@ -957,17 +1049,17 @@
             padding: 11px;
             border-radius: 11px;
             border: none;
-            background: #059669;
-            color: #fff;
-            font-size: 13px;
-            font-weight: 700;
+            background: #C0271A;
+            color: #F5C518;
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 17px;
+            letter-spacing: .08em;
             cursor: pointer;
-            font-family: inherit;
             transition: background .15s;
         }
 
         .btn-modal-confirm:hover {
-            background: #047857;
+            background: #9B1E13;
         }
 
         .btn-modal-confirm:disabled {
@@ -978,26 +1070,27 @@
         /* ── STRUK ── */
         .receipt-thermal {
             background: #fff;
-            border: 1px solid #e5e7eb;
-            border-radius: 4px;
+            border: 2px dashed #f0d9a0;
+            border-radius: 8px;
             padding: 20px 18px;
-            font-family: 'IBM Plex Mono', 'Courier New', monospace;
+            font-family: 'Courier New', monospace;
             font-size: 12px;
-            color: #111827;
+            color: #1f1f1f;
         }
 
         .rc-brand {
             text-align: center;
             padding-bottom: 12px;
             margin-bottom: 12px;
-            border-bottom: 1px dashed #9ca3af;
+            border-bottom: 2px dashed #f0d9a0;
         }
 
         .rc-brand h3 {
-            font-size: 15px;
-            font-weight: 600;
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 18px;
+            letter-spacing: .1em;
+            color: #C0271A;
             margin: 0 0 3px;
-            font-family: 'IBM Plex Mono', monospace;
         }
 
         .rc-brand p {
@@ -1009,20 +1102,19 @@
         .rc-brand .rc-method-badge {
             display: inline-block;
             margin-top: 6px;
-            padding: 2px 10px;
-            border: 1px solid #374151;
-            border-radius: 2px;
-            font-size: 10px;
-            font-weight: 600;
-            letter-spacing: .08em;
-            text-transform: uppercase;
-            color: #111827;
+            padding: 2px 12px;
+            background: #C0271A;
+            color: #F5C518;
+            border-radius: 99px;
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 11px;
+            letter-spacing: .1em;
         }
 
         .rc-meta {
             padding-bottom: 10px;
             margin-bottom: 10px;
-            border-bottom: 1px dashed #9ca3af;
+            border-bottom: 1px dashed #f0d9a0;
         }
 
         .rc-meta-row {
@@ -1034,19 +1126,19 @@
         }
 
         .rc-meta-row span:first-child {
-            color: #6b7280;
+            color: #9ca3af;
         }
 
         .rc-items-head {
             display: flex;
             justify-content: space-between;
             font-size: 10px;
-            font-weight: 600;
+            font-weight: 700;
             letter-spacing: .08em;
             text-transform: uppercase;
-            color: #6b7280;
+            color: #9ca3af;
             padding-bottom: 5px;
-            border-bottom: 1px solid #d1d5db;
+            border-bottom: 1px solid #f0d9a0;
             margin-bottom: 5px;
         }
 
@@ -1055,13 +1147,13 @@
             justify-content: space-between;
             align-items: baseline;
             padding: 5px 0;
-            border-bottom: 1px dashed #e5e7eb;
+            border-bottom: 1px dashed #f5e6c8;
         }
 
         .rc-item-name {
             font-size: 12px;
-            font-weight: 500;
-            color: #111827;
+            font-weight: 700;
+            color: #1f1f1f;
         }
 
         .rc-item-detail {
@@ -1072,13 +1164,14 @@
 
         .rc-item-sub {
             font-size: 12px;
-            font-weight: 500;
+            font-weight: 700;
             white-space: nowrap;
+            color: #C0271A;
         }
 
         .rc-sum {
             padding: 10px 0 8px;
-            border-bottom: 1px dashed #9ca3af;
+            border-bottom: 1px dashed #f0d9a0;
         }
 
         .rc-sum-row {
@@ -1090,12 +1183,13 @@
         }
 
         .rc-sum-row.rc-total {
-            font-size: 14px;
-            font-weight: 600;
-            color: #111827;
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 16px;
+            letter-spacing: .06em;
+            color: #C0271A;
             margin-top: 6px;
             padding-top: 6px;
-            border-top: 1px solid #374151;
+            border-top: 2px solid #C0271A;
         }
 
         .rc-pay {
@@ -1116,44 +1210,45 @@
             align-items: center;
             margin-top: 8px;
             padding: 7px 10px;
-            border: 1px solid #059669;
-            border-radius: 3px;
-            background: #f0fdf4;
+            border: 2px solid #F5C518;
+            border-radius: 6px;
+            background: #FFF8E7;
         }
 
         .rc-kembalian-box span {
             font-size: 11px;
-            color: #166534;
-            font-weight: 500;
+            color: #9B1E13;
+            font-weight: 700;
         }
 
         .rc-kembalian-box strong {
-            font-size: 13px;
-            font-weight: 600;
-            color: #059669;
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 16px;
+            color: #C0271A;
+            letter-spacing: .04em;
         }
 
         .rc-footer {
             margin-top: 14px;
             padding-top: 12px;
-            border-top: 1px dashed #9ca3af;
+            border-top: 1px dashed #f0d9a0;
             text-align: center;
         }
 
         .rc-footer p {
             font-size: 11px;
-            color: #6b7280;
+            color: #9ca3af;
             margin: 2px 0;
         }
 
         .rc-footer .rc-wave {
-            color: #9ca3af;
+            color: #f0d9a0;
             letter-spacing: .2em;
             font-size: 10px;
             margin-top: 6px;
         }
 
-        /* ── STRUK ACTIONS (tanpa PDF/Excel) ── */
+        /* ── RECEIPT BUTTONS ── */
         .receipt-btn-group {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -1169,32 +1264,31 @@
             padding: 9px 12px;
             border-radius: 8px;
             font-size: 12px;
-            font-weight: 600;
+            font-weight: 700;
             cursor: pointer;
-            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-family: 'Nunito', sans-serif;
             transition: background .15s;
-            border: 1.5px solid;
-            text-align: center;
+            border: 2px solid;
         }
 
         .btn-rc-print {
             background: #fff;
-            border-color: #e5e7eb;
+            border-color: #f0d9a0;
             color: #374151;
         }
 
         .btn-rc-print:hover {
-            background: #f3f4f6;
+            background: #FFF8E7;
         }
 
         .btn-rc-sheets {
-            background: #f0f9ff;
-            border-color: #bae6fd;
-            color: #0369a1;
+            background: #FFF8E7;
+            border-color: #F5C518;
+            color: #9B1E13;
         }
 
         .btn-rc-sheets:hover {
-            background: #e0f2fe;
+            background: #fef3c7;
         }
 
         .btn-rc-sheets:disabled {
@@ -1207,21 +1301,21 @@
             margin-top: 8px;
             padding: 11px;
             border-radius: 10px;
-            border: 1.5px solid #bbf7d0;
-            background: #ecfdf5;
-            color: #047857;
-            font-size: 13px;
-            font-weight: 700;
+            border: none;
+            background: #C0271A;
+            color: #F5C518;
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 17px;
+            letter-spacing: .08em;
             cursor: pointer;
-            font-family: 'Plus Jakarta Sans', sans-serif;
             transition: background .15s;
         }
 
         .btn-rc-new-trx:hover {
-            background: #d1fae5;
+            background: #9B1E13;
         }
 
-        /* ── MODAL LAPORAN ── */
+        /* ── LAPORAN MODAL ── */
         .laporan-modal-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -1230,22 +1324,23 @@
         }
 
         .lap-stat {
-            background: #f8fafc;
+            background: #FFF8E7;
             border-radius: 12px;
             padding: 14px 16px;
-            border: 1px solid #e9eaec;
+            border: 2px solid #f0d9a0;
         }
 
         .lap-stat .ls-label {
             font-size: 11px;
             color: #9ca3af;
-            font-weight: 500;
+            font-weight: 700;
         }
 
         .lap-stat .ls-val {
-            font-size: 20px;
-            font-weight: 700;
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 24px;
             margin-top: 4px;
+            letter-spacing: .04em;
         }
 
         .btn-lap-action {
@@ -1256,23 +1351,23 @@
             width: 100%;
             padding: 12px;
             border-radius: 11px;
-            border: 1.5px solid;
+            border: 2px solid;
             font-size: 13px;
-            font-weight: 600;
+            font-weight: 700;
             cursor: pointer;
-            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-family: 'Nunito', sans-serif;
             transition: background .15s;
             margin-bottom: 8px;
         }
 
         .btn-lap-sheets {
-            background: #f0f9ff;
-            border-color: #bae6fd;
-            color: #0369a1;
+            background: #FFF8E7;
+            border-color: #F5C518;
+            color: #9B1E13;
         }
 
         .btn-lap-sheets:hover {
-            background: #e0f2fe;
+            background: #fef3c7;
         }
 
         .btn-lap-sheets:disabled {
@@ -1280,21 +1375,20 @@
             cursor: not-allowed;
         }
 
-        /* ── GOOGLE SHEETS MODAL ── */
+        /* ── SHEETS CONFIG ── */
         .sheets-config {
-            background: #f8fafc;
+            background: #FFF8E7;
             border-radius: 12px;
             padding: 14px 16px;
-            border: 1px solid #e9eaec;
+            border: 2px solid #f0d9a0;
             margin-bottom: 12px;
         }
 
         .sheets-config label {
-            font-size: 11px;
-            font-weight: 700;
-            letter-spacing: .08em;
-            text-transform: uppercase;
-            color: #9ca3af;
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 13px;
+            letter-spacing: .1em;
+            color: #C0271A;
             display: block;
             margin-bottom: 6px;
         }
@@ -1306,17 +1400,19 @@
         }
 
         .sheets-config .hint code {
-            background: #e9eaec;
+            background: #f0d9a0;
             padding: 1px 5px;
             border-radius: 4px;
-            font-family: 'IBM Plex Mono', monospace;
+            font-family: 'Courier New', monospace;
+            color: #9B1E13;
         }
 
+        /* ── SYNC STATUS ── */
         .sync-status {
             border-radius: 10px;
             padding: 10px 14px;
             font-size: 12px;
-            font-weight: 500;
+            font-weight: 700;
             margin-top: 8px;
             display: none;
         }
@@ -1334,9 +1430,9 @@
         }
 
         .sync-wait {
-            background: #f0f9ff;
-            color: #0369a1;
-            border: 1px solid #bae6fd;
+            background: #FFF8E7;
+            color: #9B1E13;
+            border: 1px solid #F5C518;
         }
 
         .spinner {
@@ -1356,9 +1452,9 @@
             }
         }
 
+        /* ── PRINT ── */
         @media print {
 
-            /* Sembunyikan panel utama */
             .pos-wrap,
             .topbar,
             #modal-menu,
@@ -1368,7 +1464,6 @@
                 display: none !important;
             }
 
-            /* Overlay struk — jadikan static, hilangkan backdrop */
             #modal-receipt {
                 position: static !important;
                 background: none !important;
@@ -1391,7 +1486,6 @@
                 border-radius: 0 !important;
             }
 
-            /* Sembunyikan tombol di struk */
             .modal-close,
             .receipt-btn-group,
             .btn-rc-new-trx,
@@ -1405,6 +1499,7 @@
             }
         }
 
+        /* ── RESPONSIVE ── */
         @media (max-width: 768px) {
             .pos-wrap {
                 grid-template-columns: 1fr;
@@ -1435,60 +1530,74 @@
             {{-- Topbar --}}
             <div class="topbar">
                 <div>
-                    <h1>POS Kasir</h1>
-                    <p>Sistem penjualan harian, inventori stok, dan checkout.</p>
+                    <h1>POS KASIR</h1>
+                    <p>Sistem penjualan harian · inventori stok · checkout</p>
                 </div>
+
                 <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-                    <span class="badge">{{ $selectedShift?->user->name ?? auth()->user()->name }}</span>
-                    <span class="badge badge-green">{{ $selectedShift ? 'Kasir shift' : auth()->user()->role }}</span>
-
-                    <button type="button" class="btn-laporan-topbar" onclick="openLaporanModal()">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
-                            stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                        </svg>
-                        Laporan Hari Ini
+                    <button id="btn-toggle-shift-report" class="btn-laporan-topbar" onclick="toggleShiftReport()">
+                        Laporan Shift
                     </button>
 
-                    {{-- Tombol sync Google Sheets --}}
-                    <button type="button" class="btn-sheets-topbar" id="btn-sheets-topbar" onclick="openSheetsModal()">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
-                            stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2" />
-                        </svg>
-                        Sync Sheets
+                    <button id="btn-shift" class="btn-laporan-topbar" style="background:#16a34a;color:white"
+                        onclick="handleShiftButton()">
+                        Awali Shift 1
                     </button>
-                    <button type="button" class="btn-laporan-topbar" onclick="openRiwayatModal()"
-                        style="background:#f5f3ff;color:#6d28d9;border-color:#ddd6fe">
-                        📋 Riwayat
-                    </button>
+                </div>
 
-                    {{-- Tambahkan di dalam div topbar, sebelum tombol Keluar --}}
-                    <a href="{{ route('attendance.index') }}"
+                <div class="shift-report" id="shift-report" style="display:none">
+                    <div class="shift-report-title">Laporan Shift Realtime</div>
+                    <div class="shift-report-line">
+                        <span>Status Shift</span>
+                        <strong id="shift-current">Belum dimulai</strong>
+                    </div>
+                    <div class="shift-report-line">
+                        <span>Cash</span>
+                        <strong id="shift-cash">Rp0</strong>
+                    </div>
+                    <div class="shift-report-line">
+                        <span>QRIS</span>
+                        <strong id="shift-qris">Rp0</strong>
+                    </div>
+                    <div class="shift-report-line">
+                        <span>GoFood</span>
+                        <strong id="shift-gofood">Rp0</strong>
+                    </div>
+                    <div class="shift-report-line">
+                        <span>ShopeeFood</span>
+                        <strong id="shift-shopeefood">Rp0</strong>
+                    </div>
+                    <div class="shift-report-line shift-total">
+                        <span>Shift 1</span>
+                        <strong id="shift1-total">Rp0</strong>
+                    </div>
+                    <div class="shift-report-line shift-total">
+                        <span>Shift 2</span>
+                        <strong id="shift2-total">Rp0</strong>
+                    </div>
+                    <button id="btn-reset-shift-report" class="btn-laporan-topbar" onclick="resetShiftReportData()"
+                        style="margin-top:12px; font-size:12px; padding:8px 12px; background:#000; color:#fff; border-radius:8px;">
+                        Reset Laporan Shift
+                    </button>
+                </div>
+
+                <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+                    <button type="button" class="btn-laporan-topbar" onclick="openRiwayatModal()">
+                        Riwayat Pesanan
+                    </button>
+                    <a href="{{ route('attendance.reset') }}"
                         style="display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:99px;
-          background:#fef3c7;color:#92400e;border:1px solid #fde68a;font-size:12px;
-          font-weight:600;text-decoration:none;transition:background .15s"
-                        onmouseover="this.style.background='#fde68a'" onmouseout="this.style.background='#fef3c7'">
-                        👤 Absensi
+                        background:rgba(245,197,24,0.15);color:#F5C518;border:1px solid rgba(245,197,24,0.35);
+                        font-size:12px;font-weight:700;text-decoration:none;transition:background .15s;font-family:'Nunito',sans-serif"
+                        onmouseover="this.style.background='rgba(245,197,24,0.25)'"
+                        onmouseout="this.style.background='rgba(245,197,24,0.15)'">
+                        Absensi Karyawan
                     </a>
-
-                    <form action="{{ route('attendance.clock-out') }}" method="POST"
-    onsubmit="return confirm('Yakin ingin menyelesaikan shift dan mencatat absen pulang?')">
+git 
+<form method="POST" action="{{ route('logout') }}" style="display:inline;margin:0">
     @csrf
-    <button type="submit"
-        style="display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:99px;
-        background:#fef2f2;color:#b91c1c;border:1px solid #fecaca;font-size:12px;
-        font-weight:600;cursor:pointer;font-family:inherit">
-        ⏱ Selesai Shift
-    </button>
+    <button type="submit" class="btn-logout">Keluar</button>
 </form>
-
-                    <form action="{{ route('logout') }}" method="POST">
-                        @csrf
-                        <button type="submit" class="btn-logout">Keluar</button>
-                    </form>
                 </div>
             </div>
 
@@ -1511,10 +1620,8 @@
             @endif
             <div class="alert alert-danger" id="ajax-error" style="display:none"></div>
 
-            {{-- ⚠ STOCK WARNING BANNER — muncul jika ada stok ≤ 20 --}}
-            @php
-                $lowStocks = $stocks->filter(fn($s) => $s->jumlah_stok <= 20);
-            @endphp
+            {{-- Stock Warning Banner --}}
+            @php $lowStocks = $stocks->filter(fn($s) => $s->jumlah_stok <= 20); @endphp
             @if ($lowStocks->count())
                 <div class="stock-warning-banner">
                     <div class="swb-icon">⚠️</div>
@@ -1526,8 +1633,7 @@
                                 @php $stok = $s->jumlah_stok; @endphp
                                 <span
                                     class="swb-chip {{ $stok <= 5 ? 'swb-chip-red' : ($stok <= 10 ? 'swb-chip-yellow' : 'swb-chip-orange') }}">
-                                    {{ $s->pcsTahu?->nama_pcs ?? '—' }}:
-                                    {{ $stok }} pcs
+                                    {{ $s->pcsTahu?->nama_pcs ?? '—' }}: {{ $stok }} pcs
                                     @if ($stok <= 5)
                                         🔴
                                     @elseif($stok <= 10)
@@ -1542,11 +1648,13 @@
                 </div>
             @endif
 
+
             {{-- Stats --}}
             <div class="stat-row">
                 <div class="stat-card">
                     <div class="s-label">Total Penjualan Hari Ini</div>
-                    <div class="s-val s-emerald" id="stat-sales">Rp{{ number_format($todaySales ?? 0, 0, ',', '.') }}
+                    <div class="s-val s-emerald" id="stat-sales">
+                        Rp{{ number_format($todaySales ?? 0, 0, ',', '.') }}
                     </div>
                 </div>
                 <div class="stat-card">
@@ -1559,7 +1667,7 @@
                 </div>
             </div>
 
-            {{-- Metode pembayaran --}}
+            {{-- Metode Pembayaran --}}
             <div class="card">
                 <div class="card-title">Metode Pembayaran</div>
                 <div class="pay-methods" id="pay-methods">
@@ -1570,13 +1678,14 @@
                     @endforeach
                 </div>
             </div>
-            {{-- ═══ MODAL 6 — RIWAYAT TRANSAKSI ═══ --}}
+
+            {{-- Modal Riwayat --}}
             <div class="overlay" id="modal-riwayat" style="display:none"
                 onclick="closeModalOutside(event,'modal-riwayat')">
                 <div class="modal modal-wide">
                     <div class="modal-head">
                         <div>
-                            <h2>📋 Riwayat Transaksi Hari Ini</h2>
+                            <h2>📋 Riwayat Transaksi</h2>
                             <p id="riwayat-tanggal">—</p>
                         </div>
                         <button class="modal-close" onclick="closeModal('modal-riwayat')">✕</button>
@@ -1585,7 +1694,7 @@
                 </div>
             </div>
 
-            {{-- Menu cards --}}
+            {{-- Menu Cards --}}
             <div class="card">
                 <div class="card-title">Pilih Menu</div>
                 <div class="menu-grid">
@@ -1599,7 +1708,7 @@
                 </div>
             </div>
 
-            {{-- Stok inventori (3-level color) --}}
+            {{-- Stok Inventori --}}
             <div class="card">
                 <div class="card-title">Stok Inventori</div>
                 <div class="stock-grid" id="stock-grid">
@@ -1608,8 +1717,7 @@
                         <div
                             class="stk {{ $stok <= 5 ? 'stk-red' : ($stok <= 10 ? 'stk-yellow' : ($stok <= 20 ? 'stk-orange' : 'stk-ok')) }}">
                             <h4>{{ $s->pcsTahu?->nama_pcs ?? '—' }}</h4>
-                            <span>
-                                {{ $stok }} pcs
+                            <span>{{ $stok }} pcs
                                 @if ($stok <= 5)
                                     hampir habis
                                 @elseif($stok <= 10)
@@ -1629,13 +1737,13 @@
         <div class="pos-right">
             <div class="rp-header">
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
-                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                    fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
                     stroke-linejoin="round">
                     <circle cx="9" cy="21" r="1" />
                     <circle cx="20" cy="21" r="1" />
                     <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
                 </svg>
-                Keranjang
+                KERANJANG
             </div>
 
             <div class="cart-scroll" id="cart-scroll">
@@ -1690,7 +1798,7 @@
                         <path stroke-linecap="round" stroke-linejoin="round"
                             d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13l-1.5 7.5M7 13l-4-8m4 8h10m0 0l1.5 7.5M17 13v0" />
                     </svg>
-                    Checkout
+                    CHECKOUT
                 </button>
             </div>
         </div>
@@ -1715,9 +1823,10 @@
                 <div class="modal-section">
                     <div class="modal-section-title">Detail pesanan</div>
                     <div class="order-box">
-                        <div style="font-size:12px;color:#9ca3af">Harga saat ini</div>
+                        <div style="font-size:12px;color:#9ca3af;font-weight:700">Harga saat ini</div>
                         <div class="price-display" id="mm-price">Rp0</div>
-                        <div style="font-size:12px;color:#9ca3af;margin-bottom:8px">Jumlah pesanan</div>
+                        <div style="font-size:12px;color:#9ca3af;margin-bottom:8px;font-weight:700">Jumlah pesanan
+                        </div>
                         <div class="qty-control">
                             <button class="qty-btn" onclick="adjModalQty(-1)">−</button>
                             <span class="qty-val" id="mm-qty">1</span>
@@ -1750,25 +1859,25 @@
                 <ul class="confirm-list" id="co-items"></ul>
                 <div class="confirm-total-row">
                     <span>Total</span>
-                    <span id="co-total" style="color:#059669"></span>
+                    <span id="co-total"></span>
                 </div>
             </div>
             <div
-                style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px;padding:14px;background:#f8fafc;border-radius:12px;border:1px solid #e9eaec;font-size:13px">
+                style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px;padding:14px;background:#FFF8E7;border-radius:12px;border:2px solid #f0d9a0;font-size:13px">
                 <div>
-                    <div style="color:#9ca3af;font-size:11px;text-transform:uppercase;letter-spacing:.08em">Metode
-                    </div>
-                    <div style="font-weight:700;margin-top:4px" id="co-method">—</div>
+                    <div style="color:#9ca3af;font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:.1em">
+                        Metode</div>
+                    <div style="font-weight:800;margin-top:4px;color:#C0271A" id="co-method">—</div>
                 </div>
                 <div>
-                    <div style="color:#9ca3af;font-size:11px;text-transform:uppercase;letter-spacing:.08em">Kembalian
-                    </div>
-                    <div style="font-weight:700;color:#059669;margin-top:4px" id="co-change">Rp0</div>
+                    <div style="color:#9ca3af;font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:.1em">
+                        Kembalian</div>
+                    <div style="font-weight:800;color:#059669;margin-top:4px" id="co-change">Rp0</div>
                 </div>
             </div>
-            <div style="background:#f8fafc;border-radius:12px;padding:14px;border:1px solid #e9eaec;margin-top:14px">
+            <div style="background:#FFF8E7;border-radius:12px;padding:14px;border:2px solid #f0d9a0;margin-top:14px">
                 <div
-                    style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#9ca3af;margin-bottom:10px">
+                    style="font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:.1em;color:#C0271A;margin-bottom:10px">
                     Konfirmasi Metode Pembayaran
                 </div>
                 <div id="co-pay-methods" style="display:flex;gap:8px;flex-wrap:wrap"></div>
@@ -1776,13 +1885,14 @@
             <div class="modal-actions">
                 <button class="btn-modal-cancel" id="btn-cancel-checkout"
                     onclick="closeModal('modal-checkout')">Batal</button>
-                <button class="btn-modal-confirm" id="btn-confirm-checkout" onclick="saveTransaction()">✓ Ya, Simpan
+                <button class="btn-modal-confirm" id="btn-confirm-checkout" onclick="saveTransaction()">✓ Ya,
+                    Simpan
                     Transaksi</button>
             </div>
         </div>
     </div>
 
-    {{-- ═══ MODAL 3 — STRUK (tanpa PDF/Excel, ada tombol Sync Sheets) ═══ --}}
+    {{-- ═══ MODAL 3 — STRUK ═══ --}}
     <div class="overlay" id="modal-receipt" style="display:none">
         <div class="modal modal-sm">
             <div class="receipt-thermal" id="receipt-content">
@@ -1816,53 +1926,13 @@
                     <div class="rc-wave">- - - - - - - - - - -</div>
                 </div>
             </div>
-
-            {{-- Hanya Print + Sync Sheets --}}
             <div class="receipt-btn-group">
                 <button class="btn-rc btn-rc-print" onclick="window.print()">🖨 Print Struk</button>
-                <button class="btn-rc btn-rc-sheets" id="btn-rc-sheets" onclick="syncToSheets()">
-                    📊 Sync ke Sheets
-                </button>
+                <button class="btn-rc btn-rc-sheets" id="btn-rc-sheets" onclick="syncToSheets()">📊 Sync ke
+                    Sheets</button>
             </div>
             <div id="sync-status-receipt" class="sync-status"></div>
-
             <button class="btn-rc-new-trx" onclick="resetAndClose()">✓ Selesai & Transaksi Baru</button>
-        </div>
-    </div>
-
-    {{-- ═══ MODAL 4 — LAPORAN ═══ --}}
-    <div class="overlay" id="modal-laporan" style="display:none" onclick="closeModalOutside(event,'modal-laporan')">
-        <div class="modal modal-sm">
-            <div class="modal-head">
-                <div>
-                    <h2>Laporan Hari Ini</h2>
-                    <p id="lap-tanggal">—</p>
-                </div>
-                <button class="modal-close" onclick="closeModal('modal-laporan')">✕</button>
-            </div>
-            <div class="laporan-modal-grid">
-                <div class="lap-stat">
-                    <div class="ls-label">Total Penjualan</div>
-                    <div class="ls-val s-emerald" id="lap-sales">Rp0</div>
-                </div>
-                <div class="lap-stat">
-                    <div class="ls-label">Jumlah Transaksi</div>
-                    <div class="ls-val s-indigo" id="lap-trx">0</div>
-                </div>
-                <div class="lap-stat">
-                    <div class="ls-label">Item Terjual</div>
-                    <div class="ls-val s-amber" id="lap-items">0</div>
-                </div>
-                <div class="lap-stat">
-                    <div class="ls-label">Total Diskon</div>
-                    <div class="ls-val" style="color:#6b7280" id="lap-disc">Rp0</div>
-                </div>
-            </div>
-            {{-- Hanya Sync Sheets, tanpa PDF/Excel --}}
-            <button class="btn-lap-action btn-lap-sheets" id="btn-lap-sheets" onclick="syncToSheets()">
-                📊 Sync Laporan ke Google Sheets
-            </button>
-            <div id="sync-status-laporan" class="sync-status"></div>
         </div>
     </div>
 
@@ -1872,49 +1942,48 @@
             <div class="modal-head">
                 <div>
                     <h2>📊 Sync ke Google Sheets</h2>
-                    <p>Kirim data penjualan hari ini ke spreadsheet.</p>
+                    <p>Kirim data penjualan ke spreadsheet owner.</p>
                 </div>
                 <button class="modal-close" onclick="closeModal('modal-sheets')">✕</button>
             </div>
 
-            <div class="sheets-config">
-                <label>Spreadsheet ID</label>
-                <input id="sheets-id-input" class="input-sm" type="text"
-                    placeholder="Contoh: 1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgVE2upms" oninput="saveSheetsId()">
-                <div class="hint">
-                    Ambil dari URL spreadsheet kamu:<br>
-                    <code>docs.google.com/spreadsheets/d/<strong>[ID DI SINI]</strong>/edit</code>
+            @if (auth()->user()->role === 'owner')
+                <div class="sheets-config">
+                    <label>Spreadsheet ID</label>
+                    <input id="sheets-id-input" class="input-sm" type="text"
+                        placeholder="1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgVE2upms" oninput="saveSheetsId()">
+                    <div class="hint">Ambil dari URL: <code>spreadsheets/d/<strong>[ID]</strong>/edit</code>
+                    </div>
                 </div>
-            </div>
-
-            {{-- <div class="sheets-config" style="margin-top:0">
-                <label>Nama Sheet (Tab)</label>
-                <input id="sheets-tab-input" class="input-sm" type="text" placeholder="Contoh: Laporan"
-                    value="Laporan" oninput="saveSheetsTab()">
-                <div class="hint">
-                    Nama tab/sheet di dalam spreadsheet. Pastikan tab sudah ada.
+                <div class="sheets-config" style="margin-top:0">
+                    <label>Periode Laporan</label>
+                    <div style="display:flex;gap:8px;flex-wrap:wrap">
+                        <button class="pay-btn active" id="periode-harian" onclick="setPeriode(this,'harian')">📅
+                            Harian</button>
+                        <button class="pay-btn" id="periode-mingguan" onclick="setPeriode(this,'mingguan')">📆
+                            Mingguan</button>
+                        <button class="pay-btn" id="periode-bulanan" onclick="setPeriode(this,'bulanan')">🗓
+                            Bulanan</button>
+                    </div>
                 </div>
-            </div> --}}
-
-            <div id="sync-status-modal" class="sync-status"></div>
-
-            <div class="modal-actions" style="margin-top:14px">
-                <button class="btn-modal-cancel" onclick="closeModal('modal-sheets')">Tutup</button>
-                <button class="btn-modal-confirm" id="btn-do-sync" onclick="doSync()">
-                    📊 Sync Sekarang
-                </button>
-            </div>
-
-            <div
-                style="background:#fffbeb;border:1px solid #fde68a;border-radius:10px;padding:12px 14px;margin-top:12px;font-size:11px;color:#92400e;line-height:1.6">
-                <strong>Setup yang diperlukan:</strong><br>
-                1. Buat Google Sheet & catat ID-nya<br>
-                2. Di Laravel, install <code
-                    style="background:#fde68a;padding:1px 4px;border-radius:3px">google/apiclient</code><br>
-                3. Tambahkan route <code style="background:#fde68a;padding:1px 4px;border-radius:3px">POST
-                    /cashier/sync-sheets</code><br>
-                4. Lihat komentar di JS untuk payload yang dikirim
-            </div>
+                <div id="sync-status-modal" class="sync-status"></div>
+                <div class="modal-actions" style="margin-top:14px">
+                    <button class="btn-modal-cancel" onclick="closeModal('modal-sheets')">Tutup</button>
+                    <button class="btn-modal-confirm" id="btn-do-sync" onclick="doSync()">📊 Sync
+                        Sekarang</button>
+                </div>
+            @else
+                <div
+                    style="background:#fef2f2;border:2px solid #fecaca;border-radius:12px;padding:16px;text-align:center;color:#991b1b">
+                    <div style="font-size:24px;margin-bottom:8px">🔒</div>
+                    <div style="font-weight:800;margin-bottom:4px">Akses Terbatas</div>
+                    <div style="font-size:12px">Fitur sync Google Sheets hanya tersedia untuk Owner.</div>
+                </div>
+                <div class="modal-actions" style="margin-top:14px">
+                    <button class="btn-modal-cancel" style="flex:1"
+                        onclick="closeModal('modal-sheets')">Tutup</button>
+                </div>
+            @endif
         </div>
     </div>
 
@@ -1929,9 +1998,9 @@
                         'name' => $menu->namaMenu,
                         'desc' => $menu->deskripsi,
                         'prices' => [
-                            'normal' => (float) ($menu->hargas->whereIn('metode_payment', ['take_away_cash', 'take_away_qris'])->first()?->harga ?? 0),
-                            'gofood' => (float) ($menu->hargas->where('metode_payment', 'gofood')->first()?->harga ?? 0),
-                            'shopeefood' => (float) ($menu->hargas->where('metode_payment', 'shopeefood')->first()?->harga ?? 0),
+                            'normal' => (float) ($menu->hargas->first()?->harga_normal ?? 0),
+                            'gofood' => (float) ($menu->hargas->first()?->harga_gofood ?? 0),
+                            'shopeefood' => (float) ($menu->hargas->first()?->harga_shopeefood ?? 0),
                         ],
                         'details' => $menu->menuDetails
                             ->map(function ($d) use ($stocks) {
@@ -1950,7 +2019,6 @@
                 ->values()
                 ->toArray();
 
-            // Stok list untuk custom menu (flat array)
             $stockList = $stocks
                 ->map(function ($s) {
                     return [
@@ -1964,6 +2032,7 @@
 
             $todayTrxFull = \App\Models\Transaction::with('items')
                 ->whereDate('created_at', today())
+                ->when(auth()->user()?->cabang_id, fn($q, $idCabang) => $q->where('id_cabang', $idCabang))
                 ->get()
                 ->map(
                     fn($t) => [
@@ -1990,7 +2059,6 @@
                 ->values()
                 ->toArray();
 
-            // Snapshot stok saat ini untuk Mutasi Stok sheet
             $stockSnapshot = $stocks
                 ->map(function ($s) {
                     return [
@@ -2004,8 +2072,8 @@
         @endphp
 
         const MENU_DATA = @json($menuData);
-        const STOCK_LIST = @json($stockList); // ← baru, untuk custom menu bahan selector
-        const STOCK_SNAPSHOT = @json($stockSnapshot); // ← baru, untuk Mutasi Stok sheet
+        const STOCK_LIST = @json($stockList);
+        const STOCK_SNAPSHOT = @json($stockSnapshot);
         const KASIR_NAME = @json($selectedShift?->user->name ?? (auth()->user()->name ?? '—'));
         const TANGGAL_HARI = @json(now()->translatedFormat('d F Y'));
         const CHECKOUT_URL = "{{ route('cashier.pos.checkout') }}";
@@ -2016,18 +2084,15 @@
         let cart = [];
         let activeMenu = null;
         let modalQty = 1;
-        let currentPay = '{{ strtolower(str_replace(' ', '', $paymentMethods[0] ?? 'normal')) }}';
+        let currentPay = 'normal';
+        let currentPaymentMethod = 'cash';
         let lastTrxSnapshot = null;
-
-        // Akumulasi mutasi stok hari ini (dikumpulkan dari setiap transaksi yang terjadi di sesi ini)
-        // Format: { pcs_id: { pcs_name, stok_awal, total_dikurangi } }
         let stockMutasiMap = {};
 
-        // Inisialisasi stockMutasiMap dari snapshot awal
         STOCK_SNAPSHOT.forEach(s => {
             stockMutasiMap[s.pcs_id] = {
                 pcs_name: s.pcs_name,
-                stok_awal: s.stok_saat_ini, // stok saat halaman dimuat
+                stok_awal: s.stok_saat_ini,
                 total_dikurangi: 0,
                 stok_akhir: s.stok_saat_ini,
             };
@@ -2039,70 +2104,64 @@
             cash: 'Tunai',
             qris: 'QRIS',
             gofood: 'GoFood',
-            shopeefood: 'ShopeeFood',
+            shopeefood: 'ShopeeFood'
         };
+        const KASIR_ID = @json(auth()->user()->id ?? null);
 
-        // ── RIWAYAT TRANSAKSI ──
         function openRiwayatModal() {
             document.getElementById('riwayat-tanggal').textContent = TANGGAL_HARI;
             const list = document.getElementById('riwayat-list');
-
             if (!todayTrxList.length) {
                 list.innerHTML = '<p style="color:#9ca3af;font-size:13px;padding:16px">Belum ada transaksi hari ini.</p>';
                 openModal('modal-riwayat');
                 return;
             }
-
             list.innerHTML = [...todayTrxList].reverse().map(t => `
-        <div style="border:1px solid #e9eaec;border-radius:12px;padding:14px;margin-bottom:10px">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-                <div>
-                    <span style="font-weight:700;font-size:13px">${trxNo(t.id)}</span>
-                    <span style="font-size:11px;color:#9ca3af;margin-left:8px">${t.created_at}</span>
+                <div style="border:2px solid #f0d9a0;border-radius:12px;padding:14px;margin-bottom:10px;background:#FFFDF5">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+                        <div>
+                            <span style="font-weight:800;font-size:13px;color:#C0271A">${trxNo(t.id)}</span>
+                            <span style="font-size:11px;color:#9ca3af;margin-left:8px">${t.created_at}</span>
+                        </div>
+                        <div style="display:flex;gap:8px;align-items:center">
+                            <span style="font-size:12px;background:#C0271A;color:#F5C518;padding:2px 10px;border-radius:99px;font-weight:700">
+                                ${METHOD_LABELS[t.payment_method] ?? t.payment_method}
+                            </span>
+                            <span style="font-weight:800;color:#C0271A">${fmt(t.total)}</span>
+                            <button onclick="cetakUlang(${t.id})"
+                                style="padding:5px 12px;border-radius:8px;border:2px solid #f0d9a0;background:#fff;font-size:11px;font-weight:700;cursor:pointer;color:#374151">
+                                🖨 Cetak
+                            </button>
+                        </div>
+                    </div>
+                    <div style="font-size:12px;color:#6b7280">
+                        ${(t.items || []).map(i => `${i.nama_item} ×${i.qty} = ${fmt(i.subtotal)}`).join(' &nbsp;·&nbsp; ')}
+                    </div>
+                    ${t.discount > 0 ? `<div style="font-size:11px;color:#d97706;margin-top:4px">Diskon: ${fmt(t.discount)}</div>` : ''}
                 </div>
-                <div style="display:flex;gap:8px;align-items:center">
-                    <span style="font-size:12px;background:#eef2ff;color:#4338ca;padding:2px 10px;border-radius:99px">
-                        ${METHOD_LABELS[t.payment_method] ?? t.payment_method}
-                    </span>
-                    <span style="font-weight:700;color:#059669">${fmt(t.total)}</span>
-                    <button onclick="cetakUlang(${t.id})"
-                        style="padding:5px 12px;border-radius:8px;border:1px solid #e5e7eb;background:#fff;font-size:11px;font-weight:600;cursor:pointer;color:#374151">
-                        🖨 Cetak
-                    </button>
-                </div>
-            </div>
-            <div style="font-size:12px;color:#6b7280">
-                ${(t.items || []).map(i => `${i.nama_item} ×${i.qty} = ${fmt(i.subtotal)}`).join(' &nbsp;·&nbsp; ')}
-            </div>
-            ${t.discount > 0 ? `<div style="font-size:11px;color:#d97706;margin-top:4px">Diskon: ${fmt(t.discount)}</div>` : ''}
-        </div>
-    `).join('');
-
+            `).join('');
             openModal('modal-riwayat');
         }
 
         function cetakUlang(trxId) {
             const t = todayTrxList.find(x => x.id === trxId);
             if (!t) return;
-
-            // Isi ulang struk dengan data transaksi lama
             document.getElementById('rc-datetime').textContent = t.created_at;
             document.getElementById('rc-trxno').textContent = trxNo(t.id);
             document.getElementById('rc-method').textContent = METHOD_LABELS[t.payment_method] ?? t.payment_method;
             document.getElementById('rc-items').innerHTML = (t.items || []).map(item => `
-        <div class="rc-item-row">
-            <div>
-                <div class="rc-item-name">${item.nama_item}</div>
-                <div class="rc-item-detail">${item.qty} x ${fmt(item.unit_price)}</div>
-            </div>
-            <div class="rc-item-sub">${fmt(item.subtotal)}</div>
-        </div>`).join('');
+                <div class="rc-item-row">
+                    <div>
+                        <div class="rc-item-name">${item.nama_item}</div>
+                        <div class="rc-item-detail">${item.qty} x ${fmt(item.unit_price)}</div>
+                    </div>
+                    <div class="rc-item-sub">${fmt(item.subtotal)}</div>
+                </div>`).join('');
             document.getElementById('rc-sub').textContent = fmt(t.sub_total);
             document.getElementById('rc-disc').textContent = fmt(t.discount);
             document.getElementById('rc-total').textContent = fmt(t.total);
             document.getElementById('rc-paid').textContent = fmt(t.money_paid ?? t.total);
             document.getElementById('rc-change').textContent = fmt(Math.max(0, (t.money_paid ?? t.total) - t.total));
-
             closeModal('modal-riwayat');
             openModal('modal-receipt');
         }
@@ -2110,9 +2169,7 @@
         function setCheckoutPayment(btn, method) {
             document.querySelectorAll('#co-pay-methods .pay-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
-            // Update currentPay dan hitung ulang total
             setPaymentMethod(method);
-            // Update tampilan total di modal checkout
             const disc = Math.max(0, parseFloat(document.getElementById('discount').value) || 0);
             const sub = cart.reduce((s, i) => s + i.subtotal, 0);
             const total = Math.max(0, sub - disc);
@@ -2123,12 +2180,14 @@
         }
 
         function setPaymentMethod(method) {
-            currentPay = method;
-            // Update tombol di panel utama juga
+            currentPaymentMethod = method;
+            currentPay = (method === 'cash' || method === 'qris') ? 'normal' : method;
             document.querySelectorAll('#pay-methods .pay-btn').forEach(b => {
                 b.classList.toggle('active', b.dataset.method === method);
             });
-            // Recalculate harga cart
+            document.querySelectorAll('#co-pay-methods .pay-btn').forEach(b => {
+                b.classList.toggle('active', b.dataset.method === method);
+            });
             cart = cart.map(item => {
                 if (item.custom) return item;
                 const m = MENU_DATA.find(x => x.id === item.menuId);
@@ -2144,8 +2203,6 @@
             renderCart();
         }
 
-        // ── FIX updateStats agar sinkron dengan DB ──
-        // Ganti fungsi updateStats yang ada:
         function updateStats() {
             const totalSales = todayTrxList.reduce((s, t) => s + (t.total || 0), 0);
             const totalTrx = todayTrxList.length;
@@ -2163,14 +2220,12 @@
         }
 
         function mStkClass(s) {
-            return s <= 5 ? 'mstk mstk-red' :
-                s <= 10 ? 'mstk mstk-yellow' :
-                s <= 20 ? 'mstk mstk-orange' :
-                'mstk mstk-ok';
+            return s <= 5 ? 'mstk mstk-red' : s <= 10 ? 'mstk mstk-yellow' : s <= 20 ? 'mstk mstk-orange' : 'mstk mstk-ok';
         }
 
         function getPrice(menu) {
-            return Number(menu.prices[currentPay]) || Number(Object.values(menu.prices)[0]) || 0;
+            const key = (currentPay === 'cash' || currentPay === 'qris') ? 'normal' : currentPay;
+            return Number(menu.prices[key]) || Number(Object.values(menu.prices)[0]) || 0;
         }
 
         function nowStr() {
@@ -2190,20 +2245,11 @@
             return 'TRX-' + String(id || 0).padStart(5, '0');
         }
 
-        function updateStats() {
-            const totalSales = todayTrxList.reduce((s, t) => s + (t.total || 0), 0);
-            const totalTrx = todayTrxList.length;
-            const totalItems = todayTrxList.reduce((s, t) =>
-                s + (t.items || []).reduce((si, i) => si + (i.qty || 0), 0), 0);
-            document.getElementById('stat-sales').textContent = fmt(totalSales);
-            document.getElementById('stat-trx').textContent = totalTrx;
-            document.getElementById('stat-items').textContent = totalItems;
-        }
-
         function setPayment(btn, method) {
             document.querySelectorAll('.pay-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
-            currentPay = method;
+            currentPaymentMethod = method;
+            currentPay = (method === 'cash' || method === 'qris') ? 'normal' : method;
             cart = cart.map(item => {
                 if (item.custom) return item;
                 const m = MENU_DATA.find(x => x.id === item.menuId);
@@ -2239,7 +2285,6 @@
             if (event.target.id === id) closeModal(id);
         }
 
-        /* ── MODAL 1 — PILIH MENU ── */
         function openMenuModal(menuId) {
             activeMenu = MENU_DATA.find(m => m.id === menuId);
             if (!activeMenu) return;
@@ -2254,11 +2299,8 @@
                 stocksEl.innerHTML = '<p style="color:#9ca3af;font-size:12px">Tidak ada data bahan terdaftar.</p>';
             } else {
                 activeMenu.details.forEach(d => {
-                    stocksEl.innerHTML += `
-                    <div class="${mStkClass(d.stock)}">
-                        <h5>${d.pcs_name}</h5>
-                        <span>Per porsi: ${d.qty} pcs &nbsp;·&nbsp; Sisa stok: <strong>${d.stock} pcs</strong>${d.stock <= 20 ? ' ⚠' : ''}</span>
-                    </div>`;
+                    stocksEl.innerHTML +=
+                        `<div class="${mStkClass(d.stock)}"><h5>${d.pcs_name}</h5><span>Per porsi: ${d.qty} pcs &nbsp;·&nbsp; Sisa stok: <strong>${d.stock} pcs</strong>${d.stock <= 20 ? ' ⚠' : ''}</span></div>`;
                 });
             }
             openModal('modal-menu');
@@ -2284,7 +2326,7 @@
                     unitPrice: up,
                     subtotal: up * modalQty,
                     custom: false,
-                    details: activeMenu.details,
+                    details: activeMenu.details
                 });
             }
             closeModal('modal-menu');
@@ -2303,7 +2345,6 @@
                 alert('Masukkan harga yang valid.');
                 return;
             }
-
             cart.push({
                 menuId: null,
                 name,
@@ -2311,13 +2352,11 @@
                 unitPrice: price,
                 subtotal: price * qty,
                 custom: true,
-                details: [], // tidak ada bahan stok
+                details: []
             });
-
             document.getElementById('custom-name').value = '';
             document.getElementById('custom-price').value = '';
             document.getElementById('custom-qty').value = 1;
-
             renderCart();
         }
 
@@ -2326,7 +2365,6 @@
             renderCart();
         }
 
-        /* ── RENDER CART ── */
         function renderCart() {
             const container = document.getElementById('cart-items-container');
             const empty = document.getElementById('cart-empty');
@@ -2345,22 +2383,19 @@
             cart.forEach((item, i) => {
                 const div = document.createElement('div');
                 div.className = 'cart-item-row';
-                // Tampilkan bahan untuk custom menu
                 const bahanInfo = item.custom && item.details?.length ?
-                    `<div style="font-size:10px;color:#6b7280;margin-top:2px">
-                       Bahan: ${item.details.map(d => `${d.pcs_name} ×${d.qty}`).join(', ')}
-                   </div>` :
+                    `<div style="font-size:10px;color:#6b7280;margin-top:2px">Bahan: ${item.details.map(d => `${d.pcs_name} ×${d.qty}`).join(', ')}</div>` :
                     '';
                 div.innerHTML = `
-                <div>
-                    <div class="ci-name">${item.name}${item.custom ? '<span class="custom-badge">custom</span>' : ''}</div>
-                    <div class="ci-qty">x${item.qty} &times; ${fmt(item.unitPrice)}</div>
-                    ${bahanInfo}
-                </div>
-                <div style="text-align:right">
-                    <div class="ci-price">${fmt(item.subtotal)}</div>
-                    <div class="ci-remove" onclick="removeCartItem(${i})">✕ hapus</div>
-                </div>`;
+                    <div>
+                        <div class="ci-name">${item.name}${item.custom ? '<span class="custom-badge">custom</span>' : ''}</div>
+                        <div class="ci-qty">x${item.qty} &times; ${fmt(item.unitPrice)}</div>
+                        ${bahanInfo}
+                    </div>
+                    <div style="text-align:right">
+                        <div class="ci-price">${fmt(item.subtotal)}</div>
+                        <div class="ci-remove" onclick="removeCartItem(${i})">✕ hapus</div>
+                    </div>`;
                 container.appendChild(div);
             });
             const disc = Math.max(0, parseFloat(document.getElementById('discount').value) || 0);
@@ -2382,20 +2417,16 @@
             document.getElementById('change-display').textContent = fmt(Math.max(0, paid - total));
         }
 
-        /* ── MODAL 2 — KONFIRMASI CHECKOUT ── */
         function openCheckoutModal() {
             if (!cart.length) {
                 alert('Keranjang masih kosong. Tambahkan menu terlebih dahulu.');
                 return;
             }
-
             const disc = Math.max(0, parseFloat(document.getElementById('discount').value) || 0);
             const sub = cart.reduce((s, i) => s + i.subtotal, 0);
             const total = Math.max(0, sub - disc);
             const paid = parseFloat(document.getElementById('money-paid').value) || 0;
             const change = Math.max(0, paid - total);
-
-            // Stok impact
             const stockImpact = {};
             cart.forEach(item => {
                 (item.details || []).forEach(d => {
@@ -2408,7 +2439,6 @@
                     stockImpact[key].used += d.qty * item.qty;
                 });
             });
-
             const coStocks = document.getElementById('co-stocks');
             coStocks.innerHTML = '';
             if (!Object.keys(stockImpact).length) {
@@ -2417,26 +2447,21 @@
             } else {
                 Object.entries(stockImpact).forEach(([name, v]) => {
                     const sisa = v.stock - v.used;
-                    coStocks.innerHTML += `
-                <div class="${mStkClass(sisa)}" style="margin-bottom:6px">
-                    <h5>${name}</h5>
-                    <span>Sisa: <strong>${v.stock} pcs</strong> − ${v.used} pcs = <strong>${sisa} pcs</strong>${sisa <= 20 ? ' ⚠' : ''}</span>
-                </div>`;
+                    coStocks.innerHTML +=
+                        `<div class="${mStkClass(sisa)}" style="margin-bottom:6px"><h5>${name}</h5><span>Sisa: <strong>${v.stock} pcs</strong> − ${v.used} pcs = <strong>${sisa} pcs</strong>${sisa <= 20 ? ' ⚠' : ''}</span></div>`;
                 });
             }
-
-            // Items list
-            document.getElementById('co-items').innerHTML = cart.map(item => `
-        <li>
-            <div><div class="cn">${item.name}</div><div class="cq">x${item.qty}</div></div>
-            <div class="cs">${fmt(item.subtotal)}</div>
-        </li>`).join('');
-
+            document.getElementById('co-items').innerHTML = cart.map(item =>
+                `
+                <li><div><div class="cn">${item.name}</div><div class="cq">x${item.qty}</div></div><div class="cs">${fmt(item.subtotal)}</div></li>`
+            ).join('');
+            if (!['cash', 'qris', 'gofood', 'shopeefood'].includes(currentPaymentMethod)) {
+                currentPaymentMethod = 'cash';
+                currentPay = 'normal';
+            }
             document.getElementById('co-total').textContent = fmt(total);
             document.getElementById('co-change').textContent = fmt(change);
-            document.getElementById('co-method').textContent = METHOD_LABELS[currentPay] ?? currentPay;
-
-            // Render tombol konfirmasi metode
+            document.getElementById('co-method').textContent = METHOD_LABELS[currentPaymentMethod] ?? currentPaymentMethod;
             const coPayMethods = document.getElementById('co-pay-methods');
             if (coPayMethods) {
                 const methods = ['cash', 'qris', 'gofood', 'shopeefood'];
@@ -2446,34 +2471,28 @@
                     gofood: 'GoFood',
                     shopeefood: 'ShopeeFood'
                 };
-                coPayMethods.innerHTML = methods.map(m => `
-            <button class="pay-btn ${currentPay === m ? 'active' : ''}"
-                onclick="setCheckoutPayment(this, '${m}')"
-                data-method="${m}">${labels[m]}</button>
-        `).join('');
+                coPayMethods.innerHTML = methods.map(m =>
+                    `<button class="pay-btn ${currentPaymentMethod === m ? 'active' : ''}" onclick="setCheckoutPayment(this, '${m}')" data-method="${m}">${labels[m]}</button>`
+                ).join('');
             }
-
             openModal('modal-checkout');
         }
 
-        /* ── SIMPAN TRANSAKSI ── */
         async function saveTransaction() {
             const btnConfirm = document.getElementById('btn-confirm-checkout');
             const btnCancel = document.getElementById('btn-cancel-checkout');
             btnConfirm.disabled = true;
             btnConfirm.innerHTML = '<span class="spinner"></span> Menyimpan...';
             btnCancel.disabled = true;
-
             const disc = Math.max(0, parseFloat(document.getElementById('discount').value) || 0);
             const sub = cart.reduce((s, i) => s + i.subtotal, 0);
             const total = Math.max(0, sub - disc);
             const paid = parseFloat(document.getElementById('money-paid').value) || 0;
             const change = Math.max(0, paid - total);
-
             try {
                 const formData = new FormData();
                 formData.append('_token', CSRF_TOKEN);
-                formData.append('payment_method', currentPay);
+                formData.append('payment_method', currentPaymentMethod);
                 formData.append('discount', disc);
                 formData.append('cart', JSON.stringify(cart));
                 const response = await fetch(CHECKOUT_URL, {
@@ -2482,19 +2501,18 @@
                     headers: {
                         'X-Requested-With': 'XMLHttpRequest',
                         'Accept': 'application/json'
-                    },
+                    }
                 });
                 const result = await response.json();
                 if (!response.ok || result.success === false) throw new Error(result.message || 'Transaksi gagal.');
-
                 const newId = result.id || Date.now();
                 lastTrxSnapshot = {
                     id: newId,
                     created_at: nowStr(),
-                    payment_method: currentPay,
+                    payment_method: currentPaymentMethod,
                     sub_total: sub,
                     discount: disc,
-                    total: total,
+                    total,
                     money_paid: paid,
                     kasir: KASIR_NAME,
                     items: cart.map(item => ({
@@ -2503,7 +2521,6 @@
                         unit_price: item.unitPrice,
                         subtotal: item.subtotal,
                         is_custom: item.custom,
-                        // ← DATA BARU: bahan yang dikurangi per item di transaksi ini
                         bahan_dikurangi: (item.details || []).map(d => ({
                             pcs_id: d.pcs_id,
                             pcs_name: d.pcs_name,
@@ -2512,8 +2529,6 @@
                         })),
                     })),
                 };
-
-                // Update mutasi stok lokal
                 cart.forEach(item => {
                     (item.details || []).forEach(d => {
                         if (!d.pcs_id) return;
@@ -2531,7 +2546,6 @@
                             stockMutasiMap[d.pcs_id].total_dikurangi;
                     });
                 });
-
                 todayTrxList = [...todayTrxList, lastTrxSnapshot];
                 updateStats();
                 closeModal('modal-checkout');
@@ -2539,7 +2553,6 @@
                 await refreshStocks();
                 await autoSyncToSheets();
                 document.getElementById('ajax-error').style.display = 'none';
-
             } catch (err) {
                 document.getElementById('ajax-error').textContent = err.message || 'Terjadi kesalahan. Coba lagi';
                 document.getElementById('ajax-error').style.display = '';
@@ -2568,22 +2581,19 @@
             }
         }
 
-        /* ── MODAL 3 — STRUK ── */
         function showReceipt(sub, disc, total, paid, change, id) {
             document.getElementById('rc-datetime').textContent = nowStr();
             document.getElementById('rc-trxno').textContent = trxNo(id);
-            document.getElementById('rc-method').textContent = METHOD_LABELS[currentPay] ?? currentPay;
+            document.getElementById('rc-method').textContent = METHOD_LABELS[currentPaymentMethod] ?? currentPaymentMethod;
             document.getElementById('rc-items').innerHTML = cart.map(item => `
-            <div class="rc-item-row">
-                <div>
-                    <div class="rc-item-name">${item.name}</div>
-                    <div class="rc-item-detail">${item.qty} x ${fmt(item.unitPrice)}</div>
-                    ${item.custom && item.details?.length
-                        ? `<div style="font-size:10px;color:#9ca3af">Bahan: ${item.details.map(d=>`${d.pcs_name}×${d.qty}`).join(', ')}</div>`
-                        : ''}
-                </div>
-                <div class="rc-item-sub">${fmt(item.subtotal)}</div>
-            </div>`).join('');
+                <div class="rc-item-row">
+                    <div>
+                        <div class="rc-item-name">${item.name}</div>
+                        <div class="rc-item-detail">${item.qty} x ${fmt(item.unitPrice)}</div>
+                        ${item.custom && item.details?.length ? `<div style="font-size:10px;color:#9ca3af">Bahan: ${item.details.map(d=>`${d.pcs_name}×${d.qty}`).join(', ')}</div>` : ''}
+                    </div>
+                    <div class="rc-item-sub">${fmt(item.subtotal)}</div>
+                </div>`).join('');
             document.getElementById('rc-sub').textContent = fmt(sub);
             document.getElementById('rc-disc').textContent = fmt(disc);
             document.getElementById('rc-total').textContent = fmt(total);
@@ -2601,7 +2611,6 @@
             document.getElementById('money-paid').value = 0;
             renderCart();
             closeModal('modal-receipt');
-            // Bersihkan synced IDs kalau sudah ganti hari
             const lastSyncDate = localStorage.getItem('synced_date');
             if (lastSyncDate !== TANGGAL_HARI) {
                 localStorage.removeItem('synced_trx_ids');
@@ -2609,13 +2618,12 @@
             }
         }
 
-        /* ── MODAL 4 — LAPORAN ── */
         function openLaporanModal() {
             const totalSales = todayTrxList.reduce((s, t) => s + (t.total || 0), 0);
             const totalDisc = todayTrxList.reduce((s, t) => s + (t.discount || 0), 0);
             const totalTrx = todayTrxList.length;
-            const totalItems = todayTrxList.reduce((s, t) =>
-                s + (t.items || []).reduce((si, i) => si + (i.qty || 0), 0), 0);
+            const totalItems = todayTrxList.reduce((s, t) => s + (t.items || []).reduce((si, i) => si + (i.qty || 0), 0),
+                0);
             document.getElementById('lap-tanggal').textContent = TANGGAL_HARI;
             document.getElementById('lap-sales').textContent = fmt(totalSales);
             document.getElementById('lap-trx').textContent = totalTrx;
@@ -2627,50 +2635,166 @@
             openModal('modal-laporan');
         }
 
-        /* ══════════════════════════════════════════════════════
-           GOOGLE SHEETS SYNC — 3 TAB PAYLOAD
-           ══════════════════════════════════════════════════════
-           Tab 1: "Ringkasan Harian"
-                  Kolom: Tanggal | Kasir | Jumlah Transaksi | Item Terjual |
-                         Total Diskon | Total Penjualan
+        let selectedPeriode = 'harian';
 
-           Tab 2: "Detail Transaksi"
-                  Kolom: Tanggal | No.Transaksi | Kasir | Metode Bayar |
-                         Nama Item | Qty | Harga Satuan | Subtotal |
-                         Diskon | Total Transaksi | Bahan Dikurangi (detail)
+        function setPeriode(btn, periode) {
+            document.querySelectorAll('#modal-sheets .pay-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            selectedPeriode = periode;
+        }
 
-           Tab 3: "Mutasi Stok"
-                  Kolom: Tanggal | Nama Bahan | Stok Awal (saat halaman dimuat) |
-                         Total Dikurangi Hari Ini | Stok Akhir
-        ══════════════════════════════════════════════════════ */
+        /**
+         * Menghitung range tanggal berdasarkan periode yang dipilih
+         */
+        function getDateRangeByPeriode(periode) {
+            const today = new Date();
+            let startDate, endDate;
 
-        function buildSheetsPayload() {
-            // Ambil ID yang sudah pernah di-sync
-            const syncedIds = JSON.parse(localStorage.getItem('synced_trx_ids') || '[]');
+            if (periode === 'harian') {
+                startDate = new Date(today);
+                startDate.setHours(0, 0, 0, 0);
+                endDate = new Date(today);
+                endDate.setHours(23, 59, 59, 999);
+                return {
+                    startDate,
+                    endDate,
+                    label: today.toLocaleDateString('id-ID', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                    })
+                };
+            }
 
-            // Filter hanya transaksi BARU yang belum di-sync
-            const newTrx = todayTrxList.filter(t => !syncedIds.includes(t.id));
+            if (periode === 'mingguan') {
+                const dayOfWeek = today.getDay();
+                startDate = new Date(today);
+                startDate.setDate(today.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1));
+                startDate.setHours(0, 0, 0, 0);
+                endDate = new Date(startDate);
+                endDate.setDate(startDate.getDate() + 6);
+                endDate.setHours(23, 59, 59, 999);
+                return {
+                    startDate,
+                    endDate,
+                    label: `Minggu ${startDate.getDate()} - ${endDate.getDate()} ${endDate.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })}`
+                };
+            }
 
-            // Ringkasan tetap dari semua transaksi hari ini (bukan hanya yang baru)
-            const ringkasan = {
-                tanggal: TANGGAL_HARI,
-                kasir: KASIR_NAME,
-                jumlah_transaksi: todayTrxList.length,
-                item_terjual: todayTrxList.reduce((s, t) =>
-                    s + (t.items || []).reduce((si, i) => si + (i.qty || 0), 0), 0),
-                total_diskon: todayTrxList.reduce((s, t) => s + (t.discount || 0), 0),
-                total_penjualan: todayTrxList.reduce((s, t) => s + (t.total || 0), 0),
+            if (periode === 'bulanan') {
+                startDate = new Date(today.getFullYear(), today.getMonth(), 1);
+                startDate.setHours(0, 0, 0, 0);
+                endDate = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+                endDate.setHours(23, 59, 59, 999);
+                return {
+                    startDate,
+                    endDate,
+                    label: today.toLocaleDateString('id-ID', {
+                        month: 'long',
+                        year: 'numeric'
+                    })
+                };
+            }
+        }
+
+        /**
+         * Parse tanggal transaksi dari format string ke Date object
+         */
+        function parseTransactionDate(dateStr) {
+            const months = {
+                'Jan': 0,
+                'Feb': 1,
+                'Mar': 2,
+                'Apr': 3,
+                'Mei': 4,
+                'Mei.': 4,
+                'Juni': 5,
+                'Jun': 5,
+                'Jul': 6,
+                'Agu': 7,
+                'Agus': 7,
+                'Sep': 8,
+                'Okt': 9,
+                'Nov': 10,
+                'Des': 11,
+                'Desember': 11,
+                'Januari': 0,
+                'Februari': 1,
+                'Maret': 2,
+                'April': 3,
+                'Juli': 6,
+                'September': 8,
+                'Oktober': 9
             };
 
-            // Detail hanya dari transaksi BARU
+            const trimmed = String(dateStr || '').trim();
+            if (!trimmed) return new Date(NaN);
+
+            const isoDate = new Date(trimmed);
+            if (!isNaN(isoDate.getTime())) return isoDate;
+
+            const parts = trimmed.split(' ');
+            if (parts.length >= 4) {
+                const day = parseInt(parts[0], 10);
+                const monthStr = parts[1];
+                const year = parseInt(parts[2], 10);
+                const time = parts[3].split(':');
+                const hour = parseInt(time[0], 10);
+                const minute = parseInt(time[1] || '0', 10);
+                const month = months[monthStr] !== undefined ? months[monthStr] : 0;
+                return new Date(year, month, day, hour, minute, 0);
+            }
+
+            if (trimmed.includes('-')) {
+                const [datePart, timePart] = trimmed.split(' ');
+                const [year, month, day] = datePart.split('-').map(x => parseInt(x, 10));
+                const [hour, minute] = (timePart || '00:00').split(':').map(x => parseInt(x, 10));
+                return new Date(year, month - 1, day, hour, minute, 0);
+            }
+
+            return new Date(trimmed);
+        }
+
+        /**
+         * Build payload untuk dikirim ke Google Sheets dengan filter periode
+         */
+        function buildSheetsPayload(periode = 'harian') {
+            const {
+                startDate,
+                endDate,
+                label
+            } = getDateRangeByPeriode(periode);
+
+            // Filter transaksi berdasarkan periode
+            const filteredTrx = todayTrxList.filter(t => {
+                const trxDate = parseTransactionDate(t.created_at);
+                return trxDate >= startDate && trxDate <= endDate;
+            });
+
+            // RINGKASAN
+            const ringkasan = {
+                periode: periode.charAt(0).toUpperCase() + periode.slice(1),
+                tanggal: label,
+                kasir: KASIR_NAME,
+                jumlah_transaksi: filteredTrx.length,
+                item_terjual: filteredTrx.reduce((s, t) => s + (t.items || []).reduce((si, i) => si + (i.qty || 0), 0),
+                    0),
+                total_diskon: filteredTrx.reduce((s, t) => s + (t.discount || 0), 0),
+                total_penjualan: filteredTrx.reduce((s, t) => s + (t.total || 0), 0),
+            };
+
+            // DETAIL TRANSAKSI
             const detailRows = [];
-            newTrx.forEach(t => {
+            filteredTrx.forEach(t => {
                 (t.items || []).forEach(item => {
-                    const bahanStr = (item.bahan_dikurangi || [])
-                        .map(b => `${b.pcs_name} -${b.total_dikurangi}pcs`)
-                        .join(' | ') || (item.is_custom ? 'Custom' : '—');
+                    const bahanStr = (item.bahan_dikurangi || []).map(b =>
+                        `${b.pcs_name} -${b.total_dikurangi}pcs`).join(' | ') || (item.is_custom ?
+                        'Custom' : '—');
+
                     detailRows.push({
-                        tanggal: t.created_at,
+                        periode: periode.charAt(0).toUpperCase() + periode.slice(1),
+                        tanggal_laporan: label,
+                        tanggal_transaksi: t.created_at,
                         no_transaksi: trxNo(t.id),
                         kasir: t.kasir || KASIR_NAME,
                         metode_bayar: METHOD_LABELS[t.payment_method] ?? t.payment_method,
@@ -2686,9 +2810,9 @@
                 });
             });
 
-            // Mutasi stok hanya dari transaksi BARU
+            // MUTASI STOK
             const mutasiMap = {};
-            newTrx.forEach(t => {
+            filteredTrx.forEach(t => {
                 (t.items || []).forEach(item => {
                     (item.bahan_dikurangi || []).forEach(b => {
                         if (!b.pcs_id) return;
@@ -2697,15 +2821,17 @@
                             mutasiMap[b.pcs_id] = {
                                 pcs_name: b.pcs_name,
                                 stok_awal: snap?.stok_saat_ini ?? 0,
-                                total_dikurangi: 0,
+                                total_dikurangi: 0
                             };
                         }
                         mutasiMap[b.pcs_id].total_dikurangi += b.total_dikurangi;
                     });
                 });
             });
+
             const mutasiRows = Object.entries(mutasiMap).map(([pcsId, v]) => ({
-                tanggal: TANGGAL_HARI,
+                periode: periode.charAt(0).toUpperCase() + periode.slice(1),
+                tanggal_laporan: label,
                 pcs_id: pcsId,
                 nama_bahan: v.pcs_name,
                 stok_awal: v.stok_awal,
@@ -2713,11 +2839,8 @@
                 stok_akhir: v.stok_awal - v.total_dikurangi,
             }));
 
-            // Tandai semua transaksi ini sebagai sudah di-sync
-            const allSyncedIds = [...new Set([...syncedIds, ...newTrx.map(t => t.id)])];
-            localStorage.setItem('synced_trx_ids', JSON.stringify(allSyncedIds));
-
             return {
+                periode,
                 ringkasan,
                 detail_transaksi: detailRows,
                 mutasi_stok: mutasiRows
@@ -2726,19 +2849,12 @@
 
         function loadSheetsConfig() {
             const id = localStorage.getItem('sheets_id') || '';
-            const tab = localStorage.getItem('sheets_tab') || 'Laporan';
             const inputId = document.getElementById('sheets-id-input');
-            const inputTab = document.getElementById('sheets-tab-input');
             if (inputId) inputId.value = id;
-            if (inputTab) inputTab.value = tab;
         }
 
         function saveSheetsId() {
             localStorage.setItem('sheets_id', document.getElementById('sheets-id-input').value.trim());
-        }
-
-        function saveSheetsTab() {
-            localStorage.setItem('sheets_tab', document.getElementById('sheets-tab-input').value.trim());
         }
 
         function openSheetsModal() {
@@ -2776,28 +2892,10 @@
             btn.disabled = true;
             btn.innerHTML = '<span class="spinner"></span> Mengirim data...';
             showSyncStatus('sync-status-modal', 'wait', '⏳ Menghubungkan ke Google Sheets...');
-
-            /*
-             * PAYLOAD BARU — 3 tab:
-             * {
-             *   spreadsheet_id: "...",
-             *   ringkasan:        { tanggal, kasir, jumlah_transaksi, item_terjual, total_diskon, total_penjualan },
-             *   detail_transaksi: [{ tanggal, no_transaksi, kasir, metode_bayar, nama_item, is_custom,
-             *                         qty, harga_satuan, subtotal_item, diskon_transaksi, total_transaksi,
-             *                         bahan_dikurangi }],
-             *   mutasi_stok:      [{ tanggal, pcs_id, nama_bahan, stok_awal, total_dikurangi, stok_akhir }]
-             * }
-             *
-             * Di Laravel (SyncSheetsController), baca 3 key ini dan tulis ke masing-masing tab:
-             *   - payload['ringkasan']         → append ke tab "Ringkasan Harian"
-             *   - payload['detail_transaksi']  → append ke tab "Detail Transaksi"
-             *   - payload['mutasi_stok']       → append/update ke tab "Mutasi Stok"
-             */
             const payload = {
                 spreadsheet_id: spreadsheetId,
-                ...buildSheetsPayload(),
+                ...buildSheetsPayload(selectedPeriode) // ✅ BARU: dengan parameter periode
             };
-
             try {
                 const res = await fetch(SYNC_SHEETS_URL, {
                     method: 'POST',
@@ -2805,18 +2903,22 @@
                         'Content-Type': 'application/json',
                         'X-CSRF-TOKEN': CSRF_TOKEN,
                         'X-Requested-With': 'XMLHttpRequest',
-                        'Accept': 'application/json',
+                        'Accept': 'application/json'
                     },
                     body: JSON.stringify(payload),
                 });
+
                 if (res.status === 404) {
-                    showSyncStatus('sync-status-modal', 'err',
-                        '⚠️ Endpoint /cashier/sync-sheets belum ada. Tambahkan route & controller di Laravel dulu.');
+                    showSyncStatus('sync-status-modal', 'err', '⚠️ Endpoint /cashier/sync-sheets belum ada.');
                     return;
                 }
+
                 const data = await res.json();
                 if (!res.ok || data.success === false) throw new Error(data.message || 'Sync gagal.');
-                showSyncStatus('sync-status-modal', 'ok', '✅ Data berhasil dikirim ke 3 tab Google Sheets!');
+
+                const periodeLabel = selectedPeriode.charAt(0).toUpperCase() + selectedPeriode.slice(1);
+                showSyncStatus('sync-status-modal', 'ok',
+                    `✅ Laporan ${periodeLabel} berhasil dikirim ke Google Sheets!`);
             } catch (err) {
                 showSyncStatus('sync-status-modal', 'err', '❌ ' + (err.message || 'Terjadi kesalahan saat sync.'));
             } finally {
@@ -2831,15 +2933,16 @@
             try {
                 const payload = {
                     spreadsheet_id: spreadsheetId,
-                    ...buildSheetsPayload()
+                    ...buildSheetsPayload('harian') // ✅ BARU: selalu kirim laporan harian
                 };
+
                 await fetch(SYNC_SHEETS_URL, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'X-CSRF-TOKEN': CSRF_TOKEN,
                         'X-Requested-With': 'XMLHttpRequest',
-                        'Accept': 'application/json',
+                        'Accept': 'application/json'
                     },
                     body: JSON.stringify(payload),
                 });
@@ -2848,25 +2951,260 @@
             }
         }
 
+        // ── SHIFT STATE ──
+        const SHIFT_KEY = 'shift_state_' + TANGGAL_HARI + '_' + (KASIR_ID ?? 'guest');
+        const SHIFT_TIMES_KEY = 'shift_times_' + TANGGAL_HARI + '_' + (KASIR_ID ?? 'guest');
+        let shiftState = localStorage.getItem(SHIFT_KEY) || 'belum';
+        let shiftTimes = loadShiftTimes();
+
+        function normalizeShiftTimes(data) {
+            return {
+                shift1: {
+                    start: data?.shift1?.start || null,
+                    end: data?.shift1?.end || null,
+                },
+                shift2: {
+                    start: data?.shift2?.start || null,
+                    end: data?.shift2?.end || null,
+                },
+            };
+        }
+
+        function loadShiftTimes() {
+            const saved = localStorage.getItem(SHIFT_TIMES_KEY);
+            if (!saved) return normalizeShiftTimes({});
+            try {
+                return normalizeShiftTimes(JSON.parse(saved));
+            } catch {
+                return normalizeShiftTimes({});
+            }
+        }
+
+        function saveShiftTimes() {
+            localStorage.setItem(SHIFT_TIMES_KEY, JSON.stringify(shiftTimes));
+        }
+
+        function formatTimeLabel(isoString) {
+            if (!isoString) return '—';
+            const d = new Date(isoString);
+            return d.toLocaleTimeString('id-ID', {
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        function filterTransactionsForShift(transactions, shiftKey) {
+            const shift = shiftTimes[shiftKey];
+            if (!shift || !shift.start) return [];
+            const start = new Date(shift.start);
+            const end = shift.end ? new Date(shift.end) : new Date();
+            return transactions.filter(trx => {
+                const trxDate = parseTransactionDate(trx.created_at);
+                return trxDate >= start && trxDate <= end;
+            });
+        }
+
+        function normalizePaymentMethod(method) {
+            const m = String(method || '').trim().toLowerCase();
+            if (m === 'tunai') return 'cash';
+            if (m === 'go food' || m === 'gofood') return 'gofood';
+            if (m === 'shopee food' || m === 'shopeefood') return 'shopeefood';
+            if (m === 'qris') return 'qris';
+            if (m === 'cash') return 'cash';
+            return m;
+        }
+
+        function computeMethodTotals(transactions) {
+            return ['cash', 'qris', 'gofood', 'shopeefood'].reduce((acc, method) => {
+                acc[method] = transactions.reduce((sum, trx) => {
+                    const trxMethod = normalizePaymentMethod(trx.payment_method);
+                    return sum + ((trxMethod === method) ? (trx.total || 0) : 0);
+                }, 0);
+                return acc;
+            }, {
+                cash: 0,
+                qris: 0,
+                gofood: 0,
+                shopeefood: 0
+            });
+        }
+
+        function computeCurrentShiftMethodTotals() {
+            if (shiftState === 'shift1_aktif') {
+                return computeMethodTotals(filterTransactionsForShift(todayTrxList, 'shift1'));
+            }
+            if (shiftState === 'shift2_aktif') {
+                return computeMethodTotals(filterTransactionsForShift(todayTrxList, 'shift2'));
+            }
+            return {
+                cash: 0,
+                qris: 0,
+                gofood: 0,
+                shopeefood: 0
+            };
+        }
+
+        function computeShiftTotal(shiftKey) {
+            const shift = shiftTimes[shiftKey];
+            if (!shift || !shift.start) return 0;
+            const start = new Date(shift.start);
+            const end = shift.end ? new Date(shift.end) : new Date();
+            return todayTrxList.reduce((sum, trx) => {
+                const trxDate = parseTransactionDate(trx.created_at);
+                if (trxDate >= start && trxDate <= end) {
+                    return sum + (trx.total || 0);
+                }
+                return sum;
+            }, 0);
+        }
+
+        function buildShiftLabel() {
+            if (shiftState === 'belum') {
+                return 'Shift belum dimulai';
+            }
+            if (shiftState === 'shift1_aktif') {
+                return `Shift 1 aktif sejak ${formatTimeLabel(shiftTimes.shift1.start)}`;
+            }
+            if (shiftState === 'shift1_selesai') {
+                return `Shift 1 selesai ${formatTimeLabel(shiftTimes.shift1.end)} · Siap mulai Shift 2`;
+            }
+            if (shiftState === 'shift2_aktif') {
+                return `Shift 2 aktif sejak ${formatTimeLabel(shiftTimes.shift2.start)}`;
+            }
+            if (shiftState === 'shift2_selesai') {
+                return `Shift 2 selesai ${formatTimeLabel(shiftTimes.shift2.end)}`;
+            }
+            return 'Status shift tidak diketahui';
+        }
+
+        const SHIFT_CONFIG = {
+            belum: {
+                label: 'Awali Shift 1',
+                bg: '#16a34a',
+                next: 'shift1_aktif'
+            },
+            shift1_aktif: {
+                label: 'Akhiri Shift 1',
+                bg: '#dc2626',
+                next: 'shift1_selesai'
+            },
+            shift1_selesai: {
+                label: 'Mulai Shift 2',
+                bg: '#16a34a',
+                next: 'shift2_aktif'
+            },
+            shift2_aktif: {
+                label: 'Akhiri Shift 2',
+                bg: '#dc2626',
+                next: 'shift2_selesai'
+            },
+            shift2_selesai: {
+                label: 'Shift Selesai',
+                bg: '#6b7280',
+                next: null
+            },
+        };
+
+        function renderShiftButton() {
+            const btn = document.getElementById('btn-shift');
+            if (!btn) return;
+            const cfg = SHIFT_CONFIG[shiftState] || SHIFT_CONFIG['belum'];
+            btn.textContent = cfg.label;
+            btn.style.background = cfg.bg;
+            btn.disabled = cfg.next === null;
+            btn.style.opacity = cfg.next === null ? '0.6' : '1';
+            btn.style.cursor = cfg.next === null ? 'not-allowed' : 'pointer';
+            renderShiftReport();
+        }
+
+        function handleShiftButton() {
+            const cfg = SHIFT_CONFIG[shiftState];
+            if (!cfg || !cfg.next) return;
+
+            const confirmMsg = {
+                belum: 'Mulai Shift 1 sekarang?',
+                shift1_aktif: 'Akhiri Shift 1 sekarang?',
+                shift1_selesai: 'Mulai Shift 2 sekarang?',
+                shift2_aktif: 'Akhiri Shift 2 sekarang?',
+            };
+
+            if (!confirm(confirmMsg[shiftState] || 'Lanjutkan?')) return;
+
+            const now = new Date().toISOString();
+            if (shiftState === 'belum') {
+                shiftTimes.shift1.start = now;
+                shiftState = 'shift1_aktif';
+            } else if (shiftState === 'shift1_aktif') {
+                shiftTimes.shift1.end = now;
+                shiftState = 'shift1_selesai';
+            } else if (shiftState === 'shift1_selesai') {
+                shiftTimes.shift2.start = now;
+                shiftState = 'shift2_aktif';
+            } else if (shiftState === 'shift2_aktif') {
+                shiftTimes.shift2.end = now;
+                shiftState = 'shift2_selesai';
+            }
+
+            localStorage.setItem(SHIFT_KEY, shiftState);
+            saveShiftTimes();
+            renderShiftButton();
+        }
+
+        function resetShiftReportData() {
+            if (!confirm('Reset ulang laporan shift untuk demo?')) return;
+            shiftState = 'belum';
+            shiftTimes = normalizeShiftTimes({});
+            localStorage.removeItem(SHIFT_KEY);
+            localStorage.removeItem(SHIFT_TIMES_KEY);
+            renderShiftButton();
+            renderShiftReport();
+        }
+
+        function renderShiftReport() {
+            const totals = computeCurrentShiftMethodTotals();
+            document.getElementById('shift-cash').textContent = fmt(totals.cash);
+            document.getElementById('shift-qris').textContent = fmt(totals.qris);
+            document.getElementById('shift-gofood').textContent = fmt(totals.gofood);
+            document.getElementById('shift-shopeefood').textContent = fmt(totals.shopeefood);
+            document.getElementById('shift1-total').textContent = fmt(computeShiftTotal('shift1'));
+            document.getElementById('shift2-total').textContent = fmt(computeShiftTotal('shift2'));
+            document.getElementById('shift-current').textContent = buildShiftLabel();
+        }
+
+        function toggleShiftReport() {
+            const el = document.getElementById('shift-report');
+            if (!el) return;
+            const isOpen = el.style.display !== 'none';
+            el.style.display = isOpen ? 'none' : 'grid';
+            if (!isOpen) renderShiftReport();
+        }
+
+        function updateStats() {
+            const totalSales = todayTrxList.reduce((s, t) => s + (t.total || 0), 0);
+            const totalTrx = todayTrxList.length;
+            const totalItems = todayTrxList.reduce((s, t) =>
+                s + (t.items || []).reduce((si, i) => si + (i.qty || 0), 0), 0);
+            document.getElementById('stat-sales').textContent = fmt(totalSales);
+            document.getElementById('stat-trx').textContent = totalTrx;
+            document.getElementById('stat-items').textContent = totalItems;
+            renderShiftReport();
+        }
+
+        // Init shift button saat halaman dimuat
+        renderShiftButton();
+
         // Init
         renderMenuPrices();
         renderCart();
         loadSheetsConfig();
 
-        // Tandai semua transaksi yang sudah ada di DB saat halaman dimuat
-        // supaya tidak ikut di-sync ulang di sesi ini
         (function initSyncedIds() {
             const today = TANGGAL_HARI;
             const lastSyncDate = localStorage.getItem('synced_date');
-
-            // Kalau ganti hari, reset dulu
             if (lastSyncDate !== today) {
                 localStorage.removeItem('synced_trx_ids');
                 localStorage.setItem('synced_date', today);
             }
-
-            // Tandai semua ID yang sudah ada saat halaman dimuat sebagai "sudah di-sync"
-            // (transaksi baru yang dibuat di sesi ini akan ditambahkan setelah checkout)
             const existingIds = todayTrxList.map(t => t.id);
             const alreadySynced = JSON.parse(localStorage.getItem('synced_trx_ids') || '[]');
             const merged = [...new Set([...alreadySynced, ...existingIds])];
@@ -2880,32 +3218,23 @@
             btn.disabled = true;
             btn.textContent = 'Membuat spreadsheet...';
             showSyncStatus('sync-status-modal', 'wait', '⏳ Membuat spreadsheet baru...');
-
             try {
                 const res = await fetch(CREATE_SHEET_URL, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'X-CSRF-TOKEN': CSRF_TOKEN,
-                        'Accept': 'application/json',
+                        'Accept': 'application/json'
                     },
                     body: JSON.stringify({})
                 });
                 const data = await res.json();
                 if (!data.success) throw new Error(data.message);
-
-                // Auto-isi spreadsheet ID
                 document.getElementById('sheets-id-input').value = data.spreadsheet_id;
                 saveSheetsId();
-
-                showSyncStatus('sync-status-modal', 'ok',
-                    `✅ ${data.message} — <a href="${data.url}" target="_blank" style="color:#0369a1">Buka Spreadsheet</a>`
-                );
-                // Render HTML di status (karena ada tag <a>)
                 document.getElementById('sync-status-modal').innerHTML =
-                    `✅ ${data.message} &nbsp;<a href="${data.url}" target="_blank" style="color:#0369a1;font-weight:600">→ Buka Spreadsheet</a>`;
+                    `✅ ${data.message} &nbsp;<a href="${data.url}" target="_blank" style="color:#C0271A;font-weight:700">→ Buka Spreadsheet</a>`;
                 document.getElementById('sync-status-modal').style.display = '';
-
             } catch (err) {
                 showSyncStatus('sync-status-modal', 'err', '❌ ' + err.message);
             } finally {

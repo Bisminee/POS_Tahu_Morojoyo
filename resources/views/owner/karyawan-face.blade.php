@@ -1,228 +1,109 @@
-{{-- resources/views/owner/karyawan-face.blade.php --}}
 <!DOCTYPE html>
 <html lang="id">
-
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Daftarkan Face ID — {{ $karyawan->nama }}</title>
-    <style>
-        * {
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: sans-serif;
-            background: #f4f5f7;
-            margin: 0;
-            padding: 20px;
-        }
-
-        .card {
-            background: #fff;
-            border-radius: 16px;
-            padding: 24px;
-            max-width: 480px;
-            margin: 0 auto;
-            border: 1px solid #e9eaec;
-        }
-
-        h2 {
-            font-size: 18px;
-            margin: 0 0 4px;
-        }
-
-        p {
-            font-size: 13px;
-            color: #6b7280;
-            margin: 0 0 20px;
-        }
-
-        .camera-wrap {
-            position: relative;
-            border-radius: 12px;
-            overflow: hidden;
-            background: #111;
-            aspect-ratio: 4/3;
-            margin-bottom: 12px;
-        }
-
-        video {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            transform: scaleX(-1);
-        }
-
-        canvas {
-            display: none;
-        }
-
-        .face-overlay {
-            position: absolute;
-            inset: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            pointer-events: none;
-        }
-
-        .face-guide {
-            width: 180px;
-            height: 220px;
-            border: 2.5px solid rgba(255, 255, 255, .5);
-            border-radius: 50%;
-            box-shadow: 0 0 0 9999px rgba(0, 0, 0, .35);
-        }
-
-        .face-guide.detected {
-            border-color: #34d399;
-        }
-
-        .cam-status {
-            position: absolute;
-            bottom: 10px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(0, 0, 0, .6);
-            color: #fff;
-            font-size: 11px;
-            padding: 4px 12px;
-            border-radius: 99px;
-        }
-
-        .loading-overlay {
-            position: absolute;
-            inset: 0;
-            background: rgba(0, 0, 0, .7);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            color: #fff;
-            font-size: 13px;
-            gap: 10px;
-        }
-
-        .spinner {
-            width: 32px;
-            height: 32px;
-            border: 3px solid rgba(255, 255, 255, .3);
-            border-top-color: #fff;
-            border-radius: 50%;
-            animation: spin .8s linear infinite;
-        }
-
-        @keyframes spin {
-            to {
-                transform: rotate(360deg);
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            red: '#C0392B',
+                            'red-dark': '#96281B',
+                            'red-light': '#E74C3C',
+                            cream: '#FAF6EF',
+                            'cream-dark': '#F0E9DC',
+                        }
+                    }
+                }
             }
         }
-
-        .btn {
-            width: 100%;
-            padding: 12px;
-            border-radius: 12px;
-            border: none;
-            font-size: 14px;
-            font-weight: 700;
-            cursor: pointer;
-            margin-top: 8px;
-        }
-
-        .btn-green {
-            background: #059669;
-            color: #fff;
-        }
-
-        .btn-green:disabled {
-            background: #9ca3af;
-            cursor: not-allowed;
-        }
-
-        .btn-gray {
-            background: #f3f4f6;
-            color: #374151;
-            border: 1px solid #e5e7eb;
-        }
-
-        .status {
-            border-radius: 10px;
-            padding: 10px 14px;
-            font-size: 13px;
-            font-weight: 500;
-            margin-top: 10px;
-            display: none;
-            text-align: center;
-        }
-
-        .status-ok {
-            background: #f0fdf4;
-            color: #166534;
-            border: 1px solid #bbf7d0;
-        }
-
-        .status-err {
-            background: #fef2f2;
-            color: #991b1b;
-            border: 1px solid #fecaca;
-        }
-
-        .back-link {
-            display: block;
-            text-align: center;
-            margin-top: 12px;
-            font-size: 13px;
-            color: #6b7280;
-            text-decoration: none;
-        }
-
-        .back-link:hover {
-            color: #374151;
-        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+        body { font-family: 'Plus Jakarta Sans', system-ui, sans-serif; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .spinner { animation: spin .8s linear infinite; }
     </style>
 </head>
 
-<body>
-    <div class="card">
-        <h2>Daftarkan Face ID</h2>
-        <p>Karyawan: <strong>{{ $karyawan->nama }}</strong></p>
+<body class="min-h-screen bg-brand-cream flex items-center justify-center px-4 py-10">
 
-        <div class="camera-wrap">
-            <video id="video" autoplay muted playsinline></video>
-            <canvas id="canvas"></canvas>
-            <div class="face-overlay">
-                <div class="face-guide" id="face-guide"></div>
-            </div>
-            <div class="cam-status" id="cam-status">Memuat model...</div>
-            <div class="loading-overlay" id="loading-overlay">
-                <div class="spinner"></div>
-                <span>Memuat model wajah...</span>
-            </div>
+    <div class="w-full max-w-md">
+        {{-- Brand Header --}}
+        <div class="text-center mb-6">
+            <p class="text-xs font-bold tracking-[0.2em] text-brand-red/50 uppercase">· Tahu Bakso Morojoyo ·</p>
         </div>
 
-        <button class="btn btn-green" id="btn-save" disabled onclick="saveFace()">
-            📸 Ambil & Simpan Face ID
-        </button>
+        <div class="bg-white rounded-2xl shadow-xl shadow-brand-red/10 overflow-hidden border border-brand-cream-dark">
+            {{-- Red Header --}}
+            <div class="bg-gradient-to-br from-brand-red to-brand-red-dark px-6 py-5">
+                <h2 class="text-lg font-extrabold tracking-widest uppercase text-white">Daftarkan Face ID</h2>
+                <p class="text-sm text-red-200 mt-0.5">
+                    Karyawan: <strong class="text-white">{{ $karyawan->nama }}</strong>
+                </p>
+            </div>
 
-        <div class="status" id="status-box"></div>
+            <div class="p-5 space-y-4">
+                {{-- Camera Wrapper --}}
+                <div class="relative rounded-xl overflow-hidden bg-gray-900 aspect-[4/3]">
+                    <video id="video" autoplay muted playsinline class="w-full h-full object-cover" style="transform: scaleX(-1)"></video>
+                    <canvas id="canvas" class="hidden"></canvas>
 
-        <a href="{{ url()->previous() }}" class="back-link">← Kembali</a>
+                    {{-- Face Guide --}}
+                    <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+                        <div id="face-guide" 
+                            class="w-44 h-56 rounded-full border-[2.5px] border-white/50 transition-colors duration-300"
+                            style="box-shadow: 0 0 0 9999px rgba(0,0,0,0.38)">
+                        </div>
+                    </div>
+
+                    {{-- Cam Status Pill --}}
+                    <div id="cam-status" class="absolute bottom-3 left-1/2 -translate-x-1/2 bg-black/60 text-white text-[11px] font-medium px-3 py-1 rounded-full backdrop-blur-sm whitespace-nowrap">
+                        Memuat model...
+                    </div>
+
+                    {{-- Loading Overlay --}}
+                    <div id="loading-overlay" class="absolute inset-0 bg-black/70 flex flex-col items-center justify-center gap-3 text-white text-sm">
+                        <div class="spinner w-8 h-8 rounded-full border-[3px] border-white/30 border-t-white"></div>
+                        <span>Memuat model wajah...</span>
+                    </div>
+                </div>
+
+                {{-- Action Button --}}
+                <button id="btn-save" disabled onclick="saveFace()"
+                    class="w-full py-3.5 rounded-xl bg-gradient-to-r from-brand-red to-brand-red-light text-white font-extrabold text-sm tracking-[0.12em] uppercase shadow-md shadow-brand-red/25 hover:from-brand-red-dark hover:to-brand-red active:scale-[0.98] transition-all disabled:from-gray-300 disabled:to-gray-300 disabled:text-gray-400 disabled:cursor-not-allowed disabled:shadow-none flex items-center justify-center gap-2">
+                    📸 Ambil & Simpan Face ID
+                </button>
+
+                {{-- Status Display --}}
+                <div id="status-box" class="hidden rounded-xl px-4 py-3 text-sm font-semibold text-center border"></div>
+
+                {{-- Back Link --}}
+                <a href="{{ url()->previous() }}" class="flex items-center justify-center gap-1.5 text-xs font-semibold text-gray-400 hover:text-brand-red transition-colors pt-1">
+                    ← Kembali
+                </a>
+            </div>
+        </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
     <script>
-        const SAVE_URL = "{{ route('owner.karyawan.save-face', $karyawan->idKaryawan) }}";
-        const CSRF = "{{ csrf_token() }}";
+        const SAVE_URL  = "{{ route('owner.karyawan.save-face', $karyawan->idKaryawan) }}";
+        const CSRF      = "{{ csrf_token() }}";
         const MODEL_URL = '/face-models';
 
         let lastDescriptor = null;
-        const video = document.getElementById('video');
-        const canvas = document.getElementById('canvas');
-        const guide = document.getElementById('face-guide');
-        const camStatus = document.getElementById('cam-status');
-        const loading = document.getElementById('loading-overlay');
-        const btn = document.getElementById('btn-save');
-        const statusBox = document.getElementById('status-box');
+        const video       = document.getElementById('video');
+        const canvas      = document.getElementById('canvas');
+        const guide       = document.getElementById('face-guide');
+        const camStatus   = document.getElementById('cam-status');
+        const loading     = document.getElementById('loading-overlay');
+        const btn         = document.getElementById('btn-save');
+        const statusBox   = document.getElementById('status-box');
 
         async function init() {
             await Promise.all([
@@ -230,18 +111,10 @@
                 faceapi.nets.faceLandmark68TinyNet.loadFromUri(MODEL_URL),
                 faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL),
             ]);
-            const stream = await navigator.mediaDevices.getUserMedia({
-                video: {
-                    facingMode: 'user',
-                    width: 640,
-                    height: 480
-                }
-            });
+            const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: 640, height: 480 } });
             video.srcObject = stream;
-            await new Promise(r => video.addEventListener('loadedmetadata', r, {
-                once: true
-            }));
-            canvas.width = video.videoWidth;
+            await new Promise(r => video.addEventListener('loadedmetadata', r, { once: true }));
+            canvas.width  = video.videoWidth;
             canvas.height = video.videoHeight;
             loading.style.display = 'none';
             camStatus.textContent = 'Arahkan wajah ke kamera';
@@ -250,20 +123,18 @@
 
         function startLoop() {
             setInterval(async () => {
-                const det = await faceapi
-                    .detectSingleFace(video, new faceapi.TinyFaceDetectorOptions({
-                        scoreThreshold: 0.5
-                    }))
-                    .withFaceLandmarks(true)
-                    .withFaceDescriptor();
+                const det = await faceapi.detectSingleFace(video, new faceapi.TinyFaceDetectorOptions({ scoreThreshold: 0.5 }))
+                                         .withFaceLandmarks(true)
+                                         .withFaceDescriptor();
+
                 if (det) {
                     lastDescriptor = Array.from(det.descriptor);
-                    guide.className = 'face-guide detected';
+                    guide.style.borderColor = '#22c55e'; // Green
                     camStatus.textContent = '✓ Wajah terdeteksi — siap disimpan';
                     btn.disabled = false;
                 } else {
                     lastDescriptor = null;
-                    guide.className = 'face-guide';
+                    guide.style.borderColor = 'rgba(255,255,255,0.5)';
                     camStatus.textContent = 'Arahkan wajah ke kamera...';
                     btn.disabled = true;
                 }
@@ -292,24 +163,24 @@
                         'X-CSRF-TOKEN': CSRF,
                         'Accept': 'application/json',
                     },
-                    body: JSON.stringify({
-                        face_descriptor: lastDescriptor,
-                        foto_base64: capturePhoto(),
-                    }),
+                    body: JSON.stringify({ face_descriptor: lastDescriptor, foto_base64: capturePhoto() }),
                 });
                 const data = await res.json();
-                statusBox.className = 'status ' + (data.success ? 'status-ok' : 'status-err');
-                statusBox.textContent = data.message;
-                statusBox.style.display = '';
-                if (data.success) btn.textContent = '✅ Tersimpan';
-                else {
+
+                statusBox.classList.remove('hidden');
+                if (data.success) {
+                    statusBox.className = 'rounded-xl px-4 py-3 text-sm font-semibold text-center border bg-green-50 text-green-800 border-green-200';
+                    btn.textContent = '✅ Tersimpan';
+                } else {
+                    statusBox.className = 'rounded-xl px-4 py-3 text-sm font-semibold text-center border bg-red-50 text-red-700 border-red-200';
                     btn.disabled = false;
                     btn.textContent = '📸 Ambil & Simpan Face ID';
                 }
+                statusBox.textContent = data.message;
             } catch (e) {
-                statusBox.className = 'status status-err';
+                statusBox.classList.remove('hidden');
+                statusBox.className = 'rounded-xl px-4 py-3 text-sm font-semibold text-center border bg-red-50 text-red-700 border-red-200';
                 statusBox.textContent = 'Gagal koneksi. Coba lagi.';
-                statusBox.style.display = '';
                 btn.disabled = false;
                 btn.textContent = '📸 Ambil & Simpan Face ID';
             }
@@ -318,5 +189,4 @@
         init();
     </script>
 </body>
-
 </html>
