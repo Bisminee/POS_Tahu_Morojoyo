@@ -1,5 +1,13 @@
 @props(['title' => 'Absensi Kasir'])
 
+@php
+    /*
+     * Controller multi-karyawan mengirim $activeAttendances.
+     * Fallback ini disediakan agar tidak error jika controller lama masih mengirim $activeAttendance.
+     */
+    $activeAttendances = $activeAttendances ?? collect(isset($activeAttendance) && $activeAttendance ? [$activeAttendance] : []);
+@endphp
+
 <x-layouts.app :title="$title">
     <style>
         body {
@@ -17,7 +25,7 @@
 
         .attendance-card {
             width: 100%;
-            max-width: 760px;
+            max-width: 860px;
             background: #ffffff;
             border-radius: 28px;
             padding: 34px;
@@ -61,6 +69,13 @@
             background: #fef2f2;
             border: 1px solid #fecaca;
             color: #b91c1c;
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: 900;
+            color: #071331;
+            margin: 24px 0 12px;
         }
 
         .active-box {
@@ -186,18 +201,6 @@
             border: 1px solid #e5e7eb;
         }
 
-        .camera-box video {
-            width: 100%;
-            border-radius: 16px;
-            background: #111827;
-            display: none;
-            margin-bottom: 12px;
-        }
-
-        .camera-box video.active {
-            display: block;
-        }
-
         .video-wrapper {
             position: relative;
             width: 100%;
@@ -247,6 +250,12 @@
             display: grid;
             gap: 10px;
         }
+
+        .divider {
+            height: 1px;
+            background: #e5e7eb;
+            margin: 24px 0;
+        }
     </style>
 
     <div class="attendance-page">
@@ -276,92 +285,100 @@
                 </div>
             @endif
 
-            @if ($activeAttendance)
-                <div class="active-box">
-                    <h2>Shift Sedang Aktif</h2>
-                    <p><strong>Karyawan:</strong> {{ $activeAttendance->karyawan?->nama ?? '-' }}</p>
-                    <p><strong>Jam Masuk:</strong> {{ $activeAttendance->jam_masuk?->format('H:i') ?? '-' }}</p>
-                </div>
+            @if ($activeAttendances->count())
+                <div class="section-title">Karyawan Sedang Shift</div>
+
+                @foreach ($activeAttendances as $activeAttendance)
+                    <div class="active-box">
+                        <h2>{{ $activeAttendance->karyawan?->nama ?? '-' }}</h2>
+                        <p><strong>Jam Masuk:</strong> {{ $activeAttendance->jam_masuk?->format('H:i') ?? '-' }}</p>
+
+                        <form method="POST" action="{{ route('attendance.clock-out') }}" id="clockOutForm_{{ $activeAttendance->id }}" style="margin-top: 12px;">
+                            @csrf
+
+                            <input type="hidden" name="attendance_id" value="{{ $activeAttendance->id }}">
+                            <input type="hidden" name="face_descriptor" id="face_descriptor_out_{{ $activeAttendance->id }}">
+                            <input type="hidden" name="foto_base64" id="foto_base64_out_{{ $activeAttendance->id }}">
+
+                            <div class="camera-box">
+                                <div class="face-status" id="faceStatusOut_{{ $activeAttendance->id }}">
+                                    Untuk absen pulang {{ $activeAttendance->karyawan?->nama ?? '-' }}, scan wajah terlebih dahulu.
+                                </div>
+
+                                <div class="video-wrapper">
+                                    <video id="videoOut_{{ $activeAttendance->id }}" autoplay muted playsinline></video>
+                                    <canvas id="canvasOut_{{ $activeAttendance->id }}"></canvas>
+                                </div>
+
+                                <div class="button-gap">
+                                    <button type="button" class="btn-secondary"
+                                        onclick="scanFace('out', {{ $activeAttendance->id }})">
+                                        Scan Wajah Pulang {{ $activeAttendance->karyawan?->nama ?? '' }}
+                                    </button>
+
+                                    <button type="submit" class="btn btn-danger" id="clockOutSubmit_{{ $activeAttendance->id }}" disabled>
+                                        Selesai Shift / Absen Pulang
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                @endforeach
 
                 <a href="{{ route('cashier.pos') }}" class="btn-secondary">
                     Masuk ke POS
                 </a>
 
-                <form method="POST" action="{{ route('attendance.clock-out') }}" id="clockOutForm" style="margin-top: 12px;">
+                <div class="divider"></div>
+            @endif
+
+            <div class="section-title">Tambah Karyawan Shift</div>
+
+            @if ($karyawans->count())
+                <form method="POST" action="{{ route('attendance.clock-in') }}" id="clockInForm">
                     @csrf
 
-                    <input type="hidden" name="face_descriptor" id="face_descriptor_out">
-                    <input type="hidden" name="foto_base64" id="foto_base64_out">
+                    <div class="form-group">
+                        <label for="karyawan_id">Pilih Nama Karyawan</label>
+                        <select name="karyawan_id" id="karyawan_id" required>
+                            <option value="">-- Pilih karyawan yang mulai shift --</option>
+                            @foreach ($karyawans as $karyawan)
+                                <option value="{{ $karyawan->idKaryawan }}">
+                                    {{ $karyawan->nama }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <input type="hidden" name="face_descriptor" id="face_descriptor_in">
+                    <input type="hidden" name="foto_base64" id="foto_base64_in">
 
                     <div class="camera-box">
-                        <div class="face-status" id="faceStatusOut">
-                            Untuk absen pulang, scan wajah terlebih dahulu.
+                        <div class="face-status" id="faceStatusIn">
+                            Pilih nama karyawan, lalu scan wajah sebelum absen masuk.
                         </div>
 
                         <div class="video-wrapper">
-                            <video id="videoOut" autoplay muted playsinline></video>
-                            <canvas id="canvasOut"></canvas>
+                            <video id="videoIn" autoplay muted playsinline></video>
+                            <canvas id="canvasIn"></canvas>
                         </div>
 
                         <div class="button-gap">
                             <button type="button" class="btn-secondary"
-                                onclick="scanFace('out')">
-                                Scan Wajah Pulang
+                                onclick="scanFace('in')">
+                                Scan Wajah Masuk
                             </button>
 
-                            <button type="submit" class="btn btn-danger" id="clockOutSubmit" disabled>
-                                Selesai Shift / Absen Pulang
+                            <button type="submit" class="btn btn-primary" id="clockInSubmit" disabled>
+                                Mulai Shift / Absen Masuk
                             </button>
                         </div>
                     </div>
                 </form>
             @else
-                @if ($karyawans->count())
-                    <form method="POST" action="{{ route('attendance.clock-in') }}" id="clockInForm">
-                        @csrf
-
-                        <div class="form-group">
-                            <label for="karyawan_id">Pilih Nama Karyawan</label>
-                            <select name="karyawan_id" id="karyawan_id" required>
-                                <option value="">-- Pilih karyawan yang mulai shift --</option>
-                                @foreach ($karyawans as $karyawan)
-                                    <option value="{{ $karyawan->idKaryawan }}">
-                                        {{ $karyawan->nama }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
-
-                        <input type="hidden" name="face_descriptor" id="face_descriptor_in">
-                        <input type="hidden" name="foto_base64" id="foto_base64_in">
-
-                        <div class="camera-box">
-                            <div class="face-status" id="faceStatusIn">
-                                Pilih nama karyawan, lalu scan wajah sebelum absen masuk.
-                            </div>
-
-                            <div class="video-wrapper">
-                                <video id="videoIn" autoplay muted playsinline></video>
-                                <canvas id="canvasIn"></canvas>
-                            </div>
-
-                            <div class="button-gap">
-                                <button type="button" class="btn-secondary"
-                                    onclick="scanFace('in')">
-                                    Scan Wajah Masuk
-                                </button>
-
-                                <button type="submit" class="btn btn-primary" id="clockInSubmit" disabled>
-                                    Mulai Shift / Absen Masuk
-                                </button>
-                            </div>
-                        </div>
-                    </form>
-                @else
-                    <div class="empty-box">
-                        Belum ada data karyawan aktif. Hubungi owner.
-                    </div>
-                @endif
+                <div class="empty-box">
+                    Semua karyawan aktif sudah berada dalam shift, atau belum ada data karyawan aktif.
+                </div>
             @endif
         </div>
     </div>
@@ -374,8 +391,15 @@
 
         const MODEL_URL = '/face-models';
 
-        function setFaceStatus(type, message) {
-            const statusId = type === 'in' ? 'faceStatusIn' : 'faceStatusOut';
+        function setFaceStatus(type, message, attendanceId = null) {
+            let statusId;
+
+            if (type === 'in') {
+                statusId = 'faceStatusIn';
+            } else {
+                statusId = 'faceStatusOut_' + attendanceId;
+            }
+
             const statusElement = document.getElementById(statusId);
 
             if (statusElement) {
@@ -416,14 +440,14 @@
             }
         }
 
-        async function scanFace(type) {
+        async function scanFace(type, attendanceId = null) {
             const isClockIn = type === 'in';
 
-            const videoId = isClockIn ? 'videoIn' : 'videoOut';
-            const canvasId = isClockIn ? 'canvasIn' : 'canvasOut';
-            const descriptorInputId = isClockIn ? 'face_descriptor_in' : 'face_descriptor_out';
-            const fotoInputId = isClockIn ? 'foto_base64_in' : 'foto_base64_out';
-            const submitButtonId = isClockIn ? 'clockInSubmit' : 'clockOutSubmit';
+            const videoId = isClockIn ? 'videoIn' : 'videoOut_' + attendanceId;
+            const canvasId = isClockIn ? 'canvasIn' : 'canvasOut_' + attendanceId;
+            const descriptorInputId = isClockIn ? 'face_descriptor_in' : 'face_descriptor_out_' + attendanceId;
+            const fotoInputId = isClockIn ? 'foto_base64_in' : 'foto_base64_out_' + attendanceId;
+            const submitButtonId = isClockIn ? 'clockInSubmit' : 'clockOutSubmit_' + attendanceId;
 
             const video = document.getElementById(videoId);
             const overlayCanvas = document.getElementById(canvasId);
@@ -454,7 +478,7 @@
             try {
                 await stopCamera();
 
-                setFaceStatus(type, 'Membuka kamera...');
+                setFaceStatus(type, 'Membuka kamera...', attendanceId);
 
                 currentStream = await navigator.mediaDevices.getUserMedia({
                     video: {
@@ -476,7 +500,7 @@
                     };
                 });
 
-                setFaceStatus(type, 'Kamera aktif. Mendeteksi wajah...');
+                setFaceStatus(type, 'Kamera aktif. Mendeteksi wajah...', attendanceId);
 
                 await new Promise(resolve => setTimeout(resolve, 1000));
 
@@ -503,7 +527,7 @@
                 overlayContext.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
 
                 if (!detection) {
-                    setFaceStatus(type, 'Wajah tidak terdeteksi. Pastikan wajah terang dan menghadap kamera.');
+                    setFaceStatus(type, 'Wajah tidak terdeteksi. Pastikan wajah terang dan menghadap kamera.', attendanceId);
                     alert('Wajah tidak terdeteksi. Pastikan wajah terlihat jelas, terang, dan menghadap kamera.');
 
                     await stopCamera();
@@ -518,7 +542,7 @@
                 const descriptor = Array.from(detection.descriptor);
 
                 if (!descriptor || descriptor.length < 100) {
-                    setFaceStatus(type, 'Data Face ID tidak valid. Silakan scan ulang.');
+                    setFaceStatus(type, 'Data Face ID tidak valid. Silakan scan ulang.', attendanceId);
                     alert('Data Face ID tidak valid. Silakan scan ulang.');
 
                     await stopCamera();
@@ -540,7 +564,7 @@
 
                 submitButton.disabled = false;
 
-                setFaceStatus(type, 'Face ID berhasil discan. Lingkaran hijau menunjukkan wajah terdeteksi. Sekarang klik tombol absen.');
+                setFaceStatus(type, 'Face ID berhasil discan. Lingkaran hijau menunjukkan wajah terdeteksi. Sekarang klik tombol absen.', attendanceId);
                 alert('Face ID berhasil discan. Sekarang klik tombol absen.');
 
                 setTimeout(async () => {
@@ -554,7 +578,7 @@
             } catch (error) {
                 console.error('Scan wajah error:', error);
 
-                setFaceStatus(type, 'Gagal scan wajah. Cek izin kamera atau Console browser.');
+                setFaceStatus(type, 'Gagal scan wajah. Cek izin kamera atau Console browser.', attendanceId);
                 alert('Gagal scan wajah. Pastikan izin kamera sudah diberikan.');
 
                 await stopCamera();
