@@ -198,6 +198,40 @@
             display: block;
         }
 
+        .video-wrapper {
+            position: relative;
+            width: 100%;
+            border-radius: 16px;
+            overflow: hidden;
+            background: #111827;
+            margin-bottom: 12px;
+        }
+
+        .video-wrapper video {
+            width: 100%;
+            border-radius: 16px;
+            background: #111827;
+            display: none;
+            margin-bottom: 0;
+        }
+
+        .video-wrapper video.active {
+            display: block;
+        }
+
+        .video-wrapper canvas {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            display: none;
+            pointer-events: none;
+        }
+
+        .video-wrapper canvas.active {
+            display: block;
+        }
+
         .face-status {
             padding: 12px 14px;
             border-radius: 14px;
@@ -264,7 +298,10 @@
                             Untuk absen pulang, scan wajah terlebih dahulu.
                         </div>
 
-                        <video id="videoOut" autoplay muted playsinline></video>
+                        <div class="video-wrapper">
+                            <video id="videoOut" autoplay muted playsinline></video>
+                            <canvas id="canvasOut"></canvas>
+                        </div>
 
                         <div class="button-gap">
                             <button type="button" class="btn-secondary"
@@ -303,7 +340,10 @@
                                 Pilih nama karyawan, lalu scan wajah sebelum absen masuk.
                             </div>
 
-                            <video id="videoIn" autoplay muted playsinline></video>
+                            <div class="video-wrapper">
+                                <video id="videoIn" autoplay muted playsinline></video>
+                                <canvas id="canvasIn"></canvas>
+                            </div>
 
                             <div class="button-gap">
                                 <button type="button" class="btn-secondary"
@@ -380,11 +420,13 @@
             const isClockIn = type === 'in';
 
             const videoId = isClockIn ? 'videoIn' : 'videoOut';
+            const canvasId = isClockIn ? 'canvasIn' : 'canvasOut';
             const descriptorInputId = isClockIn ? 'face_descriptor_in' : 'face_descriptor_out';
             const fotoInputId = isClockIn ? 'foto_base64_in' : 'foto_base64_out';
             const submitButtonId = isClockIn ? 'clockInSubmit' : 'clockOutSubmit';
 
             const video = document.getElementById(videoId);
+            const overlayCanvas = document.getElementById(canvasId);
             const descriptorInput = document.getElementById(descriptorInputId);
             const fotoInput = document.getElementById(fotoInputId);
             const submitButton = document.getElementById(submitButtonId);
@@ -425,6 +467,7 @@
 
                 video.srcObject = currentStream;
                 video.classList.add('active');
+                overlayCanvas.classList.add('active');
 
                 await new Promise((resolve) => {
                     video.onloadedmetadata = () => {
@@ -433,7 +476,7 @@
                     };
                 });
 
-                setFaceStatus(type, 'Kamera aktif. Mengambil data wajah...');
+                setFaceStatus(type, 'Kamera aktif. Mendeteksi wajah...');
 
                 await new Promise(resolve => setTimeout(resolve, 1000));
 
@@ -448,52 +491,112 @@
                     .withFaceLandmarks()
                     .withFaceDescriptor();
 
+                const displaySize = {
+                    width: video.videoWidth || 640,
+                    height: video.videoHeight || 480
+                };
+
+                overlayCanvas.width = displaySize.width;
+                overlayCanvas.height = displaySize.height;
+
+                const overlayContext = overlayCanvas.getContext('2d');
+                overlayContext.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
+
                 if (!detection) {
                     setFaceStatus(type, 'Wajah tidak terdeteksi. Pastikan wajah terang dan menghadap kamera.');
                     alert('Wajah tidak terdeteksi. Pastikan wajah terlihat jelas, terang, dan menghadap kamera.');
+
                     await stopCamera();
                     video.classList.remove('active');
+                    overlayCanvas.classList.remove('active');
                     return;
                 }
+
+                const resizedDetection = faceapi.resizeResults(detection, displaySize);
+                drawFaceCircle(overlayCanvas, resizedDetection);
 
                 const descriptor = Array.from(detection.descriptor);
 
                 if (!descriptor || descriptor.length < 100) {
                     setFaceStatus(type, 'Data Face ID tidak valid. Silakan scan ulang.');
                     alert('Data Face ID tidak valid. Silakan scan ulang.');
+
                     await stopCamera();
                     video.classList.remove('active');
+                    overlayCanvas.classList.remove('active');
                     return;
                 }
 
                 descriptorInput.value = JSON.stringify(descriptor);
 
-                const canvas = document.createElement('canvas');
-                canvas.width = video.videoWidth || 640;
-                canvas.height = video.videoHeight || 480;
+                const snapshotCanvas = document.createElement('canvas');
+                snapshotCanvas.width = video.videoWidth || 640;
+                snapshotCanvas.height = video.videoHeight || 480;
 
-                const context = canvas.getContext('2d');
-                context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                const snapshotContext = snapshotCanvas.getContext('2d');
+                snapshotContext.drawImage(video, 0, 0, snapshotCanvas.width, snapshotCanvas.height);
 
-                fotoInput.value = canvas.toDataURL('image/jpeg', 0.85);
+                fotoInput.value = snapshotCanvas.toDataURL('image/jpeg', 0.85);
 
                 submitButton.disabled = false;
 
-                setFaceStatus(type, 'Face ID berhasil discan. Sekarang klik tombol absen.');
+                setFaceStatus(type, 'Face ID berhasil discan. Lingkaran hijau menunjukkan wajah terdeteksi. Sekarang klik tombol absen.');
                 alert('Face ID berhasil discan. Sekarang klik tombol absen.');
 
-                await stopCamera();
-                video.classList.remove('active');
+                setTimeout(async () => {
+                    await stopCamera();
+
+                    video.classList.remove('active');
+                    overlayCanvas.classList.remove('active');
+                    overlayContext.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
+                }, 1500);
+
             } catch (error) {
                 console.error('Scan wajah error:', error);
+
                 setFaceStatus(type, 'Gagal scan wajah. Cek izin kamera atau Console browser.');
                 alert('Gagal scan wajah. Pastikan izin kamera sudah diberikan.');
+
                 await stopCamera();
 
                 if (video) {
                     video.classList.remove('active');
                 }
+
+                if (overlayCanvas) {
+                    overlayCanvas.classList.remove('active');
+                }
             }
+        }
+
+        function drawFaceCircle(canvas, detection) {
+            const ctx = canvas.getContext('2d');
+            const box = detection.detection.box;
+
+            const centerX = box.x + box.width / 2;
+            const centerY = box.y + box.height / 2;
+            const radius = Math.max(box.width, box.height) / 2 + 18;
+
+            ctx.save();
+
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+            ctx.lineWidth = 6;
+            ctx.strokeStyle = '#22c55e';
+            ctx.stroke();
+
+            ctx.fillStyle = 'rgba(34, 197, 94, 0.15)';
+            ctx.fill();
+
+            ctx.font = 'bold 20px Arial';
+            ctx.fillStyle = '#22c55e';
+            ctx.fillText(
+                'Face ID Terdeteksi',
+                Math.max(10, box.x),
+                Math.max(30, box.y - 12)
+            );
+
+            ctx.restore();
         }
 
         window.addEventListener('beforeunload', stopCamera);

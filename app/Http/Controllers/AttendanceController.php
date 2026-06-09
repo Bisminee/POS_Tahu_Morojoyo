@@ -10,6 +10,11 @@ use Illuminate\Support\Facades\Storage;
 
 class AttendanceController extends Controller
 {
+    /*
+    |--------------------------------------------------------------------------
+    | HALAMAN ABSENSI KASIR
+    |--------------------------------------------------------------------------
+    */
     public function index()
     {
         $user = Auth::user();
@@ -34,6 +39,7 @@ class AttendanceController extends Controller
             ]);
         }
 
+        // Semua karyawan aktif ditampilkan, tidak difilter cabang.
         $karyawans = Karyawan::query()
             ->where('is_active', 1)
             ->orderBy('nama')
@@ -42,6 +48,11 @@ class AttendanceController extends Controller
         return view('attendance.index', compact('karyawans', 'activeAttendance'));
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | ABSEN MASUK
+    |--------------------------------------------------------------------------
+    */
     public function clockIn(Request $request)
     {
         $user = Auth::user();
@@ -61,9 +72,9 @@ class AttendanceController extends Controller
             ->where('is_active', 1)
             ->firstOrFail();
 
-        if (!$karyawan->face_descriptor) {
+        if (!$this->hasValidFaceDescriptor($karyawan->face_descriptor)) {
             return back()->withErrors([
-                'face_descriptor' => 'Face ID karyawan ini belum terdaftar. Silakan daftarkan Face ID di dashboard owner.',
+                'face_descriptor' => "Face ID {$karyawan->nama} belum terdaftar. Silakan daftarkan Face ID terlebih dahulu di halaman owner.",
             ]);
         }
 
@@ -74,7 +85,9 @@ class AttendanceController extends Controller
 
         if (!$verification['verified']) {
             return back()->withErrors([
-                'face_descriptor' => 'Wajah tidak cocok dengan Face ID karyawan yang dipilih.',
+                'face_descriptor' => 'Wajah tidak cocok dengan Face ID ' . $karyawan->nama .
+                    '. Distance: ' . $verification['distance'] .
+                    ', Confidence: ' . $verification['confidence'] . '%. Silakan scan ulang.',
             ]);
         }
 
@@ -87,15 +100,9 @@ class AttendanceController extends Controller
             ->first();
 
         if ($activeAttendance) {
-            session([
-                'active_attendance_id' => $activeAttendance->id,
-                'active_karyawan_id' => $activeAttendance->karyawan_id,
-                'active_karyawan_name' => $activeAttendance->karyawan?->nama,
+            return back()->withErrors([
+                'attendance' => 'Masih ada shift aktif atas nama ' . ($activeAttendance->karyawan?->nama ?? '-') . '. Selesaikan shift terlebih dahulu.',
             ]);
-
-            return redirect()
-                ->route('cashier.pos')
-                ->with('success', 'Shift masih aktif. Kamu diarahkan ke POS.');
         }
 
         $fotoMasuk = $this->saveBase64Photo(
@@ -127,6 +134,11 @@ class AttendanceController extends Controller
             ->with('success', "Absensi masuk berhasil. Selamat bekerja, {$karyawan->nama}!");
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | ABSEN PULANG
+    |--------------------------------------------------------------------------
+    */
     public function clockOut(Request $request)
     {
         $user = Auth::user();
@@ -169,9 +181,9 @@ class AttendanceController extends Controller
 
         $karyawan = $attendance->karyawan;
 
-        if (!$karyawan || !$karyawan->face_descriptor) {
+        if (!$karyawan || !$this->hasValidFaceDescriptor($karyawan->face_descriptor)) {
             return back()->withErrors([
-                'face_descriptor' => 'Face ID karyawan belum terdaftar.',
+                'face_descriptor' => 'Face ID karyawan belum terdaftar atau datanya tidak valid.',
             ]);
         }
 
@@ -182,7 +194,8 @@ class AttendanceController extends Controller
 
         if (!$verification['verified']) {
             return back()->withErrors([
-                'face_descriptor' => 'Wajah tidak cocok. Absen pulang ditolak.',
+                'face_descriptor' => 'Wajah tidak cocok. Absen pulang ditolak. Confidence: '
+                    . $verification['confidence'] . '%. Silakan scan ulang.',
             ]);
         }
 
@@ -211,12 +224,17 @@ class AttendanceController extends Controller
             ->with('success', "Shift {$karyawan->nama} selesai. Jam pulang berhasil dicatat.");
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | REKAP ABSENSI OWNER
+    |--------------------------------------------------------------------------
+    */
     public function ownerDashboard(Request $request)
     {
         $this->authorizeOwner();
 
-        $tanggalMulai = $request->input('tanggal_mulai', now()->toDateString());
-        $tanggalSelesai = $request->input('tanggal_selesai', now()->toDateString());
+        $tanggalMulai = $request->input('tanggal_mulai', today()->toDateString());
+        $tanggalSelesai = $request->input('tanggal_selesai', today()->toDateString());
 
         $attendances = Attendance::with(['karyawan', 'cabang', 'user'])
             ->whereBetween('tanggal', [$tanggalMulai, $tanggalSelesai])
@@ -231,12 +249,17 @@ class AttendanceController extends Controller
         ));
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | EXPORT REKAP ABSENSI
+    |--------------------------------------------------------------------------
+    */
     public function exportAbsensiCsv(Request $request)
     {
         $this->authorizeOwner();
 
-        $tanggalMulai = $request->input('tanggal_mulai', now()->toDateString());
-        $tanggalSelesai = $request->input('tanggal_selesai', now()->toDateString());
+        $tanggalMulai = $request->input('tanggal_mulai', today()->toDateString());
+        $tanggalSelesai = $request->input('tanggal_selesai', today()->toDateString());
 
         $attendances = Attendance::with(['karyawan', 'cabang', 'user'])
             ->whereBetween('tanggal', [$tanggalMulai, $tanggalSelesai])
@@ -254,6 +277,7 @@ class AttendanceController extends Controller
         $callback = function () use ($attendances) {
             $file = fopen('php://output', 'w');
 
+            // UTF-8 BOM agar Excel Indonesia tidak rusak encoding-nya.
             fprintf($file, chr(0xEF) . chr(0xBB) . chr(0xBF));
 
             fputcsv($file, [
@@ -288,6 +312,11 @@ class AttendanceController extends Controller
         return response()->stream($callback, 200, $headers);
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | DAFTAR FACE ID KARYAWAN OWNER
+    |--------------------------------------------------------------------------
+    */
     public function karyawanList(Request $request)
     {
         $this->authorizeOwner();
@@ -304,11 +333,11 @@ class AttendanceController extends Controller
         return view('owner.karyawan-list', compact('karyawans', 'search'));
     }
 
-    public function showSaveFace()
-    {
-        return view('attendance.save-face');
-    }
-
+    /*
+    |--------------------------------------------------------------------------
+    | SIMPAN / UPDATE FACE ID KARYAWAN
+    |--------------------------------------------------------------------------
+    */
     public function saveFaceDataForKaryawan(Request $request, Karyawan $karyawan)
     {
         $this->authorizeOwner();
@@ -352,12 +381,55 @@ class AttendanceController extends Controller
             ->with('success', "Face ID {$karyawan->nama} berhasil disimpan.");
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | HELPER: CEK FACE DESCRIPTOR VALID
+    |--------------------------------------------------------------------------
+    */
+    private function hasValidFaceDescriptor(?string $descriptor): bool
+    {
+        if ($descriptor === null) {
+            return false;
+        }
+
+        $descriptor = trim($descriptor);
+
+        if ($descriptor === '' || strtolower($descriptor) === 'null' || $descriptor === '[]') {
+            return false;
+        }
+
+        $decoded = json_decode($descriptor, true);
+
+        if (!is_array($decoded)) {
+            return false;
+        }
+
+        if (count($decoded) < 100) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | HELPER: VERIFIKASI WAJAH
+    |--------------------------------------------------------------------------
+    */
     private function verifyFaceDescriptor(string $inputDescriptor, string $storedDescriptor): array
     {
         $input = json_decode($inputDescriptor, true);
         $stored = json_decode($storedDescriptor, true);
 
         if (!is_array($input) || !is_array($stored)) {
+            return [
+                'verified' => false,
+                'distance' => null,
+                'confidence' => 0,
+            ];
+        }
+
+        if (count($input) < 100 || count($stored) < 100) {
             return [
                 'verified' => false,
                 'distance' => null,
@@ -382,22 +454,23 @@ class AttendanceController extends Controller
 
         $distance = sqrt($sum);
 
-        /*
-         * Semakin kecil distance, semakin mirip.
-         * Umumnya face-api.js memakai threshold sekitar 0.6.
-         * Kalau terlalu sering gagal, bisa naikkan ke 0.65.
-         */
-        $threshold = 0.6;
+        // Lebih kecil = lebih ketat.
+        $threshold = 0.70;
 
         $confidence = max(0, round((1 - ($distance / $threshold)) * 100, 2));
 
         return [
             'verified' => $distance <= $threshold,
-            'distance' => $distance,
+            'distance' => round($distance, 4),
             'confidence' => $confidence,
         ];
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | HELPER: SIMPAN FOTO BASE64
+    |--------------------------------------------------------------------------
+    */
     private function saveBase64Photo(string $base64, int $karyawanId, string $prefix = 'face'): string
     {
         $base64 = preg_replace('/^data:image\/\w+;base64,/', '', $base64);
@@ -415,12 +488,17 @@ class AttendanceController extends Controller
         return $path;
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | HELPER: OTORISASI OWNER
+    |--------------------------------------------------------------------------
+    */
     private function authorizeOwner(): void
     {
         $user = Auth::user();
 
         if (!$user || $user->role !== 'owner') {
-            abort(403, 'Hanya owner yang bisa mengakses halaman ini.');
+            abort(403, 'Hanya owner yang dapat mengakses halaman ini.');
         }
     }
 }
