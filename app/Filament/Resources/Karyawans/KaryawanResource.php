@@ -15,6 +15,7 @@ class KaryawanResource extends Resource
     protected static ?string $model = Karyawan::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedUserGroup;
+    protected static string | \UnitEnum | null $navigationGroup = 'Master Data';
 
     protected static ?string $recordTitleAttribute = 'nama';
 

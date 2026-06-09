@@ -32,7 +32,7 @@ class LoginPanelProvider extends PanelProvider
             // ->loginResponse(LoginResponse::class)
 
             ->colors([
-                'primary' => Color::Amber,
+                // 'primary' => Color::Amber,
             ])
 
             ->discoverResources(

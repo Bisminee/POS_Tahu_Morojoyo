@@ -29,6 +29,24 @@ class CabangForm
                 ->label('Alamat')
                 ->required()
                 ->rows(3),
+
+            Forms\Components\Textarea::make('detail_alamat')
+                ->label('Detail Alamat')
+                ->rows(4)
+                ->nullable(),
+                
+            Forms\Components\TextInput::make('link_gmaps')
+                ->label('Link Google Maps')
+                ->url()
+                ->nullable(),
+
+            Forms\Components\FileUpload::make('foto')
+                ->label('Foto Cabang')
+                ->image()
+                ->directory('cabangs')
+                ->disk('public')
+                ->nullable(),
+
         ]);
     }
 }
