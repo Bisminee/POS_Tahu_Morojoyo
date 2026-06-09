@@ -120,14 +120,6 @@ class OwnerSheetsController extends Controller
         }
     }
 
-    /**
-     * Sync data penjualan ke Google Sheets, bisa per cabang atau semua cabang.
-     *
-     * Request params:
-     *   spreadsheet_id : string (required)
-     *   periode        : harian|mingguan|bulanan (required)
-     *   cabang_id      : int|'all'  (required)  — 'all' = semua cabang
-     */
     public function sync(Request $request)
     {
         $this->authorizeOwner();
@@ -386,9 +378,153 @@ class OwnerSheetsController extends Controller
         }
     }
 
-    // ─────────────────────────────────────────────
-    // PRIVATE HELPERS
-    // ─────────────────────────────────────────────
+    public function showLaporanKeuangan()
+    {
+        $this->authorizeOwner();
+        return view('owner.laporan-keuangan');
+    }
+
+    public function laporanKeuangan(Request $request)
+    {
+        $user = auth()->user();
+
+        if ($user->role !== 'owner') {
+            return response()->json(['success' => false, 'message' => 'Akses ditolak'], 403);
+        }
+
+        try {
+            $periode = $request->input('periode', 'harian');
+            if (!in_array($periode, ['harian', 'mingguan', 'bulanan'])) {
+                $periode = 'harian';
+            }
+
+            $dateRange = $this->getDateRangeByPeriode($periode);
+            $startDate = $dateRange['startDate'];
+            $endDate   = $dateRange['endDate'];
+
+            $cabangs = \App\Models\Cabang::orderBy('namaCabang')->get();
+
+            if ($cabangs->isEmpty()) {
+                return response()->json([
+                    'success'     => true,
+                    'periode'     => $periode,
+                    'summary'     => ['total_penjualan' => 0, 'total_diskon' => 0, 'jumlah_transaksi' => 0, 'item_terjual' => 0],
+                    'cabang_list' => [],
+                ]);
+            }
+
+            $cabangList   = [];
+            $overallTotal = ['total_penjualan' => 0, 'total_diskon' => 0, 'jumlah_transaksi' => 0, 'item_terjual' => 0];
+
+            foreach ($cabangs as $cabang) {
+                $userIds = \App\Models\User::where('cabang_id', $cabang->idCabang)->pluck('id');
+
+                $transactions = \App\Models\Transaction::whereIn('user_id', $userIds)
+                    ->whereBetween('created_at', [$startDate, $endDate])
+                    ->with('items')
+                    ->get();
+
+                $paymentBreakdown = ['cash' => 0, 'qris' => 0, 'gofood' => 0, 'shopeefood' => 0];
+                $totalPenjualan   = 0;
+                $totalDiskon      = 0;
+                $itemTerjual      = 0;
+
+                foreach ($transactions as $trx) {
+                    $totalPenjualan += $trx->total ?? 0;
+                    $totalDiskon    += $trx->discount ?? 0;
+
+                    $method = $this->normalizePaymentMethod($trx->payment_method);
+                    if (isset($paymentBreakdown[$method])) {
+                        $paymentBreakdown[$method] += $trx->total ?? 0;
+                    }
+
+                    if ($trx->items) {
+                        $itemTerjual += $trx->items->sum('qty');
+                    }
+                }
+
+                $cabangList[] = [
+                    'id_cabang'         => $cabang->idCabang,
+                    'nama_cabang'       => $cabang->namaCabang,
+                    'total_penjualan'   => (int) $totalPenjualan,
+                    'total_diskon'      => (int) $totalDiskon,
+                    'jumlah_transaksi'  => $transactions->count(),
+                    'item_terjual'      => (int) $itemTerjual,
+                    'metode_pembayaran' => [
+                        'cash'       => (int) $paymentBreakdown['cash'],
+                        'qris'       => (int) $paymentBreakdown['qris'],
+                        'gofood'     => (int) $paymentBreakdown['gofood'],
+                        'shopeefood' => (int) $paymentBreakdown['shopeefood'],
+                    ],
+                ];
+
+                $overallTotal['total_penjualan']  += $totalPenjualan;
+                $overallTotal['total_diskon']     += $totalDiskon;
+                $overallTotal['jumlah_transaksi'] += $transactions->count();
+                $overallTotal['item_terjual']     += $itemTerjual;
+            }
+
+            return response()->json([
+                'success'     => true,
+                'periode'     => $periode,
+                'summary'     => $overallTotal,
+                'cabang_list' => $cabangList,
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Laporan Keuangan Error: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => 'Terjadi kesalahan: ' . $e->getMessage()], 500);
+        }
+    }
+    private function getDateRangeByPeriode($periode)
+    {
+        $today = now();
+
+        switch ($periode) {
+            case 'harian':
+                return [
+                    'startDate' => $today->clone()->startOfDay(),
+                    'endDate' => $today->clone()->endOfDay(),
+                ];
+            case 'mingguan':
+                return [
+                    'startDate' => $today->clone()->startOfWeek(),
+                    'endDate' => $today->clone()->endOfWeek(),
+                ];
+            case 'bulanan':
+                return [
+                    'startDate' => $today->clone()->startOfMonth(),
+                    'endDate' => $today->clone()->endOfMonth(),
+                ];
+            default:
+                return [
+                    'startDate' => $today->clone()->startOfDay(),
+                    'endDate' => $today->clone()->endOfDay(),
+                ];
+        }
+    }
+
+    /**
+     * Helper: Normalize payment method
+     */
+    private function normalizePaymentMethod($method)
+    {
+        $m = strtolower(trim($method ?? ''));
+
+        if (in_array($m, ['tunai', 'cash'])) {
+            return 'cash';
+        }
+        if (in_array($m, ['qris'])) {
+            return 'qris';
+        }
+        if (in_array($m, ['go food', 'gofood'])) {
+            return 'gofood';
+        }
+        if (in_array($m, ['shopee food', 'shopeefood'])) {
+            return 'shopeefood';
+        }
+
+        return $m;
+    }
 
     private function authorizeOwner(): void
     {

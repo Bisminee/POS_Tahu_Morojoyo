@@ -576,6 +576,212 @@ class CashierController extends Controller
         }
     }
 
+    /**
+     * Laporan Keuangan Realtime per Cabang
+     * 
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function laporanKeuangan(Request $request)
+    {
+        $user = auth()->user();
+
+        // Validasi: hanya owner yang bisa akses
+        if ($user->role !== 'owner') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Akses ditolak. Hanya owner yang bisa mengakses laporan keuangan.'
+            ], 403);
+        }
+
+        try {
+            $periode = $request->input('periode', 'harian');
+
+            // Validasi periode
+            if (!in_array($periode, ['harian', 'mingguan', 'bulanan'])) {
+                $periode = 'harian';
+            }
+
+            // Ambil range tanggal berdasarkan periode
+            $dateRange = $this->getDateRangeByPeriode($periode);
+            $startDate = $dateRange['startDate'];
+            $endDate = $dateRange['endDate'];
+
+            // Ambil semua cabang milik owner
+            // Asumsi: ada relasi $user->cabangs atau kamu ambil dari table cabangs
+            // Jika owner punya multiple cabang, gunakan ini:
+            $cabangs = \App\Models\Cabang::where('user_id', $user->id)->get();
+
+            // Atau jika owner cuma punya satu cabang via user.cabang_id:
+            // $cabangs = collect([['id_cabang' => $user->cabang_id, 'nama_cabang' => $user->cabang?->nama_cabang ?? 'Cabang']]);
+
+            if ($cabangs->isEmpty()) {
+                return response()->json([
+                    'success' => true,
+                    'periode' => $periode,
+                    'summary' => [
+                        'total_penjualan' => 0,
+                        'total_diskon' => 0,
+                        'jumlah_transaksi' => 0,
+                        'item_terjual' => 0,
+                    ],
+                    'cabang_list' => []
+                ]);
+            }
+
+            // Build laporan per cabang
+            $cabangList = [];
+            $overallTotal = [
+                'total_penjualan' => 0,
+                'total_diskon' => 0,
+                'jumlah_transaksi' => 0,
+                'item_terjual' => 0,
+            ];
+
+            foreach ($cabangs as $cabang) {
+                // Query transaksi untuk cabang ini dalam periode
+                $transactions = Transaction::where('id_cabang', $cabang->id_cabang)
+                    ->whereBetween('created_at', [$startDate, $endDate])
+                    ->with('items')
+                    ->get();
+
+                // Hitung breakdown metode pembayaran
+                $paymentBreakdown = [
+                    'cash' => 0,
+                    'qris' => 0,
+                    'gofood' => 0,
+                    'shopeefood' => 0,
+                ];
+
+                $totalPenjualan = 0;
+                $totalDiskon = 0;
+                $itemTerjual = 0;
+
+                foreach ($transactions as $trx) {
+                    $totalPenjualan += $trx->total ?? 0;
+                    $totalDiskon += $trx->discount ?? 0;
+
+                    // Breakdown per metode pembayaran
+                    $method = $this->normalizePaymentMethod($trx->payment_method);
+                    if (isset($paymentBreakdown[$method])) {
+                        $paymentBreakdown[$method] += $trx->total ?? 0;
+                    }
+
+                    // Hitung total items terjual
+                    if ($trx->items) {
+                        $itemTerjual += $trx->items->sum('qty');
+                    }
+                }
+
+                // Tambah ke array
+                $cabangList[] = [
+                    'id_cabang' => $cabang->id_cabang,
+                    'nama_cabang' => $cabang->nama_cabang ?? 'Cabang ' . $cabang->id_cabang,
+                    'total_penjualan' => (int) $totalPenjualan,
+                    'total_diskon' => (int) $totalDiskon,
+                    'jumlah_transaksi' => $transactions->count(),
+                    'item_terjual' => (int) $itemTerjual,
+                    'metode_pembayaran' => [
+                        'cash' => (int) $paymentBreakdown['cash'],
+                        'qris' => (int) $paymentBreakdown['qris'],
+                        'gofood' => (int) $paymentBreakdown['gofood'],
+                        'shopeefood' => (int) $paymentBreakdown['shopeefood'],
+                    ],
+                ];
+
+                // Accumulate overall totals
+                $overallTotal['total_penjualan'] += $totalPenjualan;
+                $overallTotal['total_diskon'] += $totalDiskon;
+                $overallTotal['jumlah_transaksi'] += $transactions->count();
+                $overallTotal['item_terjual'] += $itemTerjual;
+            }
+
+            return response()->json([
+                'success' => true,
+                'periode' => $periode,
+                'summary' => $overallTotal,
+                'cabang_list' => $cabangList,
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Laporan Keuangan Error: ' . $e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Helper: Ambil range tanggal berdasarkan periode
+     * 
+     * @param string $periode
+     * @return array
+     */
+    private function getDateRangeByPeriode($periode)
+    {
+        $today = now();
+
+        switch ($periode) {
+            case 'harian':
+                return [
+                    'startDate' => $today->clone()->startOfDay(),
+                    'endDate' => $today->clone()->endOfDay(),
+                ];
+
+            case 'mingguan':
+                return [
+                    'startDate' => $today->clone()->startOfWeek(),
+                    'endDate' => $today->clone()->endOfWeek(),
+                ];
+
+            case 'bulanan':
+                return [
+                    'startDate' => $today->clone()->startOfMonth(),
+                    'endDate' => $today->clone()->endOfMonth(),
+                ];
+
+            default:
+                return [
+                    'startDate' => $today->clone()->startOfDay(),
+                    'endDate' => $today->clone()->endOfDay(),
+                ];
+        }
+    }
+
+    /**
+     * Helper: Normalize payment method string
+     * 
+     * @param string $method
+     * @return string
+     */
+    private function normalizePaymentMethod($method)
+    {
+        $m = strtolower(trim($method ?? ''));
+
+        // Cash
+        if (in_array($m, ['tunai', 'cash'])) {
+            return 'cash';
+        }
+
+        // QRIS
+        if (in_array($m, ['qris'])) {
+            return 'qris';
+        }
+
+        // GoFood
+        if (in_array($m, ['go food', 'gofood'])) {
+            return 'gofood';
+        }
+
+        // ShopeeFood
+        if (in_array($m, ['shopee food', 'shopeefood'])) {
+            return 'shopeefood';
+        }
+
+        return $m;
+    }
+
     private function ensureSheetExists(\Google\Service\Sheets $service, string $spreadsheetId, string $tab): void
     {
         $spreadsheet    = $service->spreadsheets->get($spreadsheetId);
@@ -633,9 +839,9 @@ class CashierController extends Controller
 
     public function logout(Request $request)
     {
-        Auth::logout();
+        Auth::guard('web')->logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
-        return redirect('/admin/login');
+        return redirect('/login');
     }
 }

@@ -16,6 +16,7 @@ use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
+use Filament\Navigation\NavigationItem;
 use App\Filament\Pages\Auth\Login;
 use App\Filament\Auth\LoginResponse;
 
@@ -56,6 +57,22 @@ class LoginPanelProvider extends PanelProvider
 
             ->widgets([
                 \App\Filament\Widgets\DashboardOwnerStats::class,
+            ])
+
+            ->navigationItems([
+                NavigationItem::make('Laporan Keuangan')
+                    ->url('/admin/laporan-keuangan', shouldOpenInNewTab: false)
+                    ->icon('heroicon-o-banknotes')
+                    ->group('Laporan')
+                    ->sort(1)
+                    ->visible(fn() => auth()->user()?->role === 'owner'),
+
+                NavigationItem::make('Sync Google Sheets')
+                    ->url('/admin/sheets', shouldOpenInNewTab: false)
+                    ->icon('heroicon-o-table-cells')
+                    ->group('Laporan')
+                    ->sort(2)
+                    ->visible(fn() => auth()->user()?->role === 'owner'),
             ])
 
             ->middleware([

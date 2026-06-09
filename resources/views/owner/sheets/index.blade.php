@@ -501,7 +501,7 @@
         {{-- TOPBAR --}}
         <div class="topbar">
             <div>
-                <h1>📊 Sync Google Sheets</h1>
+                <h1>Sync Google Sheets</h1>
                 <p>Kirim laporan penjualan & stok ke spreadsheet — per cabang atau semua cabang</p>
             </div>
             <a href="{{ url()->previous() }}" class="btn-back">← Kembali</a>
@@ -509,7 +509,7 @@
 
         {{-- STATISTIK HARI INI — SEMUA CABANG --}}
         <div class="card">
-            <div class="card-title">📈 Ringkasan Hari Ini — Semua Cabang</div>
+            <div class="card-title">Ringkasan Hari Ini — Semua Cabang</div>
             <div class="stat-row">
                 <div class="stat-card">
                     <div class="s-label">Total Penjualan</div>
@@ -532,7 +532,7 @@
 
         {{-- STATISTIK PER CABANG --}}
         <div class="card">
-            <div class="card-title">🏪 Performa Per Cabang — Hari Ini</div>
+            <div class="card-title">Performa Per Cabang — Hari Ini</div>
             @if ($statsPerCabang->isEmpty())
                 <p style="color:#9ca3af;font-size:13px">Belum ada data cabang.</p>
             @else
@@ -552,7 +552,7 @@
                             @foreach ($statsPerCabang as $s)
                                 <tr>
                                     <td>
-                                        <span class="cabang-badge">🏪 {{ $s['nama'] }}</span>
+                                        <span class="cabang-badge">{{ $s['nama'] }}</span>
                                     </td>
                                     <td style="text-align:right;font-weight:800;color:#C0271A">{{ $s['trx'] }}</td>
                                     <td style="text-align:right;font-weight:800;color:#059669">
@@ -575,7 +575,7 @@
 
         {{-- KONFIGURASI SPREADSHEET --}}
         <div class="card">
-            <div class="card-title">⚙️ Konfigurasi Spreadsheet</div>
+            <div class="card-title">Konfigurasi Spreadsheet</div>
 
             <div style="margin-bottom:16px">
                 <label class="input-label">Spreadsheet ID</label>
@@ -583,55 +583,46 @@
                     placeholder="Contoh: 1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgVE2upms" oninput="saveSheetsId()">
                 <div class="hint">Ambil dari URL: <code>spreadsheets/d/<strong>[ID]</strong>/edit</code></div>
             </div>
-
-            <hr class="divider">
-
-            <div style="margin-top:14px">
-                <label class="input-label">Atau Buat Spreadsheet Baru</label>
-                <a href="{{ route('owner.sheets.create') }}" class="btn-secondary">
-                    ✨ Buat Spreadsheet Baru
-                </a>
-            </div>
         </div>
 
         {{-- PILIH CABANG & PERIODE --}}
         <div class="card">
-            <div class="card-title">🏪 Pilih Cabang</div>
+            <div class="card-title">Pilih Cabang</div>
             <div class="section-sub">Pilih cabang yang datanya ingin disinkronisasi</div>
             <div class="cabang-selector" id="cabang-selector">
                 {{-- Tombol "Semua Cabang" --}}
                 <button class="cabang-btn all-btn active" data-id="all" onclick="setCabang(this,'all')">
-                    🌐 Semua Cabang
+                    Semua Cabang
                 </button>
                 {{-- Tombol per cabang --}}
                 @foreach ($cabangs as $cabang)
                     <button class="cabang-btn" data-id="{{ $cabang->idCabang }}"
                         onclick="setCabang(this,'{{ $cabang->idCabang }}')">
-                        🏪 {{ $cabang->namaCabang }}
+                        {{ $cabang->namaCabang }}
                     </button>
                 @endforeach
             </div>
 
             <div id="cabang-info"
                 style="margin-top:12px;padding:10px 14px;background:#FFF8E7;border-radius:10px;border:1.5px solid #f0d9a0;font-size:12px;color:#6b7280">
-                ℹ️ <strong>Semua Cabang</strong> dipilih — data akan dikirim ke tab terpisah per cabang + tab ringkasan
+                <strong>Semua Cabang</strong> dipilih — data akan dikirim ke tab terpisah per cabang + tab ringkasan
                 gabungan.
             </div>
         </div>
 
         {{-- PILIH PERIODE & SYNC --}}
         <div class="card">
-            <div class="card-title">📅 Periode & Sinkronisasi</div>
+            <div class="card-title">Periode & Sinkronisasi</div>
 
             <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px">
-                <button class="pay-btn active" id="periode-harian" onclick="setPeriode(this,'harian')">📅
+                <button class="pay-btn active" id="periode-harian" onclick="setPeriode(this,'harian')">
                     Harian</button>
-                <button class="pay-btn" id="periode-mingguan" onclick="setPeriode(this,'mingguan')">📆 Mingguan</button>
+                <button class="pay-btn" id="periode-mingguan" onclick="setPeriode(this,'mingguan')">Mingguan</button>
                 <button class="pay-btn" id="periode-bulanan" onclick="setPeriode(this,'bulanan')">🗓 Bulanan</button>
             </div>
 
             <div class="alert-info" style="margin-bottom:16px">
-                ℹ️ Setiap cabang mendapat <strong>3 tab</strong>: <em>Ringkasan</em>, <em>Detail Transaksi</em>,
+                Setiap cabang mendapat <strong>3 tab</strong>: <em>Ringkasan</em>, <em>Detail Transaksi</em>,
                 dan <em>Mutasi Stok</em>. Jika sync <strong>Semua Cabang</strong>, akan ada tambahan tab
                 <em>Ringkasan Semua Cabang</em>.
             </div>
@@ -645,15 +636,15 @@
                 <div style="display:flex;flex-wrap:wrap;gap:8px">
                     <span
                         style="background:#C0271A;color:#F5C518;padding:3px 12px;border-radius:99px;font-size:12px;font-weight:700"
-                        id="preview-cabang">🌐 Semua Cabang</span>
+                        id="preview-cabang">Semua Cabang</span>
                     <span
                         style="background:#f0d9a0;color:#9B1E13;padding:3px 12px;border-radius:99px;font-size:12px;font-weight:700"
-                        id="preview-periode">📅 Harian</span>
+                        id="preview-periode">Harian</span>
                 </div>
             </div>
 
             <button id="btn-do-sync" class="btn-primary" onclick="doSync()">
-                📊 SYNC KE GOOGLE SHEETS SEKARANG
+                SYNC KE GOOGLE SHEETS SEKARANG
             </button>
 
             <div id="sync-status" class="sync-status" style="margin-top:14px"></div>
@@ -684,13 +675,13 @@
                         <div class="rv" id="res-sales">—</div>
                     </div>
                 </div>
-                <a id="open-sheet-link" href="#" target="_blank" class="sheet-link">🔗 Buka Spreadsheet →</a>
+                <a id="open-sheet-link" href="#" target="_blank" class="sheet-link">Buka Spreadsheet →</a>
             </div>
         </div>
 
         {{-- PANDUAN --}}
         <div class="card">
-            <div class="card-title">📖 Panduan Penggunaan</div>
+            <div class="card-title">Panduan Penggunaan</div>
             <ol style="padding-left:18px;font-size:13px;color:#374151;line-height:2.2">
                 <li>Isi <strong>Spreadsheet ID</strong> atau buat baru dengan tombol <strong>"Buat Spreadsheet
                         Baru"</strong>.</li>
@@ -735,10 +726,10 @@
             const info = document.getElementById('cabang-info');
             if (id === 'all') {
                 info.innerHTML =
-                    'ℹ️ <strong>Semua Cabang</strong> dipilih — data dikirim ke tab terpisah per cabang + tab ringkasan gabungan.';
+                    '<strong>Semua Cabang</strong> dipilih — data dikirim ke tab terpisah per cabang + tab ringkasan gabungan.';
             } else {
                 info.innerHTML =
-                    `ℹ️ Cabang <strong>${selectedCabangLabel}</strong> dipilih — data dikirim ke 3 tab khusus cabang ini.`;
+                    `Cabang <strong>${selectedCabangLabel}</strong> dipilih — data dikirim ke 3 tab khusus cabang ini.`;
             }
 
             document.getElementById('preview-cabang').textContent = selectedCabangLabel;
@@ -752,9 +743,9 @@
             btn.classList.add('active');
             selectedPeriode = periode;
             const labels = {
-                harian: '📅 Harian',
-                mingguan: '📆 Mingguan',
-                bulanan: '🗓 Bulanan'
+                harian: 'Harian',
+                mingguan: 'Mingguan',
+                bulanan: 'Bulanan'
             };
             document.getElementById('preview-periode').textContent = labels[periode] || periode;
             document.getElementById('sync-result').style.display = 'none';
@@ -782,13 +773,13 @@
         async function doSync() {
             const spreadsheetId = document.getElementById('sheets-id-input').value.trim();
             if (!spreadsheetId) {
-                showStatus('sync-status', 'err', '❌ Masukkan Spreadsheet ID terlebih dahulu.');
+                showStatus('sync-status', 'err', 'Masukkan Spreadsheet ID terlebih dahulu.');
                 return;
             }
             const btn = document.getElementById('btn-do-sync');
             btn.disabled = true;
             btn.innerHTML = '<span class="spinner"></span> Mengirim data ke Google Sheets...';
-            showStatus('sync-status', 'wait', `⏳ Mengirim data ${selectedCabangLabel} — ${selectedPeriode}...`);
+            showStatus('sync-status', 'wait', `Mengirim data ${selectedCabangLabel} — ${selectedPeriode}...`);
             document.getElementById('sync-result').style.display = 'none';
             try {
                 const res = await fetch(SYNC_URL, {
@@ -808,10 +799,10 @@
                 const data = await res.json();
                 if (!res.ok || !data.success) throw new Error(data.message || 'Sync gagal.');
 
-                showStatus('sync-status', 'ok', `✅ ${data.message}`);
+                showStatus('sync-status', 'ok', `${data.message}`);
 
                 if (data.stats) {
-                    document.getElementById('res-cabang-label').textContent = '📍 ' + (data.stats.cabang_label || '');
+                    document.getElementById('res-cabang-label').textContent = '' + (data.stats.cabang_label || '');
                     document.getElementById('res-trx').textContent = data.stats.jumlah_transaksi;
                     document.getElementById('res-items').textContent = data.stats.item_terjual;
                     document.getElementById('res-disc').textContent = fmt(data.stats.total_diskon);
@@ -821,10 +812,10 @@
                     `https://docs.google.com/spreadsheets/d/${spreadsheetId}/edit`;
                 document.getElementById('sync-result').style.display = '';
             } catch (err) {
-                showStatus('sync-status', 'err', '❌ ' + (err.message || 'Terjadi kesalahan saat sync.'));
+                showStatus('sync-status', 'err', '' + (err.message || 'Terjadi kesalahan saat sync.'));
             } finally {
                 btn.disabled = false;
-                btn.innerHTML = '📊 SYNC KE GOOGLE SHEETS SEKARANG';
+                btn.innerHTML = 'SYNC KE GOOGLE SHEETS SEKARANG';
             }
         }
     </script>

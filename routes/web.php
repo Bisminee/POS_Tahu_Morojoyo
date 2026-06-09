@@ -20,11 +20,12 @@ Route::middleware('guest')->group(function () {
     Route::post('/login', [CashierController::class, 'login'])->name('cashier.login.submit');
 });
 
+Route::middleware(['auth'])->group(function () {
+    Route::post('/logout', [CashierController::class, 'logout'])->name('logout');
+});
+
 // ── Auth ────────────────────────────────────────────────────────────────────
 Route::middleware(['auth', ValidateShiftSession::class])->group(function () {
-
-    Route::post('/logout', [CashierController::class, 'logout'])->name('logout');
-
     // ── Absensi (kasir) ──────────────────────────────────────────────────────
     Route::get('/absensi', [AttendanceController::class, 'index'])->name('attendance.index');
     Route::get('/absensi/reset', [AttendanceController::class, 'resetAndGoToAbsensi'])
@@ -51,17 +52,14 @@ Route::middleware(['auth', ValidateShiftSession::class])->group(function () {
     Route::post('/cashier/create-spreadsheet', [CashierController::class, 'createSpreadsheet'])->name('cashier.create-spreadsheet');
 
 
-    // ── Owner ────────────────────────────────────────────────────────────────
+    Route::prefix('admin')->name('owner.')->middleware(['auth'])->group(function () {
 
-    Route::prefix('owner')->name('owner.')->middleware(['auth'])->group(function () {
+        Route::get('/laporan-keuangan', [OwnerSheetsController::class, 'showLaporanKeuangan'])->name('laporan-keuangan');
+        Route::post('/laporan-keuangan', [OwnerSheetsController::class, 'laporanKeuangan'])->name('laporan-keuangan.data');
 
-        // ── Google Sheets ──
         Route::get('sheets',           [OwnerSheetsController::class, 'index'])->name('sheets.index');
-        // GET untuk menampilkan form create
         Route::get('sheets/create',    [OwnerSheetsController::class, 'create'])->name('sheets.create');
-        // POST untuk handle buat spreadsheet baru (AJAX dari form)
         Route::post('sheets/store',    [OwnerSheetsController::class, 'createSpreadsheet'])->name('sheets.store');
-        // POST untuk sync ke sheets
         Route::post('sheets/sync',     [OwnerSheetsController::class, 'sync'])->name('sheets.sync');
     });
 

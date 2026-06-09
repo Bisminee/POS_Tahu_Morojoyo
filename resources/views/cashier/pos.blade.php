@@ -1575,7 +1575,8 @@
                         <span>Shift 2</span>
                         <strong id="shift2-total">Rp0</strong>
                     </div>
-                    <button id="btn-reset-shift-report" class="btn-laporan-topbar" onclick="resetShiftReportData()" style="margin-top:12px; font-size:12px; padding:8px 12px; background:#000; color:#fff; border-radius:8px;">
+                    <button id="btn-reset-shift-report" class="btn-laporan-topbar" onclick="resetShiftReportData()"
+                        style="margin-top:12px; font-size:12px; padding:8px 12px; background:#000; color:#fff; border-radius:8px;">
                         Reset Laporan Shift
                     </button>
                 </div>
@@ -1593,9 +1594,10 @@
                         Absensi Karyawan
                     </a>
 
-                    <a href="/admin/login" class="btn-logout" style="display:inline-flex;align-items:center;justify-content:center;text-decoration:none;">
-                        Keluar
-                    </a>
+<form method="POST" action="{{ route('logout') }}" style="display:inline;margin:0">
+    @csrf
+    <button type="submit" class="btn-logout">Keluar</button>
+</form>
                 </div>
             </div>
 
@@ -1734,8 +1736,9 @@
         {{-- ══ RIGHT PANEL — CART ══ --}}
         <div class="pos-right">
             <div class="rp-header">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                    fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                    stroke-linejoin="round">
                     <circle cx="9" cy="21" r="1" />
                     <circle cx="20" cy="21" r="1" />
                     <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
@@ -1986,7 +1989,6 @@
 
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    {{-- ═══ SEMUA SCRIPT LOGIKA — TIDAK DIUBAH SAMA SEKALI ═══ --}}
     <script>
         @php
             $menuData = $menus
@@ -2453,7 +2455,7 @@
                 `
                 <li><div><div class="cn">${item.name}</div><div class="cq">x${item.qty}</div></div><div class="cs">${fmt(item.subtotal)}</div></li>`
             ).join('');
-            if (!['cash','qris','gofood','shopeefood'].includes(currentPaymentMethod)) {
+            if (!['cash', 'qris', 'gofood', 'shopeefood'].includes(currentPaymentMethod)) {
                 currentPaymentMethod = 'cash';
                 currentPay = 'normal';
             }
