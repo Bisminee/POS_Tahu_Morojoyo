@@ -16,6 +16,7 @@ use Illuminate\Session\Middleware\AuthenticateSession;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 use Illuminate\Support\Facades\Blade;
+use Filament\Navigation\NavigationItem;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -39,6 +40,19 @@ class AdminPanelProvider extends PanelProvider
             ->brandLogoHeight('2.5rem')
             ->sidebarCollapsibleOnDesktop()
             ->navigationGroups(['Utama', 'Data Master'])
+            ->navigationItems([
+                NavigationItem::make('Face ID Karyawan')
+                    ->icon('heroicon-o-camera')
+                    ->url('/owner/karyawan')
+                    ->group('Absensi')
+                    ->sort(1),
+
+                NavigationItem::make('Rekap Absensi')
+                    ->icon('heroicon-o-clipboard-document-list')
+                    ->url('/owner/absensi')
+                    ->group('Absensi')
+                    ->sort(2),
+            ])
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
@@ -48,7 +62,7 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->renderHook(
                 'panels::head.end',
-                fn () => Blade::render('
+                fn() => Blade::render('
                     <script src="https://cdn.tailwindcss.com"></script>
                     <script>
                         tailwind.config = {

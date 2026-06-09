@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Attendance;
 use App\Models\Menu;
 use App\Models\Shift;
 use App\Models\StokPcs;
@@ -34,7 +35,13 @@ class CashierController extends Controller
         }
 
         $request->session()->regenerate();
-        $request->session()->forget(['selected_shift_id', 'selected_cashier_name']);
+        $request->session()->forget([
+            'selected_shift_id',
+            'selected_cashier_name',
+            'active_attendance_id',
+            'active_karyawan_id',
+            'active_karyawan_name',
+        ]);
 
         if (Auth::user()->role !== 'kasir') {
             Auth::logout();
@@ -75,8 +82,56 @@ class CashierController extends Controller
         return Auth::id();
     }
 
+    private function getActiveAttendance(): ?Attendance
+    {
+        $user = Auth::user();
+
+        if (!$user || $user->role !== 'kasir') {
+            return null;
+        }
+
+        return Attendance::with('karyawan')
+            ->where('user_id', $user->id)
+            ->whereDate('tanggal', today())
+            ->whereNotNull('jam_masuk')
+            ->whereNull('jam_pulang')
+            ->latest()
+            ->first();
+    }
+
+    private function ensureHasActiveAttendance()
+    {
+        $attendance = $this->getActiveAttendance();
+
+        if (!$attendance) {
+            session()->forget([
+                'active_attendance_id',
+                'active_karyawan_id',
+                'active_karyawan_name',
+            ]);
+
+            return redirect()
+                ->route('attendance.index')
+                ->withErrors([
+                    'attendance' => 'Silakan absen masuk menggunakan Face ID terlebih dahulu sebelum membuka POS.',
+                ]);
+        }
+
+        session([
+            'active_attendance_id' => $attendance->id,
+            'active_karyawan_id' => $attendance->karyawan_id,
+            'active_karyawan_name' => $attendance->karyawan?->nama,
+        ]);
+
+        return null;
+    }
+
     public function pos(Request $request)
     {
+        if ($redirect = $this->ensureHasActiveAttendance()) {
+            return $redirect;
+        }
+
         $menus = Menu::with(['menuDetails.pcsTahu', 'hargas'])->get();
         $paymentMethods = ['cash', 'qris', 'gofood', 'shopeefood'];
         $stocks = StokPcs::with('pcsTahu')->get()->keyBy(fn($s) => $s->pcsTahu?->id_pcs ?? $s->id_pcs);
@@ -144,6 +199,13 @@ class CashierController extends Controller
 
     public function checkout(Request $request)
     {
+        if (!$this->getActiveAttendance()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Transaksi ditolak. Kasir belum absen masuk menggunakan Face ID.',
+            ], 403);
+        }
+
         $data = $request->validate([
             'payment_method' => ['required', 'string'],
             'discount'       => ['nullable', 'numeric', 'min:0'],
@@ -196,9 +258,9 @@ class CashierController extends Controller
             $menu = Menu::with(['menuDetails.pcsTahu', 'hargas'])->find($menuId);
             if (!$menu) continue;
 
-            // Struktur tabel hargas yang baru sudah tidak memakai kolom
-            // metode_payment dan harga. Sekarang 1 menu memiliki 1 baris harga
-            // dengan kolom: harga_normal, harga_gofood, harga_shopeefood.
+            // Struktur tabel hargas terbaru:
+            // 1 menu memiliki 1 baris harga dengan kolom:
+            // harga_normal, harga_gofood, harga_shopeefood.
             $hargaModel = $menu->hargas->first();
 
             if (!$hargaModel) {
