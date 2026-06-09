@@ -1,7 +1,12 @@
-{{-- resources/views/attendance/index.blade.php --}}
-@extends('layouts.app')
+@props(['title' => 'Absensi Kasir'])
 
-@section('title', 'Absensi Masuk')
+@php
+    /*
+     * Controller multi-karyawan mengirim $activeAttendances.
+     * Fallback ini disediakan agar tidak error jika controller lama masih mengirim $activeAttendance.
+     */
+    $activeAttendances = $activeAttendances ?? collect(isset($activeAttendance) && $activeAttendance ? [$activeAttendance] : []);
+@endphp
 
 @section('content')
 
@@ -33,6 +38,10 @@
                     <div class="text-right">
                         <p class="text-[#F5C518] text-xs font-bold uppercase tracking-wide">Face Recognition</p>
                     </div>
+                </form>
+            @else
+                <div class="empty-box">
+                    Semua karyawan aktif sudah berada dalam shift, atau belum ada data karyawan aktif.
                 </div>
 
                 <div class="px-6 py-6 space-y-4">

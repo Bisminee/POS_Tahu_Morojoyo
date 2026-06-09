@@ -5,82 +5,103 @@ namespace App\Http\Middleware;
 use App\Models\Attendance;
 use Closure;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
-use Carbon\Carbon;
+use Symfony\Component\HttpFoundation\Response;
 
 class CheckAttendance
 {
-    public function handle(Request $request, Closure $next)
+    public function handle(Request $request, Closure $next): Response
     {
         $user = $request->user();
 
-        // Bukan kasir → skip middleware
         if (!$user || $user->role !== 'kasir') {
             return $next($request);
         }
 
-        // Ambil attendance aktif hari ini berdasarkan user_id
-        $attendanceRecord = Attendance::whereNotNull('jam_masuk')
-            ->whereNull('jam_keluar')
+        $activeAttendances = Attendance::with('karyawan')
             ->where('user_id', $user->id)
-            ->whereDate('created_at', Carbon::today())
-            ->first();
+            ->whereDate('tanggal', today())
+            ->whereNotNull('jam_masuk')
+            ->whereNull('jam_pulang')
+            ->get();
 
-        // Sync session dari attendance yang ada di DB
-        if ($attendanceRecord) {
-            $currentShiftInSession = session('selected_shift_id');
-            if (!$currentShiftInSession || $currentShiftInSession != $attendanceRecord->shift_id) {
-                session(['selected_shift_id' => $attendanceRecord->shift_id]);
-                session()->save();
-                Log::debug('Session synced from DB', [
-                    'shift_id' => $attendanceRecord->shift_id,
-                ]);
-            }
+        $validAttendances = $activeAttendances->filter(function ($attendance) {
+            return $this->isValidFaceAttendance($attendance);
+        });
+
+        if ($validAttendances->count() > 0) {
+            $firstAttendance = $validAttendances->first();
+
+            session([
+                'active_attendance_id' => $firstAttendance->id,
+                'active_karyawan_id' => $firstAttendance->karyawan_id,
+                'active_karyawan_name' => $firstAttendance->karyawan?->nama,
+            ]);
+
+            return $next($request);
         }
 
-        $shiftId     = session('selected_shift_id');
-        $hasAttendance = (bool) $attendanceRecord;
-
-        Log::debug('CheckAttendance Debug', [
-            'user_id'           => $user->id,
-            'selected_shift_id' => $shiftId,
-            'has_attendance'    => $hasAttendance,
-            'route'             => $request->route()?->getName(),
-            'today'             => Carbon::today()->toDateString(),
+        session()->forget([
+            'active_attendance_id',
+            'active_karyawan_id',
+            'active_karyawan_name',
         ]);
 
-        // ── ROUTE POS SELALU DIIZINKAN (absen tidak wajib) ──────────
-        // Kasir boleh akses POS meski belum absen
-        if ($request->routeIs('cashier.pos') || $request->routeIs('cashier.pos.checkout') || $request->routeIs('cashier.sync-sheets')) {
-            return $next($request);
+        return redirect()
+            ->route('attendance.index')
+            ->with('error', 'Silakan lakukan absensi masuk menggunakan Face ID terlebih dahulu sebelum membuka POS.');
+    }
+
+    private function isValidFaceAttendance(?Attendance $attendance): bool
+    {
+        if (!$attendance) {
+            return false;
         }
 
-        // ── ROUTE ABSENSI / PILIH SHIFT SELALU DIIZINKAN ────────────
-        $allowedRoutes = [
-            'attendance.*',
-            'cashier.select-shift',
-            'cashier.select-shift.submit',
-        ];
-
-        $isAllowedRoute = collect($allowedRoutes)
-            ->contains(fn ($pattern) => $request->routeIs($pattern));
-
-        if ($isAllowedRoute) {
-            return $next($request);
+        if (!$attendance->karyawan) {
+            return false;
         }
 
-        // ── SUDAH ABSEN: jangan redirect balik ke absensi ────────────
-        if ($hasAttendance) {
-            return $next($request);
+        if (!$this->hasValidFaceDescriptor($attendance->karyawan->face_descriptor)) {
+            return false;
         }
 
-        // ── BELUM ABSEN & bukan route yang diizinkan ─────────────────
-        // Untuk route selain POS dan absensi, redirect ke absensi
-        Log::info('Redirect to attendance', [
-            'reason'   => 'no active attendance',
-            'shift_id' => $shiftId,
-        ]);
+        if (!$attendance->foto_masuk) {
+            return false;
+        }
 
-        return redirect()->route('attendance.index');
+        if ($attendance->face_confidence_masuk === null) {
+            return false;
+        }
+
+        if (floatval($attendance->face_confidence_masuk) <= 0) {
+            return false;
+        }
+
+        return true;
+    }
+
+    private function hasValidFaceDescriptor(?string $descriptor): bool
+    {
+        if ($descriptor === null) {
+            return false;
+        }
+
+        $descriptor = trim($descriptor);
+
+        if ($descriptor === '' || strtolower($descriptor) === 'null' || $descriptor === '[]') {
+            return false;
+        }
+
+        $decoded = json_decode($descriptor, true);
+
+        if (!is_array($decoded)) {
+            return false;
+        }
+
+        if (count($decoded) < 100) {
+            return false;
+        }
+
+        return true;
     }
 }

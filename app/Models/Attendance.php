@@ -7,36 +7,38 @@ use Illuminate\Database\Eloquent\Model;
 class Attendance extends Model
 {
     protected $fillable = [
-        'shift_id',
+        'karyawan_id',
         'user_id',
+        'cabang_id',
+        'tanggal',
         'jam_masuk',
-        'status_masuk',
-        'telat_menit',
-        'foto_absen',
-        'face_confidence',
-        'jam_keluar',
-        'jenis_keluar',
-        'digantikan_oleh',
+        'jam_pulang',
+        'foto_masuk',
+        'foto_pulang',
+        'face_confidence_masuk',
+        'face_confidence_pulang',
+        'status',
         'catatan',
     ];
 
     protected $casts = [
+        'tanggal' => 'date',
         'jam_masuk' => 'datetime',
-        'jam_keluar' => 'datetime',
+        'jam_pulang' => 'datetime',
     ];
-
-    public function shift()
-    {
-        return $this->belongsTo(Shift::class);
-    }
 
     public function karyawan()
     {
         return $this->belongsTo(Karyawan::class, 'karyawan_id', 'idKaryawan');
     }
 
-    public function pengganti()
+    public function user()
     {
-        return $this->belongsTo(Karyawan::class, 'digantikan_oleh', 'idKaryawan');
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
+    public function cabang()
+    {
+        return $this->belongsTo(Cabang::class, 'cabang_id', 'idCabang');
     }
 }

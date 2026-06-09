@@ -32,7 +32,7 @@ class MenuResource extends Resource
     protected static ?string $model = Menu::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBookOpen;
-
+    protected static string | \UnitEnum | null $navigationGroup = 'Master Data';
     protected static ?string $recordTitleAttribute = 'namaMenu';
 
     protected static ?string $navigationLabel = 'Menu';
