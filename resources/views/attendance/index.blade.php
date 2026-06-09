@@ -258,11 +258,30 @@
         }
     </style>
 
-    <div class="attendance-page">
-        <div class="attendance-card">
-            <div class="attendance-header">
-                <h1>Absensi Kasir</h1>
-                <p>{{ now()->translatedFormat('l, d F Y • H:i') }}</p>
+    {{--
+        Face descriptor karyawan yang sedang shift — dikirim dari controller.
+        Format: JSON string dari array Float32 (128 angka).
+        Contoh di controller:
+            $shift->karyawan->face_descriptor  (sudah json_encode saat disimpan)
+    --}}
+    @php
+        $faceDescriptorRaw = $shift?->karyawan?->face_descriptor ?? null;
+    @endphp
+
+    <pre>
+shift: {{ $shift?->id }}
+karyawan: {{ $shift?->karyawan?->nama }}
+face_descriptor: {{ $faceDescriptorRaw ? 'ADA' : 'NULL' }}
+cabang_id shift: {{ $shift?->cabang_id }}
+cabang_id user: {{ auth()->user()->cabang_id }}
+</pre>
+
+    <div class="abs-wrap">
+        <div class="abs-card">
+
+            <div class="abs-header">
+                <h1>Absensi Masuk</h1>
+                <p>{{ now()->translatedFormat('l, d F Y') }} &middot; {{ now()->format('H:i') }}</p>
             </div>
 
             @if (session('success'))
