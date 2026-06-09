@@ -1,496 +1,188 @@
+{{-- resources/views/attendance/setup-face.blade.php --}}
 @extends('layouts.app')
 
 @section('title', 'Setup Wajah')
 
 @section('content')
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap');
 
-        .sf-body {
-            font-family: 'DM Sans', sans-serif;
-            background: #0f1117;
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 24px;
-            margin: 0;
-        }
+    <div class="min-h-screen bg-[#FFF8E7] flex items-center justify-center px-4 py-10">
+        <div class="w-full max-w-md">
 
-        .sf-card {
-            background: #1a1d27;
-            border: 1px solid #2a2d3a;
-            border-radius: 28px;
-            padding: 36px;
-            width: 100%;
-            max-width: 460px;
-            box-shadow: 0 32px 80px rgba(0, 0, 0, .5);
-        }
-
-        .sf-header {
-            text-align: center;
-            margin-bottom: 28px;
-        }
-
-        .sf-icon {
-            width: 56px;
-            height: 56px;
-            background: linear-gradient(135deg, #6366f1, #8b5cf6);
-            border-radius: 16px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 26px;
-            margin: 0 auto 16px;
-        }
-
-        .sf-header h1 {
-            font-size: 20px;
-            font-weight: 700;
-            color: #f1f5f9;
-            margin: 0 0 6px;
-        }
-
-        .sf-header p {
-            font-size: 13px;
-            color: #64748b;
-            margin: 0;
-            line-height: 1.5;
-        }
-
-        .sf-steps {
-            display: flex;
-            margin-bottom: 24px;
-            position: relative;
-        }
-
-        .sf-steps::before {
-            content: '';
-            position: absolute;
-            top: 14px;
-            left: 14px;
-            right: 14px;
-            height: 2px;
-            background: #2a2d3a;
-            z-index: 0;
-        }
-
-        .sf-step {
-            flex: 1;
-            text-align: center;
-            position: relative;
-            z-index: 1;
-        }
-
-        .sf-step-dot {
-            width: 28px;
-            height: 28px;
-            border-radius: 50%;
-            background: #2a2d3a;
-            border: 2px solid #3a3d4a;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 11px;
-            font-weight: 700;
-            color: #64748b;
-            margin: 0 auto 6px;
-            transition: all .3s;
-        }
-
-        .sf-step.active .sf-step-dot {
-            background: #6366f1;
-            border-color: #6366f1;
-            color: #fff;
-            box-shadow: 0 0 16px rgba(99, 102, 241, .4);
-        }
-
-        .sf-step.done .sf-step-dot {
-            background: #10b981;
-            border-color: #10b981;
-            color: #fff;
-        }
-
-        .sf-step-label {
-            font-size: 10px;
-            color: #64748b;
-            font-weight: 500;
-        }
-
-        .sf-step.active .sf-step-label {
-            color: #a5b4fc;
-        }
-
-        .cam-wrap {
-            position: relative;
-            border-radius: 20px;
-            overflow: hidden;
-            background: #0a0b0f;
-            aspect-ratio: 4/3;
-            margin-bottom: 16px;
-            border: 2px solid #2a2d3a;
-        }
-
-        #sf-video {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            display: block;
-            transform: scaleX(-1);
-        }
-
-        #sf-canvas {
-            display: none;
-        }
-
-        .cam-overlay {
-            position: absolute;
-            inset: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            pointer-events: none;
-        }
-
-        .cam-guide {
-            width: 160px;
-            height: 200px;
-            border-radius: 50%;
-            border: 2.5px solid rgba(255, 255, 255, .25);
-            box-shadow: 0 0 0 9999px rgba(0, 0, 0, .45);
-            transition: border-color .3s;
-            position: relative;
-        }
-
-        .cam-guide.detected {
-            border-color: #34d399;
-            box-shadow: 0 0 0 9999px rgba(0, 0, 0, .45), 0 0 24px rgba(52, 211, 153, .3);
-        }
-
-        .cam-guide.no-face {
-            border-color: #f87171;
-        }
-
-        .cam-badge {
-            position: absolute;
-            bottom: 12px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(0, 0, 0, .7);
-            backdrop-filter: blur(8px);
-            color: #fff;
-            font-size: 11px;
-            font-weight: 500;
-            padding: 5px 14px;
-            border-radius: 99px;
-            white-space: nowrap;
-            font-family: 'DM Sans', sans-serif;
-        }
-
-        .cam-loading {
-            position: absolute;
-            inset: 0;
-            background: rgba(10, 11, 15, .85);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
-            color: #94a3b8;
-            font-size: 13px;
-        }
-
-        .ring {
-            width: 40px;
-            height: 40px;
-            border: 3px solid rgba(99, 102, 241, .2);
-            border-top-color: #6366f1;
-            border-radius: 50%;
-            animation: spin .9s linear infinite;
-        }
-
-        @keyframes spin {
-            to {
-                transform: rotate(360deg);
-            }
-        }
-
-        .captures {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 16px;
-        }
-
-        .cap-slot {
-            flex: 1;
-            aspect-ratio: 1;
-            border-radius: 12px;
-            background: #0f1117;
-            border: 2px dashed #2a2d3a;
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #3a3d4a;
-            font-size: 20px;
-            transition: all .3s;
-            position: relative;
-        }
-
-        .cap-slot img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            display: block;
-        }
-
-        .cap-slot.filled {
-            border-color: #10b981;
-            border-style: solid;
-        }
-
-        .cap-slot .cap-num {
-            position: absolute;
-            top: 4px;
-            right: 4px;
-            background: rgba(0, 0, 0, .6);
-            color: #10b981;
-            font-size: 9px;
-            font-weight: 700;
-            padding: 2px 5px;
-            border-radius: 4px;
-        }
-
-        .hint {
-            font-size: 12px;
-            color: #475569;
-            text-align: center;
-            margin-bottom: 16px;
-            line-height: 1.5;
-        }
-
-        .btn-capture {
-            width: 100%;
-            padding: 14px;
-            border-radius: 14px;
-            border: none;
-            background: linear-gradient(135deg, #6366f1, #8b5cf6);
-            color: #fff;
-            font-size: 14px;
-            font-weight: 700;
-            cursor: pointer;
-            font-family: 'DM Sans', sans-serif;
-            transition: opacity .15s, transform .1s;
-            margin-bottom: 10px;
-        }
-
-        .btn-capture:hover:not(:disabled) {
-            opacity: .9;
-        }
-
-        .btn-capture:active:not(:disabled) {
-            transform: scale(.98);
-        }
-
-        .btn-capture:disabled {
-            opacity: .4;
-            cursor: not-allowed;
-        }
-
-        .btn-save {
-            width: 100%;
-            padding: 14px;
-            border-radius: 14px;
-            border: none;
-            background: #10b981;
-            color: #fff;
-            font-size: 14px;
-            font-weight: 700;
-            cursor: pointer;
-            font-family: 'DM Sans', sans-serif;
-            transition: background .15s, transform .1s;
-            display: none;
-        }
-
-        .btn-save:hover:not(:disabled) {
-            background: #059669;
-        }
-
-        .btn-save:active:not(:disabled) {
-            transform: scale(.98);
-        }
-
-        .btn-save:disabled {
-            opacity: .5;
-            cursor: not-allowed;
-        }
-
-        .btn-reset {
-            width: 100%;
-            padding: 10px;
-            border-radius: 12px;
-            border: 1px solid #2a2d3a;
-            background: transparent;
-            color: #64748b;
-            font-size: 13px;
-            cursor: pointer;
-            font-family: 'DM Sans', sans-serif;
-            margin-top: 8px;
-            display: none;
-            transition: color .15s, border-color .15s;
-        }
-
-        .btn-reset:hover {
-            color: #94a3b8;
-            border-color: #3a3d4a;
-        }
-
-        .status-box {
-            border-radius: 12px;
-            padding: 12px 16px;
-            font-size: 13px;
-            font-weight: 500;
-            margin-top: 12px;
-            display: none;
-            text-align: center;
-        }
-
-        .s-ok {
-            background: #064e3b;
-            color: #6ee7b7;
-            border: 1px solid #065f46;
-        }
-
-        .s-err {
-            background: #450a0a;
-            color: #fca5a5;
-            border: 1px solid #7f1d1d;
-        }
-
-        .s-wait {
-            background: #1e1b4b;
-            color: #a5b4fc;
-            border: 1px solid #312e81;
-        }
-
-        .progress-bar {
-            height: 4px;
-            background: #2a2d3a;
-            border-radius: 99px;
-            margin-bottom: 20px;
-            overflow: hidden;
-        }
-
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #6366f1, #8b5cf6);
-            border-radius: 99px;
-            transition: width .4s ease;
-            width: 0%;
-        }
-    </style>
-
-    <div class="sf-body">
-        <div class="sf-card">
-            <div class="sf-header">
-                <div class="sf-icon">🪪</div>
-                <h1>Setup Wajah</h1>
-                <p>Foto wajah diambil 3x dari sudut berbeda<br>untuk akurasi pengenalan yang lebih baik</p>
-            </div>
-
-            <div class="sf-steps">
-                <div class="sf-step active" id="step-1">
-                    <div class="sf-step-dot">1</div>
-                    <div class="sf-step-label">Foto</div>
-                </div>
-                <div class="sf-step" id="step-2">
-                    <div class="sf-step-dot">2</div>
-                    <div class="sf-step-label">Verifikasi</div>
-                </div>
-                <div class="sf-step" id="step-3">
-                    <div class="sf-step-dot">3</div>
-                    <div class="sf-step-label">Simpan</div>
+            {{-- Logo --}}
+            <div class="flex justify-center mb-6">
+                <div class="bg-[#C0271A] rounded-xl px-5 py-2.5 shadow-lg">
+                    <p class="text-[#F5C518] text-[7px] tracking-[.2em] text-center leading-none font-black uppercase">· Tahu Bakso ·</p>
+                    <p class="text-[#F5C518] text-2xl leading-none tracking-widest text-center font-black" style="font-family:'Bebas Neue',sans-serif">MOROJOYO</p>
                 </div>
             </div>
 
-            <div class="progress-bar">
-                <div class="progress-fill" id="progress-fill"></div>
-            </div>
+            {{-- Card --}}
+            <div class="bg-white rounded-3xl shadow-xl border-t-4 border-[#C0271A] overflow-hidden">
 
-            <div class="cam-wrap">
-                <video id="sf-video" autoplay muted playsinline></video>
-                <canvas id="sf-canvas"></canvas>
-                <div class="cam-overlay">
-                    <div class="cam-guide" id="cam-guide"></div>
+                {{-- Header --}}
+                <div class="bg-[#C0271A] px-6 py-5 flex items-center gap-3">
+                    <div class="w-11 h-11 bg-white/20 rounded-xl flex items-center justify-center text-xl flex-shrink-0">🪪</div>
+                    <div>
+                        <h1 class="text-white font-black text-xl leading-tight" style="font-family:'Bebas Neue',sans-serif">SETUP WAJAH</h1>
+                        <p class="text-red-200 text-xs">Daftarkan wajah untuk absensi</p>
+                    </div>
                 </div>
-                <div class="cam-badge" id="cam-badge">Memuat model...</div>
-                <div class="cam-loading" id="cam-loading">
-                    <div class="ring"></div>
-                    <span>Memuat model pengenalan wajah...</span>
+
+                <div class="px-6 py-6 space-y-5">
+
+                    {{-- Info --}}
+                    <div class="bg-[#FFF8E7] border border-[#F5C518]/40 rounded-2xl px-4 py-3 flex items-start gap-2.5">
+                        <span class="text-[#F5C518] text-lg flex-shrink-0">💡</span>
+                        <p class="text-gray-600 text-xs leading-relaxed">Foto wajah diambil <strong class="text-[#C0271A]">3x</strong> dari sudut berbeda untuk akurasi pengenalan yang lebih baik.</p>
+                    </div>
+
+                    {{-- Step indicator --}}
+                    <div class="relative flex items-center">
+                        <div class="absolute left-7 right-7 h-0.5 bg-gray-200 top-3.5 z-0"></div>
+                        <div class="relative z-10 flex justify-between w-full">
+                            <div class="flex flex-col items-center gap-1" id="step-1">
+                                <div class="w-7 h-7 rounded-full bg-[#C0271A] text-white text-xs font-black flex items-center justify-center shadow-md sf-dot">1</div>
+                                <span class="text-[10px] text-[#C0271A] font-bold sf-label">Foto</span>
+                            </div>
+                            <div class="flex flex-col items-center gap-1" id="step-2">
+                                <div class="w-7 h-7 rounded-full bg-gray-200 text-gray-400 text-xs font-black flex items-center justify-center sf-dot">2</div>
+                                <span class="text-[10px] text-gray-400 font-bold sf-label">Verifikasi</span>
+                            </div>
+                            <div class="flex flex-col items-center gap-1" id="step-3">
+                                <div class="w-7 h-7 rounded-full bg-gray-200 text-gray-400 text-xs font-black flex items-center justify-center sf-dot">3</div>
+                                <span class="text-[10px] text-gray-400 font-bold sf-label">Simpan</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Progress bar --}}
+                    <div class="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                        <div id="progress-fill" class="h-full bg-[#C0271A] rounded-full transition-all duration-500" style="width:0%"></div>
+                    </div>
+
+                    {{-- Camera --}}
+                    <div class="relative rounded-2xl overflow-hidden bg-gray-900 border-2 border-gray-200" style="aspect-ratio:4/3">
+                        <video id="sf-video" autoplay muted playsinline class="w-full h-full object-cover block" style="transform:scaleX(-1)"></video>
+                        <canvas id="sf-canvas" class="hidden"></canvas>
+
+                        <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+                            <div id="cam-guide" class="w-40 h-52 rounded-full border-[2.5px] border-white/30 transition-all duration-300" style="box-shadow:0 0 0 9999px rgba(0,0,0,0.45)"></div>
+                        </div>
+
+                        <div class="absolute bottom-3 left-1/2 -translate-x-1/2">
+                            <span id="cam-badge" class="bg-black/60 backdrop-blur-sm text-white text-xs font-semibold px-4 py-1.5 rounded-full whitespace-nowrap">Memuat model...</span>
+                        </div>
+
+                        <div id="cam-loading" class="absolute inset-0 bg-black/75 flex flex-col items-center justify-center gap-3 text-sm text-gray-300">
+                            <div class="w-10 h-10 border-[3px] border-[#C0271A]/30 border-t-[#C0271A] rounded-full animate-spin"></div>
+                            <span>Memuat model pengenalan wajah...</span>
+                        </div>
+                    </div>
+
+                    {{-- Capture slots --}}
+                    <div id="captures" class="grid grid-cols-3 gap-3">
+                        <div class="cap-slot aspect-square rounded-2xl bg-gray-50 border-2 border-dashed border-gray-200 flex items-center justify-center text-2xl text-gray-300 overflow-hidden relative" id="slot-0">📷</div>
+                        <div class="cap-slot aspect-square rounded-2xl bg-gray-50 border-2 border-dashed border-gray-200 flex items-center justify-center text-2xl text-gray-300 overflow-hidden relative" id="slot-1">📷</div>
+                        <div class="cap-slot aspect-square rounded-2xl bg-gray-50 border-2 border-dashed border-gray-200 flex items-center justify-center text-2xl text-gray-300 overflow-hidden relative" id="slot-2">📷</div>
+                    </div>
+
+                    {{-- Hint --}}
+                    <p id="hint-text" class="text-center text-xs text-gray-500 leading-relaxed">
+                        Hadapkan wajah ke kamera, lalu klik tombol foto. Ambil <strong>3 foto</strong> dari sudut sedikit berbeda.
+                    </p>
+
+                    {{-- Capture button --}}
+                    <button
+                        id="btn-capture"
+                        disabled
+                        onclick="capturePhoto()"
+                        class="w-full bg-[#C0271A] hover:bg-[#9B1E13] disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-black text-xl py-3.5 rounded-2xl transition-all shadow-lg shadow-red-200 flex items-center justify-center gap-2 active:scale-[.98]"
+                        style="font-family:'Bebas Neue',sans-serif; letter-spacing:.05em"
+                    >
+                        📸 AMBIL FOTO (<span id="capture-count">0</span>/3)
+                    </button>
+
+                    {{-- Save button --}}
+                    <button
+                        id="btn-save"
+                        onclick="saveToServer()"
+                        class="w-full bg-green-600 hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-black text-xl py-3.5 rounded-2xl transition-all shadow-lg shadow-green-200 items-center justify-center gap-2 active:scale-[.98] hidden"
+                        style="font-family:'Bebas Neue',sans-serif; letter-spacing:.05em"
+                    >
+                        ✅ SIMPAN DATA WAJAH
+                    </button>
+
+                    {{-- Reset --}}
+                    <button
+                        id="btn-reset"
+                        onclick="resetCaptures()"
+                        class="w-full border-2 border-gray-200 text-gray-500 hover:border-gray-300 hover:text-gray-700 text-sm font-bold py-2.5 rounded-2xl transition hidden"
+                    >
+                        🔄 Ulangi dari awal
+                    </button>
+
+                    {{-- Status --}}
+                    <div id="status-box" class="hidden rounded-2xl px-4 py-3 text-sm font-semibold text-center"></div>
+
                 </div>
             </div>
 
-            <div class="captures" id="captures">
-                <div class="cap-slot" id="slot-0">📷</div>
-                <div class="cap-slot" id="slot-1">📷</div>
-                <div class="cap-slot" id="slot-2">📷</div>
-            </div>
-
-            <p class="hint" id="hint-text">Hadapkan wajah ke kamera, lalu klik tombol foto. Ambil 3 foto dari sudut
-                sedikit berbeda.</p>
-
-            <button class="btn-capture" id="btn-capture" disabled onclick="capturePhoto()">
-                📸 Ambil Foto (<span id="capture-count">0</span>/3)
-            </button>
-
-            <button class="btn-save" id="btn-save" onclick="saveToServer()">
-                ✅ Simpan Data Wajah
-            </button>
-
-            <button class="btn-reset" id="btn-reset" onclick="resetCaptures()">
-                🔄 Ulangi dari awal
-            </button>
-
-            <div class="status-box" id="status-box"></div>
+            <p class="text-center text-xs text-gray-400 mt-6">© 2026 Tahu Bakso Morojoyo · Kelompok 4</p>
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
     <script>
-        const CSRF = document.querySelector('meta[name="csrf-token"]')?.content || '';
+        const CSRF     = document.querySelector('meta[name="csrf-token"]')?.content || '';
         const SAVE_URL = "{{ route('attendance.save-face') }}";
         const MODEL_URL = '/face-models';
-        const NEEDED = 3;
+        const NEEDED   = 3;
 
-        let captures = [],
-            faceDetected = false,
-            lastDescriptor = null,
-            detectionLoop = null;
+        let captures = [], faceDetected = false, lastDescriptor = null, detectionLoop = null;
 
-        const video = document.getElementById('sf-video');
-        const canvas = document.getElementById('sf-canvas');
-        const guide = document.getElementById('cam-guide');
-        const badge = document.getElementById('cam-badge');
-        const loading = document.getElementById('cam-loading');
-        const btnCap = document.getElementById('btn-capture');
-        const btnSave = document.getElementById('btn-save');
-        const btnReset = document.getElementById('btn-reset');
+        const video     = document.getElementById('sf-video');
+        const canvas    = document.getElementById('sf-canvas');
+        const guide     = document.getElementById('cam-guide');
+        const badge     = document.getElementById('cam-badge');
+        const loading   = document.getElementById('cam-loading');
+        const btnCap    = document.getElementById('btn-capture');
+        const btnSave   = document.getElementById('btn-save');
+        const btnReset  = document.getElementById('btn-reset');
         const statusBox = document.getElementById('status-box');
-        const countEl = document.getElementById('capture-count');
-        const hintEl = document.getElementById('hint-text');
-        const progress = document.getElementById('progress-fill');
+        const countEl   = document.getElementById('capture-count');
+        const hintEl    = document.getElementById('hint-text');
+        const progress  = document.getElementById('progress-fill');
+
+        const STATUS_CLASSES = {
+            ok:   'bg-green-50 border border-green-200 text-green-700',
+            err:  'bg-red-50 border border-red-200 text-red-700',
+            wait: 'bg-blue-50 border border-blue-200 text-blue-700',
+        };
 
         function showStatus(type, msg) {
-            statusBox.className = 'status-box s-' + type;
+            statusBox.className = 'rounded-2xl px-4 py-3 text-sm font-semibold text-center ' + (STATUS_CLASSES[type]||'');
             statusBox.innerHTML = msg;
-            statusBox.style.display = '';
+            statusBox.classList.remove('hidden');
         }
 
         function updateStep(n) {
             for (let i = 1; i <= 3; i++) {
-                const el = document.getElementById('step-' + i);
-                el.className = 'sf-step' + (i < n ? ' done' : i === n ? ' active' : '');
-                el.querySelector('.sf-step-dot').textContent = i < n ? '✓' : i;
+                const el  = document.getElementById('step-' + i);
+                const dot = el.querySelector('.sf-dot');
+                const lbl = el.querySelector('.sf-label');
+                if (i < n) {
+                    dot.className = 'w-7 h-7 rounded-full bg-green-500 text-white text-xs font-black flex items-center justify-center sf-dot';
+                    dot.textContent = '✓';
+                    lbl.className = 'text-[10px] text-green-600 font-bold sf-label';
+                } else if (i === n) {
+                    dot.className = 'w-7 h-7 rounded-full bg-[#C0271A] text-white text-xs font-black flex items-center justify-center shadow-md sf-dot';
+                    dot.textContent = i;
+                    lbl.className = 'text-[10px] text-[#C0271A] font-bold sf-label';
+                } else {
+                    dot.className = 'w-7 h-7 rounded-full bg-gray-200 text-gray-400 text-xs font-black flex items-center justify-center sf-dot';
+                    dot.textContent = i;
+                    lbl.className = 'text-[10px] text-gray-400 font-bold sf-label';
+                }
             }
         }
 
@@ -501,24 +193,15 @@
                     faceapi.nets.faceLandmark68TinyNet.loadFromUri(MODEL_URL),
                     faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL),
                 ]);
-                const stream = await navigator.mediaDevices.getUserMedia({
-                    video: {
-                        facingMode: 'user',
-                        width: 640,
-                        height: 480
-                    }
-                });
+                const stream = await navigator.mediaDevices.getUserMedia({ video:{ facingMode:'user', width:640, height:480 } });
                 video.srcObject = stream;
-                await new Promise(r => video.addEventListener('loadedmetadata', r, {
-                    once: true
-                }));
-                canvas.width = video.videoWidth;
-                canvas.height = video.videoHeight;
+                await new Promise(r => video.addEventListener('loadedmetadata', r, { once:true }));
+                canvas.width = video.videoWidth; canvas.height = video.videoHeight;
                 loading.style.display = 'none';
                 badge.textContent = 'Arahkan wajah ke kamera';
                 startLoop();
-            } catch (err) {
-                loading.innerHTML = `<span style="color:#fca5a5">⚠️ ${err.message || 'Gagal akses kamera'}</span>`;
+            } catch(err) {
+                loading.innerHTML = `<span class="text-red-300">⚠️ ${err.message || 'Gagal akses kamera'}</span>`;
             }
         }
 
@@ -526,103 +209,83 @@
             detectionLoop = setInterval(async () => {
                 try {
                     const det = await faceapi
-                        .detectSingleFace(video, new faceapi.TinyFaceDetectorOptions({
-                            scoreThreshold: 0.5
-                        }))
-                        .withFaceLandmarks(true)
-                        .withFaceDescriptor();
+                        .detectSingleFace(video, new faceapi.TinyFaceDetectorOptions({ scoreThreshold:0.5 }))
+                        .withFaceLandmarks(true).withFaceDescriptor();
                     if (det) {
-                        faceDetected = true;
+                        faceDetected   = true;
                         lastDescriptor = Array.from(det.descriptor);
-                        guide.className = 'cam-guide detected';
-                        badge.textContent = captures.length < NEEDED ? '✓ Wajah terdeteksi — siap foto' :
-                            '✓ Semua foto diambil';
+                        guide.style.borderColor = '#34d399';
+                        guide.style.boxShadow   = '0 0 0 9999px rgba(0,0,0,0.45), 0 0 20px rgba(52,211,153,.3)';
+                        badge.textContent = captures.length < NEEDED ? '✓ Wajah terdeteksi — siap foto' : '✓ Semua foto diambil';
                         if (captures.length < NEEDED) btnCap.disabled = false;
                     } else {
-                        faceDetected = false;
-                        lastDescriptor = null;
-                        guide.className = 'cam-guide no-face';
+                        faceDetected   = false; lastDescriptor = null;
+                        guide.style.borderColor = '#f87171';
+                        guide.style.boxShadow   = '0 0 0 9999px rgba(0,0,0,0.45)';
                         badge.textContent = 'Wajah tidak terdeteksi...';
                         btnCap.disabled = true;
                     }
-                } catch (_) {}
+                } catch(_) {}
             }, 500);
         }
 
         function capturePhoto() {
             if (!faceDetected || captures.length >= NEEDED) return;
             const ctx = canvas.getContext('2d');
-            ctx.save();
-            ctx.scale(-1, 1);
-            ctx.drawImage(video, -canvas.width, 0, canvas.width, canvas.height);
-            ctx.restore();
+            ctx.save(); ctx.scale(-1,1); ctx.drawImage(video,-canvas.width,0,canvas.width,canvas.height); ctx.restore();
             const base64 = canvas.toDataURL('image/jpeg', 0.8);
-            captures.push({
-                base64,
-                descriptor: [...lastDescriptor]
-            });
-            const slot = document.getElementById('slot-' + (captures.length - 1));
-            slot.innerHTML = `<img src="${base64}"><span class="cap-num">${captures.length}</span>`;
-            slot.classList.add('filled');
+            captures.push({ base64, descriptor:[...lastDescriptor] });
+            const slot = document.getElementById('slot-' + (captures.length-1));
+            slot.innerHTML = `<img src="${base64}" class="w-full h-full object-cover"><span class="absolute top-1.5 right-1.5 bg-[#C0271A] text-white text-[9px] font-black px-1.5 py-0.5 rounded-full">${captures.length}</span>`;
+            slot.classList.remove('border-dashed','border-gray-200','text-gray-300');
+            slot.classList.add('border-green-400');
             countEl.textContent = captures.length;
             progress.style.width = ((captures.length / NEEDED) * 66) + '%';
             if (captures.length >= NEEDED) {
                 clearInterval(detectionLoop);
                 btnCap.disabled = true;
-                btnSave.style.display = 'block';
-                btnReset.style.display = 'block';
-                hintEl.textContent = '3 foto berhasil diambil! Klik "Simpan Data Wajah" untuk menyimpan.';
+                btnSave.classList.remove('hidden'); btnSave.classList.add('flex');
+                btnReset.classList.remove('hidden');
+                hintEl.innerHTML = '3 foto berhasil diambil! Klik <strong class="text-[#C0271A]">Simpan Data Wajah</strong> untuk menyimpan.';
                 updateStep(2);
                 progress.style.width = '66%';
-                showStatus('wait', '⏳ Siap disimpan. Klik tombol simpan di bawah.');
+                showStatus('wait','⏳ Siap disimpan. Klik tombol simpan di bawah.');
             } else {
-                const hints = ['Bagus! Sekarang miringkan kepala sedikit ke kiri.',
-                    'Hampir selesai! Miringkan sedikit ke kanan.'
-                ];
-                hintEl.textContent = hints[captures.length - 1] || 'Ambil foto berikutnya.';
+                const hints = ['Bagus! Sekarang miringkan kepala sedikit ke kiri.','Hampir selesai! Miringkan sedikit ke kanan.'];
+                hintEl.textContent = hints[captures.length-1] || 'Ambil foto berikutnya.';
             }
         }
 
         async function saveToServer() {
             if (captures.length < NEEDED) return;
             btnSave.disabled = true;
-            btnSave.textContent = '⏳ Menyimpan...';
-            showStatus('wait', '⏳ Mengirim data wajah ke server...');
+            btnSave.innerHTML = '<div class="w-5 h-5 border-2 border-white/40 border-t-white rounded-full animate-spin mr-2"></div> Menyimpan...';
+            showStatus('wait','⏳ Mengirim data wajah ke server...');
             updateStep(3);
-            const avgDescriptor = captures[0].descriptor.map((_, i) =>
-                captures.reduce((sum, c) => sum + c.descriptor[i], 0) / captures.length
+            const avgDescriptor = captures[0].descriptor.map((_,i) =>
+                captures.reduce((sum,c) => sum + c.descriptor[i], 0) / captures.length
             );
             try {
-                const res = await fetch(SAVE_URL, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': CSRF,
-                        'Accept': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        face_descriptor: avgDescriptor,
-                        foto_base64: captures[0].base64
-                    }),
+                const res  = await fetch(SAVE_URL, {
+                    method:'POST',
+                    headers:{ 'Content-Type':'application/json','X-CSRF-TOKEN':CSRF,'Accept':'application/json' },
+                    body: JSON.stringify({ face_descriptor:avgDescriptor, foto_base64:captures[0].base64 }),
                 });
                 const data = await res.json();
                 if (data.success) {
                     progress.style.width = '100%';
-                    showStatus('ok', '✅ Data wajah berhasil disimpan! Kamu sekarang bisa absen.');
-                    btnSave.style.display = 'none';
-                    btnReset.style.display = 'none';
-                    setTimeout(() => {
-                        window.location.href = '/absensi';
-                    }, 2500);
+                    showStatus('ok','✅ Data wajah berhasil disimpan! Kamu sekarang bisa absen.');
+                    btnSave.classList.add('hidden'); btnReset.classList.add('hidden');
+                    setTimeout(() => { window.location.href = '/absensi'; }, 2500);
                 } else {
-                    showStatus('err', '❌ ' + (data.message || 'Gagal menyimpan.'));
+                    showStatus('err','❌ ' + (data.message || 'Gagal menyimpan.'));
                     btnSave.disabled = false;
-                    btnSave.textContent = '✅ Simpan Data Wajah';
+                    btnSave.innerHTML = '✅ SIMPAN DATA WAJAH';
                 }
-            } catch (err) {
-                showStatus('err', '❌ Koneksi bermasalah. Coba lagi.');
+            } catch(err) {
+                showStatus('err','❌ Koneksi bermasalah. Coba lagi.');
                 btnSave.disabled = false;
-                btnSave.textContent = '✅ Simpan Data Wajah';
+                btnSave.innerHTML = '✅ SIMPAN DATA WAJAH';
             }
         }
 
@@ -631,15 +294,14 @@
             for (let i = 0; i < NEEDED; i++) {
                 const slot = document.getElementById('slot-' + i);
                 slot.innerHTML = '📷';
-                slot.classList.remove('filled');
+                slot.className = 'cap-slot aspect-square rounded-2xl bg-gray-50 border-2 border-dashed border-gray-200 flex items-center justify-center text-2xl text-gray-300 overflow-hidden relative';
             }
             countEl.textContent = '0';
             btnCap.disabled = !faceDetected;
-            btnSave.style.display = 'none';
-            btnReset.style.display = 'none';
-            statusBox.style.display = 'none';
-            hintEl.textContent =
-            'Hadapkan wajah ke kamera, lalu klik tombol foto. Ambil 3 foto dari sudut sedikit berbeda.';
+            btnSave.classList.add('hidden'); btnSave.classList.remove('flex');
+            btnReset.classList.add('hidden');
+            statusBox.classList.add('hidden');
+            hintEl.innerHTML = 'Hadapkan wajah ke kamera, lalu klik tombol foto. Ambil <strong>3 foto</strong> dari sudut sedikit berbeda.';
             updateStep(1);
             progress.style.width = '0%';
             startLoop();
@@ -647,4 +309,5 @@
 
         initFaceApi();
     </script>
+
 @endsection
