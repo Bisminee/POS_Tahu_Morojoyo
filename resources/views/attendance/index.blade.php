@@ -1,628 +1,466 @@
 @props(['title' => 'Absensi Kasir'])
 
-@php
-    /*
-     * Controller multi-karyawan mengirim $activeAttendances.
-     * Fallback ini disediakan agar tidak error jika controller lama masih mengirim $activeAttendance.
-     */
-    $activeAttendances = $activeAttendances ?? collect(isset($activeAttendance) && $activeAttendance ? [$activeAttendance] : []);
-@endphp
-
 <x-layouts.app :title="$title">
-    <style>
-        body {
-            background: #f4f5f7;
-            font-family: 'Plus Jakarta Sans', sans-serif;
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            red:        '#C0271A',
+                            'red-dk':   '#96281B',
+                            cream:      '#FAF6EF',
+                            'cream-dk': '#F0E9DC',
+                        }
+                    }
+                }
+            }
         }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>body { font-family: 'Plus Jakarta Sans', system-ui, sans-serif; background: #FAF6EF; }</style>
 
-        .attendance-page {
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 24px;
-        }
+    @php
+        // Controller kirim $activeAttendances (Collection), bukan $shift
+        // $shift = attendance aktif pertama (bisa null kalau belum absen)
+        $shift = $activeAttendances->first() ?? null;
+        $faceDescriptorRaw = $shift?->karyawan?->face_descriptor ?? null;
+    @endphp
 
-        .attendance-card {
-            width: 100%;
-            max-width: 860px;
-            background: #ffffff;
-            border-radius: 28px;
-            padding: 34px;
-            box-shadow: 0 24px 70px rgba(15, 23, 42, .12);
-            border: 1px solid #e5e7eb;
-        }
+    <div class="min-h-screen bg-brand-cream flex items-center justify-center px-4 py-10">
+        <div class="w-full max-w-md">
 
-        .attendance-header {
-            text-align: center;
-            margin-bottom: 28px;
-        }
-
-        .attendance-header h1 {
-            font-size: 32px;
-            margin: 0;
-            color: #071331;
-            font-weight: 800;
-        }
-
-        .attendance-header p {
-            margin: 8px 0 0;
-            color: #64748b;
-            font-size: 15px;
-        }
-
-        .alert {
-            padding: 14px 16px;
-            border-radius: 16px;
-            margin-bottom: 18px;
-            font-size: 14px;
-            line-height: 1.5;
-        }
-
-        .alert-success {
-            background: #ecfdf5;
-            border: 1px solid #bbf7d0;
-            color: #047857;
-        }
-
-        .alert-danger {
-            background: #fef2f2;
-            border: 1px solid #fecaca;
-            color: #b91c1c;
-        }
-
-        .section-title {
-            font-size: 20px;
-            font-weight: 900;
-            color: #071331;
-            margin: 24px 0 12px;
-        }
-
-        .active-box {
-            background: #f0fdf4;
-            border: 1px solid #bbf7d0;
-            border-radius: 18px;
-            padding: 18px;
-            margin-bottom: 18px;
-        }
-
-        .active-box h2 {
-            margin: 0 0 8px;
-            font-size: 18px;
-            color: #166534;
-        }
-
-        .active-box p {
-            margin: 4px 0;
-            color: #166534;
-            font-size: 14px;
-        }
-
-        .form-group {
-            margin-bottom: 18px;
-        }
-
-        label {
-            display: block;
-            font-weight: 700;
-            color: #111827;
-            margin-bottom: 8px;
-        }
-
-        select,
-        textarea {
-            width: 100%;
-            border: 1px solid #cbd5e1;
-            border-radius: 16px;
-            padding: 14px 16px;
-            font-size: 15px;
-            outline: none;
-            background: #f8fafc;
-        }
-
-        select:focus,
-        textarea:focus {
-            border-color: #4f46e5;
-            background: #ffffff;
-            box-shadow: 0 0 0 4px rgba(79, 70, 229, .12);
-        }
-
-        .btn {
-            width: 100%;
-            border: none;
-            border-radius: 16px;
-            padding: 15px 18px;
-            font-size: 15px;
-            font-weight: 800;
-            cursor: pointer;
-            transition: .2s;
-            text-align: center;
-        }
-
-        .btn:disabled {
-            background: #9ca3af !important;
-            cursor: not-allowed;
-        }
-
-        .btn-primary {
-            background: #4f46e5;
-            color: #ffffff;
-        }
-
-        .btn-primary:hover {
-            background: #4338ca;
-        }
-
-        .btn-danger {
-            background: #dc2626;
-            color: #ffffff;
-        }
-
-        .btn-danger:hover {
-            background: #b91c1c;
-        }
-
-        .btn-secondary {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            text-decoration: none;
-            width: 100%;
-            border-radius: 16px;
-            padding: 15px 18px;
-            font-size: 15px;
-            font-weight: 800;
-            background: #f3f4f6;
-            color: #374151;
-            margin-top: 10px;
-            border: none;
-            cursor: pointer;
-        }
-
-        .btn-secondary:hover {
-            background: #e5e7eb;
-        }
-
-        .empty-box {
-            background: #fff7ed;
-            border: 1px solid #fed7aa;
-            color: #9a3412;
-            border-radius: 16px;
-            padding: 16px;
-            text-align: center;
-            font-size: 14px;
-        }
-
-        .camera-box {
-            margin: 18px 0;
-            padding: 16px;
-            border-radius: 20px;
-            background: #f8fafc;
-            border: 1px solid #e5e7eb;
-        }
-
-        .video-wrapper {
-            position: relative;
-            width: 100%;
-            border-radius: 16px;
-            overflow: hidden;
-            background: #111827;
-            margin-bottom: 12px;
-        }
-
-        .video-wrapper video {
-            width: 100%;
-            border-radius: 16px;
-            background: #111827;
-            display: none;
-            margin-bottom: 0;
-        }
-
-        .video-wrapper video.active {
-            display: block;
-        }
-
-        .video-wrapper canvas {
-            position: absolute;
-            inset: 0;
-            width: 100%;
-            height: 100%;
-            display: none;
-            pointer-events: none;
-        }
-
-        .video-wrapper canvas.active {
-            display: block;
-        }
-
-        .face-status {
-            padding: 12px 14px;
-            border-radius: 14px;
-            background: #eef2ff;
-            color: #3730a3;
-            font-size: 14px;
-            font-weight: 700;
-            margin-bottom: 12px;
-            line-height: 1.5;
-        }
-
-        .button-gap {
-            display: grid;
-            gap: 10px;
-        }
-
-        .divider {
-            height: 1px;
-            background: #e5e7eb;
-            margin: 24px 0;
-        }
-    </style>
-
-    <div class="attendance-page">
-        <div class="attendance-card">
-            <div class="attendance-header">
-                <h1>Absensi Kasir</h1>
-                <p>{{ now()->translatedFormat('l, d F Y • H:i') }}</p>
+            {{-- Brand --}}
+            <div class="flex justify-center mb-8">
+                @if(isset($identitas) && $identitas->logo)
+                    <img src="{{ asset('storage/' . $identitas->logo) }}" alt="{{ $identitas->nama_brand ?? 'Logo' }}"class="h-20 w-auto">
+                @endif
             </div>
 
-            @if (session('success'))
-                <div class="alert alert-success">
-                    {{ session('success') }}
-                </div>
-            @endif
+            <div class="bg-white rounded-2xl shadow-xl shadow-brand-red/10 overflow-hidden border border-brand-cream-dk">
 
-            @if (session('error'))
-                <div class="alert alert-danger">
-                    {{ session('error') }}
-                </div>
-            @endif
-
-            @if ($errors->any())
-                <div class="alert alert-danger">
-                    @foreach ($errors->all() as $error)
-                        <div>{{ $error }}</div>
-                    @endforeach
-                </div>
-            @endif
-
-            @if ($activeAttendances->count())
-                <div class="section-title">Karyawan Sedang Shift</div>
-
-                @foreach ($activeAttendances as $activeAttendance)
-                    <div class="active-box">
-                        <h2>{{ $activeAttendance->karyawan?->nama ?? '-' }}</h2>
-                        <p><strong>Jam Masuk:</strong> {{ $activeAttendance->jam_masuk?->format('H:i') ?? '-' }}</p>
-
-                        <form method="POST" action="{{ route('attendance.clock-out') }}" id="clockOutForm_{{ $activeAttendance->id }}" style="margin-top: 12px;">
-                            @csrf
-
-                            <input type="hidden" name="attendance_id" value="{{ $activeAttendance->id }}">
-                            <input type="hidden" name="face_descriptor" id="face_descriptor_out_{{ $activeAttendance->id }}">
-                            <input type="hidden" name="foto_base64" id="foto_base64_out_{{ $activeAttendance->id }}">
-
-                            <div class="camera-box">
-                                <div class="face-status" id="faceStatusOut_{{ $activeAttendance->id }}">
-                                    Untuk absen pulang {{ $activeAttendance->karyawan?->nama ?? '-' }}, scan wajah terlebih dahulu.
-                                </div>
-
-                                <div class="video-wrapper">
-                                    <video id="videoOut_{{ $activeAttendance->id }}" autoplay muted playsinline></video>
-                                    <canvas id="canvasOut_{{ $activeAttendance->id }}"></canvas>
-                                </div>
-
-                                <div class="button-gap">
-                                    <button type="button" class="btn-secondary"
-                                        onclick="scanFace('out', {{ $activeAttendance->id }})">
-                                        Scan Wajah Pulang {{ $activeAttendance->karyawan?->nama ?? '' }}
-                                    </button>
-
-                                    <button type="submit" class="btn btn-danger" id="clockOutSubmit_{{ $activeAttendance->id }}" disabled>
-                                        Selesai Shift / Absen Pulang
-                                    </button>
-                                </div>
-                            </div>
-                        </form>
+                {{-- Red Header --}}
+                <div class="bg-brand-red-dk px-6 py-5 flex items-center gap-3">
+                    {{-- <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center text-xl">
+                        {{ $shift ? '🪪' : '🕐' }}
+                    </div> --}}
+                    <div>
+                        <h1 class="text-lg font-extrabold tracking-widest uppercase text-white">
+                            {{ $shift ? 'Verifikasi Wajah' : 'Absensi Masuk' }}
+                        </h1>
+                        <p class="text-xs text-red-200 mt-0.5">
+                            {{ now()->translatedFormat('l, d F Y') }} · {{ now()->format('H:i') }}
+                        </p>
                     </div>
-                @endforeach
+                </div>
 
-                <a href="{{ route('cashier.pos') }}" class="btn-secondary">
-                    Masuk ke POS
-                </a>
+                <div class="p-5 space-y-4">
 
-                <div class="divider"></div>
-            @endif
+                    @if (session('success'))
+                        <div class="bg-green-50 border border-green-200 rounded-xl px-4 py-3 text-green-800 text-sm font-semibold">
+                            ✅ {{ session('success') }}
+                        </div>
+                    @endif
 
-            <div class="section-title">Tambah Karyawan Shift</div>
-
-            @if ($karyawans->count())
-                <form method="POST" action="{{ route('attendance.clock-in') }}" id="clockInForm">
-                    @csrf
-
-                    <div class="form-group">
-                        <label for="karyawan_id">Pilih Nama Karyawan</label>
-                        <select name="karyawan_id" id="karyawan_id" required>
-                            <option value="">-- Pilih karyawan yang mulai shift --</option>
-                            @foreach ($karyawans as $karyawan)
-                                <option value="{{ $karyawan->idKaryawan }}">
-                                    {{ $karyawan->nama }}
-                                </option>
+                    @if ($errors->any())
+                        <div class="bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-brand-red text-sm font-semibold space-y-1">
+                            @foreach ($errors->all() as $error)
+                                <div>⚠️ {{ $error }}</div>
                             @endforeach
-                        </select>
-                    </div>
-
-                    <input type="hidden" name="face_descriptor" id="face_descriptor_in">
-                    <input type="hidden" name="foto_base64" id="foto_base64_in">
-
-                    <div class="camera-box">
-                        <div class="face-status" id="faceStatusIn">
-                            Pilih nama karyawan, lalu scan wajah sebelum absen masuk.
                         </div>
+                    @endif
 
-                        <div class="video-wrapper">
-                            <video id="videoIn" autoplay muted playsinline></video>
-                            <canvas id="canvasIn"></canvas>
-                        </div>
+                    @if (!$shift)
+                    
+                        {{-- ── MODE PILIH KARYAWAN ── --}}
 
-                        <div class="button-gap">
-                            <button type="button" class="btn-secondary"
-                                onclick="scanFace('in')">
-                                Scan Wajah Masuk
-                            </button>
+                        @if ($karyawans->isEmpty())
+                            <div class="bg-amber-50 border border-amber-200 rounded-xl px-4 py-4 text-center text-amber-800 text-sm font-semibold">
+                                ⚠️ Semua karyawan sudah absen masuk hari ini.
+                            </div>
+                        @else
+                            <p class="text-xs text-gray-500">Pilih karyawan yang akan absen masuk.</p>
 
-                            <button type="submit" class="btn btn-primary" id="clockInSubmit" disabled>
-                                Mulai Shift / Absen Masuk
-                            </button>
-                        </div>
-                    </div>
-                </form>
-            @else
-                <div class="empty-box">
-                    Semua karyawan aktif sudah berada dalam shift, atau belum ada data karyawan aktif.
+                            <form method="POST" action="{{ route('attendance.clock-in') }}" id="absen-form">
+                                @csrf
+
+                                {{-- Hidden fields diisi JS setelah scan wajah --}}
+                                <input type="hidden" name="karyawan_id" id="karyawan_id">
+                                <input type="hidden" name="face_descriptor" id="face_descriptor">
+                                <input type="hidden" name="foto_base64" id="foto_base64">
+
+                                <div>
+                                    <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1.5">
+                                        Nama Karyawan
+                                    </label>
+                                    <select id="karyawan-select" required
+                                            class="w-full border border-brand-cream-dk rounded-xl px-4 py-2.5 text-sm bg-brand-cream focus:outline-none focus:ring-2 focus:ring-brand-red/30 focus:border-brand-red transition appearance-none">
+                                        <option value="">Pilih karyawan...</option>
+                                        @foreach ($karyawans as $k)
+                                            <option value="{{ $k->idKaryawan }}"
+                                                    data-descriptor="{{ $k->face_descriptor }}">
+                                                {{ $k->nama }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+
+                                {{-- Kamera (muncul setelah pilih karyawan) --}}
+                                <div id="camera-section" class="hidden space-y-3">
+                                    <div class="relative rounded-xl overflow-hidden bg-gray-900 aspect-[4/3]">
+                                        <video id="video" autoplay muted playsinline
+                                               class="w-full h-full object-cover" style="transform:scaleX(-1)"></video>
+                                        <canvas id="canvas" class="hidden"></canvas>
+
+                                        <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+                                            <div id="face-guide"
+                                                 class="w-40 h-52 rounded-full border-[2.5px] border-white/40 transition-colors duration-300"
+                                                 style="box-shadow:0 0 0 9999px rgba(0,0,0,0.4)"></div>
+                                        </div>
+
+                                        <div id="camera-status"
+                                             class="absolute bottom-3 left-1/2 -translate-x-1/2 bg-black/60 text-white text-[11px] font-medium px-3 py-1 rounded-full backdrop-blur-sm whitespace-nowrap">
+                                            Memuat model...
+                                        </div>
+
+                                        <div id="loading-models"
+                                             class="absolute inset-0 bg-black/70 flex flex-col items-center justify-center gap-3 text-white text-sm">
+                                            <div class="w-8 h-8 rounded-full border-[3px] border-white/30 border-t-white animate-spin"></div>
+                                            <span>Memuat model wajah...</span>
+                                        </div>
+                                    </div>
+
+                                    {{-- Confidence Bar --}}
+                                    <div id="confidence-wrap" class="hidden space-y-1">
+                                        <div class="flex justify-between text-xs font-semibold text-gray-500">
+                                            <span>Kecocokan Wajah</span>
+                                            <span id="confidence-pct">0%</span>
+                                        </div>
+                                        <div class="h-2 bg-brand-cream-dk rounded-full overflow-hidden">
+                                            <div id="confidence-fill"
+                                                 class="h-full rounded-full transition-all duration-300"
+                                                 style="width:0%;background:#ef4444"></div>
+                                        </div>
+                                    </div>
+
+                                    <div id="status-box" class="hidden rounded-xl px-4 py-3 text-sm font-semibold text-center border"></div>
+
+                                    <button type="button" id="btn-absen" disabled onclick="doAbsen()"
+                                            class="w-full py-3.5 rounded-xl bg-brand-red hover:bg-brand-red-dk disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-extrabold text-sm tracking-[0.1em] uppercase transition-colors flex items-center justify-center gap-2">
+                                        📸 Absen Sekarang
+                                    </button>
+                                </div>
+
+                            </form>
+                        @endif
+
+                    @else
+    {{-- ── MODE ABSEN PULANG (ada shift aktif) ── --}}
+
+    @if ($activeAttendances->isEmpty())
+        <div class="bg-amber-50 border border-amber-200 rounded-xl px-4 py-4 text-center text-amber-800 text-sm font-semibold">
+            ⚠️ Tidak ada karyawan yang sedang shift aktif.
+        </div>
+    @else
+        <p class="text-xs text-gray-500">Pilih karyawan yang akan absen pulang.</p>
+
+        <form method="POST" action="{{ route('attendance.clock-out') }}" id="pulang-form">
+            @csrf
+            <input type="hidden" name="attendance_id" id="attendance_id">
+            <input type="hidden" name="face_descriptor" id="face_descriptor">
+            <input type="hidden" name="foto_base64" id="foto_base64">
+
+            <div>
+                <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1.5">
+                    Nama Karyawan
+                </label>
+                <select id="pulang-select" required
+                        class="w-full border border-brand-cream-dk rounded-xl px-4 py-2.5 text-sm bg-brand-cream focus:outline-none focus:ring-2 focus:ring-brand-red/30 focus:border-brand-red transition appearance-none">
+                    <option value="">Pilih karyawan...</option>
+                    @foreach ($activeAttendances as $att)
+                        <option
+                            value="{{ $att->id }}"
+                            data-descriptor="{{ $att->karyawan->face_descriptor }}"
+                            data-masuk="{{ $att->jam_masuk?->format('H:i') }}"
+                            data-nama="{{ $att->karyawan->nama }}"
+                        >
+                            {{ $att->karyawan->nama }} (masuk {{ $att->jam_masuk?->format('H:i') }})
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+
+            {{-- Info karyawan terpilih --}}
+            <div id="info-karyawan" class="hidden flex items-center gap-3 bg-brand-cream border border-brand-cream-dk rounded-xl px-4 py-3">
+                <div class="w-9 h-9 bg-brand-red/10 rounded-lg flex items-center justify-center text-lg">👤</div>
+                <div>
+                    <p class="text-xs text-gray-500 font-semibold uppercase tracking-wider">Shift Aktif</p>
+                    <p class="text-sm font-bold text-gray-800" id="info-nama">-</p>
+                    <p class="text-xs text-gray-400">Masuk: <span id="info-masuk">-</span></p>
                 </div>
-            @endif
+            </div>
+
+            {{-- Kamera (muncul setelah pilih) --}}
+            <div id="camera-section-pulang" class="hidden space-y-3">
+
+                <div id="no-face-id-warn" class="hidden bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-amber-800 text-sm font-semibold text-center">
+                    ⚠️ Face ID karyawan ini belum terdaftar.
+                </div>
+
+                <div id="camera-wrap" class="hidden space-y-3">
+                    <div class="relative rounded-xl overflow-hidden bg-gray-900 aspect-[4/3]">
+                        <video id="video" autoplay muted playsinline
+                               class="w-full h-full object-cover" style="transform:scaleX(-1)"></video>
+                        <canvas id="canvas" class="hidden"></canvas>
+
+                        <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+                            <div id="face-guide"
+                                 class="w-40 h-52 rounded-full border-[2.5px] border-white/40 transition-colors duration-300"
+                                 style="box-shadow:0 0 0 9999px rgba(0,0,0,0.4)"></div>
+                        </div>
+
+                        <div id="camera-status"
+                             class="absolute bottom-3 left-1/2 -translate-x-1/2 bg-black/60 text-white text-[11px] font-medium px-3 py-1 rounded-full backdrop-blur-sm whitespace-nowrap">
+                            Memuat model...
+                        </div>
+
+                        <div id="loading-models"
+                             class="absolute inset-0 bg-black/70 flex flex-col items-center justify-center gap-3 text-white text-sm">
+                            <div class="w-8 h-8 rounded-full border-[3px] border-white/30 border-t-white animate-spin"></div>
+                            <span>Memuat model wajah...</span>
+                        </div>
+                    </div>
+
+                    {{-- Confidence Bar --}}
+                    <div id="confidence-wrap" class="hidden space-y-1">
+                        <div class="flex justify-between text-xs font-semibold text-gray-500">
+                            <span>Kecocokan Wajah</span>
+                            <span id="confidence-pct">0%</span>
+                        </div>
+                        <div class="h-2 bg-brand-cream-dk rounded-full overflow-hidden">
+                            <div id="confidence-fill"
+                                 class="h-full rounded-full transition-all duration-300"
+                                 style="width:0%;background:#ef4444"></div>
+                        </div>
+                    </div>
+
+                    <div id="status-box" class="hidden rounded-xl px-4 py-3 text-sm font-semibold text-center border"></div>
+
+                    <button type="button" id="btn-absen" disabled onclick="doPulang()"
+                            class="w-full py-3.5 rounded-xl bg-brand-red hover:bg-brand-red-dk disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-extrabold text-sm tracking-[0.1em] uppercase transition-colors flex items-center justify-center gap-2">
+                        📸 Absen Pulang
+                    </button>
+                </div>
+            </div>
+
+        </form>
+    @endif
+
+    {{-- Karyawan lain yang belum absen masuk --}}
+    @if ($karyawans->isNotEmpty())
+        <div class="border-t border-brand-cream-dk pt-4">
+            <p class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">Karyawan belum absen masuk</p>
+            @foreach ($karyawans as $k)
+                <div class="flex items-center gap-2 py-1.5 text-sm text-gray-600">
+                    <span class="w-2 h-2 rounded-full bg-brand-cream-dk inline-block"></span>
+                    {{ $k->nama }}
+                </div>
+            @endforeach
+        </div>
+    @endif
+
+@endif
+
+                </div>
+            </div>
+
+            <p class="text-center text-xs text-gray-400 mt-6">© {{ date('Y') }} Tahu Bakso Morojoyo</p>
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
 
     <script>
-        let faceModelsLoaded = false;
+        const MODEL_URL       = '/face-models';
+        const MATCH_THRESHOLD = 0.60;
+
+        // Elemen DOM
+        const video       = document.getElementById('video');
+        const canvas      = document.getElementById('canvas');
+        const guide       = document.getElementById('face-guide');
+        const camStatus   = document.getElementById('camera-status');
+        const loadingEl   = document.getElementById('loading-models');
+        const btnAbsen    = document.getElementById('btn-absen');
+        const statusBox   = document.getElementById('status-box');
+        const confWrap    = document.getElementById('confidence-wrap');
+        const confFill    = document.getElementById('confidence-fill');
+        const confPct     = document.getElementById('confidence-pct');
+
+        let faceDetected = false, lastDescriptor = null, currentDistance = 1.0;
+        let faceMatchOk = false, detectionLoop = null;
+        let registeredDescriptor = null;
+
+        // ── MODE MASUK: inisialisasi setelah pilih karyawan ──
+        @if (!$shift)
+        const karyawanSelect = document.getElementById('karyawan-select');
+        const cameraSection  = document.getElementById('camera-section');
         let currentStream = null;
 
-        const MODEL_URL = '/face-models';
+        karyawanSelect?.addEventListener('change', async function () {
+            const opt = this.options[this.selectedIndex];
+            const rawDescriptor = opt?.dataset?.descriptor;
 
-        function setFaceStatus(type, message, attendanceId = null) {
-            let statusId;
-
-            if (type === 'in') {
-                statusId = 'faceStatusIn';
-            } else {
-                statusId = 'faceStatusOut_' + attendanceId;
-            }
-
-            const statusElement = document.getElementById(statusId);
-
-            if (statusElement) {
-                statusElement.innerText = message;
-            }
-
-            console.log('[Absensi Face ID]', message);
-        }
-
-        async function loadFaceModels() {
-            if (faceModelsLoaded) {
-                return true;
-            }
-
-            if (typeof faceapi === 'undefined') {
-                alert('Library face-api.js belum berhasil dimuat. Pastikan koneksi internet aktif.');
-                return false;
-            }
-
-            try {
-                await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
-                await faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL);
-                await faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL);
-
-                faceModelsLoaded = true;
-                return true;
-            } catch (error) {
-                console.error('Load Face API model error:', error);
-                alert('Gagal memuat model Face API. Pastikan folder public/face-models sudah benar.');
-                return false;
-            }
-        }
-
-        async function stopCamera() {
-            if (currentStream) {
-                currentStream.getTracks().forEach(track => track.stop());
-                currentStream = null;
-            }
-        }
-
-        async function scanFace(type, attendanceId = null) {
-            const isClockIn = type === 'in';
-
-            const videoId = isClockIn ? 'videoIn' : 'videoOut_' + attendanceId;
-            const canvasId = isClockIn ? 'canvasIn' : 'canvasOut_' + attendanceId;
-            const descriptorInputId = isClockIn ? 'face_descriptor_in' : 'face_descriptor_out_' + attendanceId;
-            const fotoInputId = isClockIn ? 'foto_base64_in' : 'foto_base64_out_' + attendanceId;
-            const submitButtonId = isClockIn ? 'clockInSubmit' : 'clockOutSubmit_' + attendanceId;
-
-            const video = document.getElementById(videoId);
-            const overlayCanvas = document.getElementById(canvasId);
-            const descriptorInput = document.getElementById(descriptorInputId);
-            const fotoInput = document.getElementById(fotoInputId);
-            const submitButton = document.getElementById(submitButtonId);
-
-            if (isClockIn) {
-                const karyawanSelect = document.getElementById('karyawan_id');
-
-                if (!karyawanSelect || !karyawanSelect.value) {
-                    alert('Pilih nama karyawan terlebih dahulu.');
-                    setFaceStatus(type, 'Pilih nama karyawan terlebih dahulu.');
-                    return;
-                }
-            }
-
-            descriptorInput.value = '';
-            fotoInput.value = '';
-            submitButton.disabled = true;
-
-            const modelsReady = await loadFaceModels();
-
-            if (!modelsReady) {
+            if (!this.value || !rawDescriptor) {
+                cameraSection.classList.add('hidden');
+                stopCamera();
                 return;
             }
 
             try {
-                await stopCamera();
+                const parsed = JSON.parse(rawDescriptor);
+                registeredDescriptor = new Float32Array(parsed);
+            } catch {
+                showStatus('err', '⚠️ Data Face ID karyawan ini tidak valid.');
+                return;
+            }
 
-                setFaceStatus(type, 'Membuka kamera...', attendanceId);
+            document.getElementById('karyawan_id').value = this.value;
+            cameraSection.classList.remove('hidden');
+            await startCamera();
+        });
 
-                currentStream = await navigator.mediaDevices.getUserMedia({
-                    video: {
-                        width: { ideal: 640 },
-                        height: { ideal: 480 },
-                        facingMode: 'user'
-                    },
-                    audio: false
-                });
+        function stopCamera() {
+            if (currentStream) { currentStream.getTracks().forEach(t => t.stop()); currentStream = null; }
+            clearInterval(detectionLoop);
+        }
 
+        async function startCamera() {
+            try {
+                await Promise.all([
+                    faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
+                    faceapi.nets.faceLandmark68TinyNet.loadFromUri(MODEL_URL),
+                    faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL),
+                ]);
+                currentStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode:'user', width:640, height:480 } });
                 video.srcObject = currentStream;
-                video.classList.add('active');
-                overlayCanvas.classList.add('active');
-
-                await new Promise((resolve) => {
-                    video.onloadedmetadata = () => {
-                        video.play();
-                        resolve();
-                    };
-                });
-
-                setFaceStatus(type, 'Kamera aktif. Mendeteksi wajah...', attendanceId);
-
-                await new Promise(resolve => setTimeout(resolve, 1000));
-
-                const detection = await faceapi
-                    .detectSingleFace(
-                        video,
-                        new faceapi.TinyFaceDetectorOptions({
-                            inputSize: 416,
-                            scoreThreshold: 0.45
-                        })
-                    )
-                    .withFaceLandmarks()
-                    .withFaceDescriptor();
-
-                const displaySize = {
-                    width: video.videoWidth || 640,
-                    height: video.videoHeight || 480
-                };
-
-                overlayCanvas.width = displaySize.width;
-                overlayCanvas.height = displaySize.height;
-
-                const overlayContext = overlayCanvas.getContext('2d');
-                overlayContext.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
-
-                if (!detection) {
-                    setFaceStatus(type, 'Wajah tidak terdeteksi. Pastikan wajah terang dan menghadap kamera.', attendanceId);
-                    alert('Wajah tidak terdeteksi. Pastikan wajah terlihat jelas, terang, dan menghadap kamera.');
-
-                    await stopCamera();
-                    video.classList.remove('active');
-                    overlayCanvas.classList.remove('active');
-                    return;
-                }
-
-                const resizedDetection = faceapi.resizeResults(detection, displaySize);
-                drawFaceCircle(overlayCanvas, resizedDetection);
-
-                const descriptor = Array.from(detection.descriptor);
-
-                if (!descriptor || descriptor.length < 100) {
-                    setFaceStatus(type, 'Data Face ID tidak valid. Silakan scan ulang.', attendanceId);
-                    alert('Data Face ID tidak valid. Silakan scan ulang.');
-
-                    await stopCamera();
-                    video.classList.remove('active');
-                    overlayCanvas.classList.remove('active');
-                    return;
-                }
-
-                descriptorInput.value = JSON.stringify(descriptor);
-
-                const snapshotCanvas = document.createElement('canvas');
-                snapshotCanvas.width = video.videoWidth || 640;
-                snapshotCanvas.height = video.videoHeight || 480;
-
-                const snapshotContext = snapshotCanvas.getContext('2d');
-                snapshotContext.drawImage(video, 0, 0, snapshotCanvas.width, snapshotCanvas.height);
-
-                fotoInput.value = snapshotCanvas.toDataURL('image/jpeg', 0.85);
-
-                submitButton.disabled = false;
-
-                setFaceStatus(type, 'Face ID berhasil discan. Lingkaran hijau menunjukkan wajah terdeteksi. Sekarang klik tombol absen.', attendanceId);
-                alert('Face ID berhasil discan. Sekarang klik tombol absen.');
-
-                setTimeout(async () => {
-                    await stopCamera();
-
-                    video.classList.remove('active');
-                    overlayCanvas.classList.remove('active');
-                    overlayContext.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
-                }, 1500);
-
-            } catch (error) {
-                console.error('Scan wajah error:', error);
-
-                setFaceStatus(type, 'Gagal scan wajah. Cek izin kamera atau Console browser.', attendanceId);
-                alert('Gagal scan wajah. Pastikan izin kamera sudah diberikan.');
-
-                await stopCamera();
-
-                if (video) {
-                    video.classList.remove('active');
-                }
-
-                if (overlayCanvas) {
-                    overlayCanvas.classList.remove('active');
-                }
+                await new Promise(r => video.addEventListener('loadedmetadata', r, { once:true }));
+                canvas.width = video.videoWidth; canvas.height = video.videoHeight;
+                loadingEl.style.display = 'none';
+                camStatus.textContent = 'Arahkan wajah ke kamera';
+                startLoop();
+            } catch (err) {
+                loadingEl.innerHTML = `<span class="text-red-300">⚠️ ${err.message || 'Gagal akses kamera'}</span>`;
             }
         }
 
-        function drawFaceCircle(canvas, detection) {
+        async function doAbsen() {
+            if (!faceMatchOk) return;
+            clearInterval(detectionLoop);
+            btnAbsen.disabled = true;
+            btnAbsen.innerHTML = '<div class="w-5 h-5 border-2 border-white/40 border-t-white rounded-full animate-spin mr-2"></div> Menyimpan...';
             const ctx = canvas.getContext('2d');
-            const box = detection.detection.box;
+            ctx.save(); ctx.scale(-1,1); ctx.drawImage(video,-canvas.width,0,canvas.width,canvas.height); ctx.restore();
+            document.getElementById('face_descriptor').value = JSON.stringify(Array.from(lastDescriptor));
+            document.getElementById('foto_base64').value = canvas.toDataURL('image/jpeg', 0.8);
+            document.getElementById('absen-form').submit();
+        }
+        @endif
 
-            const centerX = box.x + box.width / 2;
-            const centerY = box.y + box.height / 2;
-            const radius = Math.max(box.width, box.height) / 2 + 18;
+        // ── MODE PULANG ──
+        @if ($shift && $faceDescriptorRaw)
+        const RAW = @json(is_string($faceDescriptorRaw) ? json_decode($faceDescriptorRaw, true) : $faceDescriptorRaw);
+        registeredDescriptor = new Float32Array(RAW);
 
-            ctx.save();
+        (async function initPulang() {
+            try {
+                await Promise.all([
+                    faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
+                    faceapi.nets.faceLandmark68TinyNet.loadFromUri(MODEL_URL),
+                    faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL),
+                ]);
+                const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode:'user', width:640, height:480 } });
+                video.srcObject = stream;
+                await new Promise(r => video.addEventListener('loadedmetadata', r, { once:true }));
+                canvas.width = video.videoWidth; canvas.height = video.videoHeight;
+                loadingEl.style.display = 'none';
+                camStatus.textContent = 'Arahkan wajah ke kamera';
+                startLoop();
+            } catch (err) {
+                loadingEl.innerHTML = `<span class="text-red-300">⚠️ ${err.message || 'Gagal akses kamera'}</span>`;
+            }
+        })();
 
-            ctx.beginPath();
-            ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
-            ctx.lineWidth = 6;
-            ctx.strokeStyle = '#22c55e';
-            ctx.stroke();
+        async function doPulang() {
+            if (!faceMatchOk) return;
+            clearInterval(detectionLoop);
+            btnAbsen.disabled = true;
+            btnAbsen.innerHTML = '<div class="w-5 h-5 border-2 border-white/40 border-t-white rounded-full animate-spin mr-2"></div> Menyimpan...';
+            const ctx = canvas.getContext('2d');
+            ctx.save(); ctx.scale(-1,1); ctx.drawImage(video,-canvas.width,0,canvas.width,canvas.height); ctx.restore();
+            document.getElementById('face_descriptor').value = JSON.stringify(Array.from(lastDescriptor));
+            document.getElementById('foto_base64').value = canvas.toDataURL('image/jpeg', 0.8);
+            document.getElementById('pulang-form').submit();
+        }
+        @endif
 
-            ctx.fillStyle = 'rgba(34, 197, 94, 0.15)';
-            ctx.fill();
+        // ── Detection loop (shared) ──
+        function startLoop() {
+            detectionLoop = setInterval(async () => {
+                try {
+                    const det = await faceapi
+                        .detectSingleFace(video, new faceapi.TinyFaceDetectorOptions({ scoreThreshold: 0.5 }))
+                        .withFaceLandmarks(true).withFaceDescriptor();
 
-            ctx.font = 'bold 20px Arial';
-            ctx.fillStyle = '#22c55e';
-            ctx.fillText(
-                'Face ID Terdeteksi',
-                Math.max(10, box.x),
-                Math.max(30, box.y - 12)
-            );
+                    if (det && registeredDescriptor) {
+                        faceDetected   = true;
+                        lastDescriptor = det.descriptor;
+                        currentDistance = faceapi.euclideanDistance(lastDescriptor, registeredDescriptor);
 
-            ctx.restore();
+                        const pct = Math.max(0, Math.min(100, Math.round((1 - currentDistance / MATCH_THRESHOLD) * 100)));
+                        confWrap?.classList.remove('hidden');
+                        if (confPct) confPct.textContent = pct + '%';
+                        if (confFill) {
+                            confFill.style.width = pct + '%';
+                            confFill.style.background = currentDistance <= MATCH_THRESHOLD ? '#10b981' : currentDistance <= 0.75 ? '#f59e0b' : '#ef4444';
+                        }
+
+                        if (currentDistance <= MATCH_THRESHOLD) {
+                            faceMatchOk = true;
+                            guide.style.borderColor = '#34d399';
+                            camStatus.textContent   = '✓ Wajah cocok — siap absen';
+                            if (btnAbsen) btnAbsen.disabled = false;
+                        } else {
+                            faceMatchOk = false;
+                            guide.style.borderColor = '#fbbf24';
+                            camStatus.textContent   = `Wajah belum cocok (${currentDistance.toFixed(2)})`;
+                            if (btnAbsen) btnAbsen.disabled = true;
+                        }
+                    } else {
+                        faceDetected = false; faceMatchOk = false; lastDescriptor = null; currentDistance = 1.0;
+                        guide.style.borderColor = 'rgba(255,255,255,0.4)';
+                        camStatus.textContent   = 'Wajah tidak terdeteksi...';
+                        if (btnAbsen) btnAbsen.disabled = true;
+                        confWrap?.classList.remove('hidden');
+                        if (confFill) { confFill.style.width = '0%'; confFill.style.background = '#ef4444'; }
+                        if (confPct) confPct.textContent = '0%';
+                    }
+                } catch(_) {}
+            }, 600);
         }
 
-        window.addEventListener('beforeunload', stopCamera);
+        function showStatus(type, msg) {
+            if (!statusBox) return;
+            const cls = {
+                ok:   'bg-green-50 border-green-200 text-green-800',
+                err:  'bg-red-50 border-red-200 text-brand-red',
+                warn: 'bg-amber-50 border-amber-200 text-amber-800',
+                wait: 'bg-blue-50 border-blue-200 text-blue-800',
+            };
+            statusBox.className = 'rounded-xl px-4 py-3 text-sm font-semibold text-center border ' + (cls[type] || '');
+            statusBox.innerHTML = msg;
+            statusBox.classList.remove('hidden');
+        }
     </script>
+
 </x-layouts.app>

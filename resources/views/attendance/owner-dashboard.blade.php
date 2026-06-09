@@ -1,250 +1,144 @@
 <x-layouts.app title="Rekap Absensi Karyawan">
-    <style>
-        body {
-            background: #f4f5f7;
-            font-family: 'Plus Jakarta Sans', sans-serif;
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            red:       '#C0392B',
+                            'red-dk':  '#96281B',
+                            'red-lt':  '#E74C3C',
+                            cream:     '#FAF6EF',
+                            'cream-dk':'#F0E9DC',
+                        }
+                    },
+                    fontFamily: {
+                        jakarta: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
+                    }
+                }
+            }
         }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>body { font-family: 'Plus Jakarta Sans', system-ui, sans-serif; }</style>
 
-        .page {
-            padding: 32px;
-        }
+    <div class="min-h-screen bg-brand-cream px-4 py-8 md:px-8">
 
-        .card {
-            background: white;
-            border-radius: 24px;
-            padding: 28px;
-            box-shadow: 0 16px 50px rgba(15, 23, 42, .10);
-            border: 1px solid #e5e7eb;
-        }
+        <div class="text-center mb-6">
+            <p class="text-xs font-bold tracking-[0.2em] text-brand-red/40 uppercase">· Tahu Bakso Morojoyo ·</p>
+        </div>
 
-        h1 {
-            margin: 0 0 20px;
-            font-size: 32px;
-            font-weight: 800;
-            color: #071331;
-        }
+        <div class="max-w-7xl mx-auto">
+            <div class="bg-white rounded-2xl shadow-xl shadow-brand-red/10 overflow-hidden border border-brand-cream-dk">
 
-        .top-actions {
-            display: flex;
-            justify-content: space-between;
-            gap: 12px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-            align-items: end;
-        }
+                {{-- Red Header --}}
+                <div class="bg-brand-red to-brand-red-dk px-6 py-5">
+                    <h1 class="text-xl font-extrabold tracking-widest uppercase text-white">Rekap Absensi Karyawan</h1>
+                    <p class="text-sm text-red-200 mt-0.5">Pantau kehadiran seluruh karyawan per periode</p>
+                </div>
 
-        .filter-form {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-            align-items: end;
-        }
+                <div class="p-6">
 
-        .form-group label {
-            display: block;
-            font-size: 13px;
-            font-weight: 700;
-            color: #334155;
-            margin-bottom: 6px;
-        }
+                    {{-- Filter & Actions --}}
+                    <div class="flex flex-wrap gap-3 justify-between items-end mb-6">
+                        <form method="GET" action="{{ route('attendance.owner') }}" class="flex flex-wrap gap-3 items-end">
+                            <div>
+                                <label class="block text-xs font-bold text-gray-500 mb-1.5 uppercase tracking-wider">Tanggal Mulai</label>
+                                <input type="date" name="tanggal_mulai" value="{{ $tanggalMulai }}"
+                                       class="border border-brand-cream-dk rounded-xl px-4 py-2.5 text-sm bg-brand-cream focus:outline-none focus:ring-2 focus:ring-brand-red/30 focus:border-brand-red transition">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-500 mb-1.5 uppercase tracking-wider">Tanggal Selesai</label>
+                                <input type="date" name="tanggal_selesai" value="{{ $tanggalSelesai }}"
+                                       class="border border-brand-cream-dk rounded-xl px-4 py-2.5 text-sm bg-brand-cream focus:outline-none focus:ring-2 focus:ring-brand-red/30 focus:border-brand-red transition">
+                            </div>
+                            <button type="submit"
+                                    class="bg-brand-red hover:bg-brand-red-dk text-white text-sm font-bold px-5 py-2.5 rounded-xl transition-colors">
+                                Filter
+                            </button>
+                        </form>
 
-        .input {
-            border: 1px solid #cbd5e1;
-            border-radius: 12px;
-            padding: 10px 14px;
-            font-size: 14px;
-            background: #f8fafc;
-        }
-
-        .btn {
-            border: none;
-            border-radius: 12px;
-            padding: 10px 14px;
-            font-size: 13px;
-            font-weight: 700;
-            cursor: pointer;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .btn-primary {
-            background: #4f46e5;
-            color: white;
-        }
-
-        .btn-success {
-            background: #059669;
-            color: white;
-        }
-
-        .btn-secondary {
-            background: #e5e7eb;
-            color: #111827;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            overflow: hidden;
-            border-radius: 16px;
-            margin-top: 16px;
-        }
-
-        th {
-            text-align: left;
-            background: #f8fafc;
-            color: #475569;
-            font-size: 13px;
-            padding: 14px;
-            border-bottom: 1px solid #e5e7eb;
-        }
-
-        td {
-            padding: 14px;
-            border-bottom: 1px solid #e5e7eb;
-            font-size: 14px;
-            color: #111827;
-        }
-
-        .badge {
-            padding: 6px 10px;
-            border-radius: 99px;
-            font-size: 12px;
-            font-weight: 700;
-            display: inline-flex;
-        }
-
-        .badge-running {
-            background: #fef3c7;
-            color: #92400e;
-        }
-
-        .badge-done {
-            background: #dcfce7;
-            color: #166534;
-        }
-
-        .empty {
-            text-align: center;
-            color: #64748b;
-            padding: 24px;
-        }
-    </style>
-
-    <div class="page">
-        <div class="card">
-            <h1>Rekap Absensi Karyawan</h1>
-
-            <div class="top-actions">
-                <form method="GET" action="{{ route('attendance.owner') }}" class="filter-form">
-                    <div class="form-group">
-                        <label for="tanggal_mulai">Tanggal Mulai</label>
-                        <input
-                            type="date"
-                            id="tanggal_mulai"
-                            name="tanggal_mulai"
-                            class="input"
-                            value="{{ $tanggalMulai }}">
+                        <div class="flex gap-2 flex-wrap">
+                            <a href="{{ route('owner.karyawan.list') }}"
+                               class="bg-brand-cream-dk hover:bg-brand-cream-dk/70 text-gray-700 text-sm font-bold px-4 py-2.5 rounded-xl transition-colors border border-brand-cream-dk">
+                                Face ID Karyawan
+                            </a>
+                            <a href="{{ route('attendance.export', ['tanggal_mulai' => $tanggalMulai, 'tanggal_selesai' => $tanggalSelesai]) }}"
+                               class="bg-green-600 hover:bg-green-700 text-white text-sm font-bold px-4 py-2.5 rounded-xl transition-colors">
+                                Unduh Sheet
+                            </a>
+                        </div>
                     </div>
 
-                    <div class="form-group">
-                        <label for="tanggal_selesai">Tanggal Selesai</label>
-                        <input
-                            type="date"
-                            id="tanggal_selesai"
-                            name="tanggal_selesai"
-                            class="input"
-                            value="{{ $tanggalSelesai }}">
+                    {{-- Table --}}
+                    <div class="overflow-x-auto rounded-xl border border-brand-cream-dk">
+                        <table class="w-full border-collapse min-w-[900px]">
+                            <thead>
+                                <tr class="bg-brand-cream">
+                                    <th class="text-left text-xs font-bold uppercase tracking-wider text-brand-red/60 px-4 py-3 border-b border-brand-cream-dk">Tanggal</th>
+                                    <th class="text-left text-xs font-bold uppercase tracking-wider text-brand-red/60 px-4 py-3 border-b border-brand-cream-dk">Nama Karyawan</th>
+                                    <th class="text-left text-xs font-bold uppercase tracking-wider text-brand-red/60 px-4 py-3 border-b border-brand-cream-dk">Cabang</th>
+                                    <th class="text-left text-xs font-bold uppercase tracking-wider text-brand-red/60 px-4 py-3 border-b border-brand-cream-dk">Jam Masuk</th>
+                                    <th class="text-left text-xs font-bold uppercase tracking-wider text-brand-red/60 px-4 py-3 border-b border-brand-cream-dk">Jam Pulang</th>
+                                    <th class="text-left text-xs font-bold uppercase tracking-wider text-brand-red/60 px-4 py-3 border-b border-brand-cream-dk">Status</th>
+                                    <th class="text-left text-xs font-bold uppercase tracking-wider text-brand-red/60 px-4 py-3 border-b border-brand-cream-dk">Akun Kasir</th>
+                                    <th class="text-left text-xs font-bold uppercase tracking-wider text-brand-red/60 px-4 py-3 border-b border-brand-cream-dk">Conf. Masuk</th>
+                                    <th class="text-left text-xs font-bold uppercase tracking-wider text-brand-red/60 px-4 py-3 border-b border-brand-cream-dk">Conf. Pulang</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-brand-cream-dk">
+                                @forelse ($attendances as $attendance)
+                                    <tr class="hover:bg-brand-cream/50 transition-colors">
+                                        <td class="px-4 py-3 text-sm font-semibold text-gray-800">
+                                            {{ $attendance->tanggal?->format('d-m-Y') ?? '-' }}
+                                        </td>
+                                        <td class="px-4 py-3 text-sm font-semibold text-gray-800">
+                                            {{ $attendance->karyawan?->nama ?? '-' }}
+                                        </td>
+                                        <td class="px-4 py-3 text-sm text-gray-600">
+                                            {{ $attendance->cabang?->namaCabang ?? '-' }}
+                                        </td>
+                                        <td class="px-4 py-3 text-sm text-gray-600">
+                                            {{ $attendance->jam_masuk?->format('H:i:s') ?? '-' }}
+                                        </td>
+                                        <td class="px-4 py-3 text-sm text-gray-600">
+                                            {{ $attendance->jam_pulang?->format('H:i:s') ?? '-' }}
+                                        </td>
+                                        <td class="px-4 py-3">
+                                            @if ($attendance->status === 'selesai')
+                                                <span class="inline-flex items-center bg-green-50 text-green-800 border border-green-200 text-xs font-bold px-3 py-1.5 rounded-full">
+                                                    ✓ Selesai
+                                                </span>
+                                            @else
+                                                <span class="inline-flex items-center bg-amber-50 text-amber-800 border border-amber-200 text-xs font-bold px-3 py-1.5 rounded-full">
+                                                    ⏳ Sedang Shift
+                                                </span>
+                                            @endif
+                                        </td>
+                                        <td class="px-4 py-3 text-sm text-gray-500">
+                                            {{ $attendance->user?->email ?? '-' }}
+                                        </td>
+                                        <td class="px-4 py-3 text-sm text-gray-600">
+                                            {{ $attendance->face_confidence_masuk ?? '-' }}
+                                        </td>
+                                        <td class="px-4 py-3 text-sm text-gray-600">
+                                            {{ $attendance->face_confidence_pulang ?? '-' }}
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="9" class="text-center text-gray-400 py-10 text-sm">
+                                            Belum ada data absensi pada periode ini.
+                                        </td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
                     </div>
 
-                    <button type="submit" class="btn btn-primary">
-                        Filter
-                    </button>
-                </form>
-
-                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                    <a href="{{ route('owner.karyawan.list') }}" class="btn btn-secondary">
-                        Face ID Karyawan
-                    </a>
-
-                    <a href="{{ route('attendance.export', [
-                        'tanggal_mulai' => $tanggalMulai,
-                        'tanggal_selesai' => $tanggalSelesai
-                    ]) }}" class="btn btn-success">
-                        Unduh Sheet
-                    </a>
                 </div>
             </div>
-
-            <table>
-                <thead>
-                    <tr>
-                        <th>Tanggal</th>
-                        <th>Nama Karyawan</th>
-                        <th>Cabang Absensi</th>
-                        <th>Jam Masuk</th>
-                        <th>Jam Pulang</th>
-                        <th>Status</th>
-                        <th>Akun Kasir</th>
-                        <th>Confidence Masuk</th>
-                        <th>Confidence Pulang</th>
-                    </tr>
-                </thead>
-
-                <tbody>
-                    @forelse ($attendances as $attendance)
-                        <tr>
-                            <td>
-                                {{ $attendance->tanggal?->format('d-m-Y') ?? '-' }}
-                            </td>
-
-                            <td>
-                                {{ $attendance->karyawan?->nama ?? '-' }}
-                            </td>
-
-                            <td>
-                                {{ $attendance->cabang?->namaCabang ?? '-' }}
-                            </td>
-
-                            <td>
-                                {{ $attendance->jam_masuk?->format('H:i:s') ?? '-' }}
-                            </td>
-
-                            <td>
-                                {{ $attendance->jam_pulang?->format('H:i:s') ?? '-' }}
-                            </td>
-
-                            <td>
-                                @if ($attendance->status === 'selesai')
-                                    <span class="badge badge-done">Selesai</span>
-                                @else
-                                    <span class="badge badge-running">Sedang Shift</span>
-                                @endif
-                            </td>
-
-                            <td>
-                                {{ $attendance->user?->email ?? '-' }}
-                            </td>
-
-                            <td>
-                                {{ $attendance->face_confidence_masuk ?? '-' }}
-                            </td>
-
-                            <td>
-                                {{ $attendance->face_confidence_pulang ?? '-' }}
-                            </td>
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="9" class="empty">
-                                Belum ada data absensi pada periode ini.
-                            </td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
         </div>
     </div>
 </x-layouts.app>

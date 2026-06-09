@@ -16,7 +16,9 @@ class CashierController extends Controller
 {
     public function showLoginForm()
     {
-        return view('cashier.login');
+        $identitas = \App\Models\Identitas::first(); 
+
+        return view('cashier.login', compact('identitas'));
     }
 
     public function login(Request $request)

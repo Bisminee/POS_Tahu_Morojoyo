@@ -235,6 +235,7 @@ class AttendanceController extends Controller
     {
         $this->authorizeOwner();
 
+        $identitas = \App\Models\Identitas::first();
         $tanggalMulai = $request->input('tanggal_mulai', today()->toDateString());
         $tanggalSelesai = $request->input('tanggal_selesai', today()->toDateString());
 
@@ -247,7 +248,8 @@ class AttendanceController extends Controller
         return view('attendance.owner-dashboard', compact(
             'attendances',
             'tanggalMulai',
-            'tanggalSelesai'
+            'tanggalSelesai',
+            'identitas'
         ));
     }
 
@@ -313,6 +315,7 @@ class AttendanceController extends Controller
         $this->authorizeOwner();
 
         $search = $request->input('search');
+        $identitas = \App\Models\Identitas::first();
 
         $karyawans = Karyawan::query()
             ->when($search, function ($query) use ($search) {

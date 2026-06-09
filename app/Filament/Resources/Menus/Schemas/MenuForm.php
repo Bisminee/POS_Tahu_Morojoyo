@@ -40,26 +40,6 @@ class MenuForm
                 ->content(fn ($record) => $record?->deskripsi ?? '—')
                 ->visibleOn('edit'),
 
-            Repeater::make('menuDetails')
-                ->relationship()
-                ->label('Detail Menu')
-                ->schema([
-                    Select::make('id_pcs')
-                        ->label('Jenis Barang')
-                        ->relationship('pcsTahu', 'nama_pcs')
-                        ->searchable()
-                        ->preload()
-                        ->required(),
-
-                    TextInput::make('jumlah_pakai')
-                        ->label('Jumlah Pakai')
-                        ->numeric()
-                        ->minValue(1)
-                        ->required(),
-                ])
-                ->columns(2)
-                ->defaultItems(1)
-                ->collapsible(),
 
             Repeater::make('compositions')
                 ->label('Komposisi Menu')
