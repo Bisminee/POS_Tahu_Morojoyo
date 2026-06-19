@@ -41,50 +41,29 @@ class MenuForm
                 ->visibleOn('edit'),
 
             Repeater::make('menuDetails')
-                ->relationship()
-                ->label('Detail Menu')
+                ->relationship('menuDetails')
+                ->label('Komposisi Menu / Pengurangan Stok')
                 ->schema([
                     Select::make('id_pcs')
-                        ->label('Jenis Barang')
+                        ->label('Jenis PCS Tahu')
                         ->relationship('pcsTahu', 'nama_pcs')
                         ->searchable()
                         ->preload()
                         ->required(),
 
-                    TextInput::make('jumlah_pakai')
-                        ->label('Jumlah Pakai')
-                        ->numeric()
-                        ->minValue(1)
-                        ->required(),
-                ])
-                ->columns(2)
-                ->defaultItems(1)
-                ->collapsible(),
-
-            Repeater::make('compositions')
-                ->label('Komposisi Menu')
-                ->relationship('compositions')
-                ->schema([
-                    Select::make('pcs_tahu_id')
-                        ->label('Jenis Tahu')
-                        ->relationship('pcsTahu', 'nama_pcs')
-                        ->searchable()
-                        ->preload()
-                        ->required(),
-
-                    TextInput::make('jumlah_pakai')
+                    TextInput::make('jumlah_pcs')
                         ->label('Jumlah Pakai')
                         ->numeric()
                         ->minValue(1)
                         ->default(1)
                         ->required(),
-
                 ])
                 ->columns(2)
                 ->defaultItems(1)
                 ->addActionLabel('Tambah Komposisi')
                 ->reorderable(false)
-                ->collapsible(),
+                ->collapsible()
+                ->columnSpanFull(),
 
         ]);
     }

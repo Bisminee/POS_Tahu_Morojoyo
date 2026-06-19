@@ -213,12 +213,6 @@
                         x-model="nama"
                         class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 font-body text-sm focus:outline-none focus:border-brand-red transition"/>
 
-                    <input
-                        type="tel"
-                        placeholder="Nomor WhatsApp Anda"
-                        x-model="nomor"
-                        class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 font-body text-sm focus:outline-none focus:border-brand-red transition"/>
-
                     <textarea
                         rows="4"
                         placeholder="Pesan atau pertanyaan Anda..."
@@ -228,11 +222,11 @@
 
                     <button
                         @click="
-                            if (!nama || !nomor || !pesan) {
+                            if (!nama || !pesan) {
                                 alert('Mohon isi semua field terlebih dahulu.');
                                 return;
                             }
-                            const teks = `Halo Tahu Bakso Morojoyo! 👋\n\nNama: ${nama}\nNomor: ${nomor}\n\nPesan:\n${pesan}`;
+                            const teks = `Halo Tahu Bakso Morojoyo! \n\nNama: ${nama} \n\nPesan:${pesan}`;
                             const waNumber = '{{ isset($identitas) && $identitas->nomor_whatsapp ? preg_replace("/[^0-9]/", "", $identitas->nomor_whatsapp) : "" }}';
                             const url = 'https://wa.me/' + waNumber + '?text=' + encodeURIComponent(teks);
                             window.open(url, '_blank');

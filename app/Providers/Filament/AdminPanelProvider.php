@@ -3,20 +3,24 @@
 namespace App\Providers\Filament;
 
 use Filament\Http\Middleware\Authenticate;
+use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
+use Filament\Pages\Dashboard;
 use Filament\Panel;
+use App\Models\Identitas;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
-use Illuminate\Routing\Middleware\SubstituteBindings;
-use Illuminate\Session\Middleware\AuthenticateSession;
-use Illuminate\Session\Middleware\StartSession;
-use Illuminate\View\Middleware\ShareErrorsFromSession;
-use Illuminate\Support\Facades\Blade;
 use Filament\Navigation\NavigationItem;
+use Illuminate\Routing\Middleware\SubstituteBindings;
+use Illuminate\Session\Middleware\StartSession;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Blade;
+use Illuminate\View\Middleware\ShareErrorsFromSession;
+use App\Filament\Widgets\DashboardOwnerStats;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -27,42 +31,68 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login()
+
             ->colors([
-                'primary' => Color::hex('#C0271A'),
-                'gray'    => Color::Zinc,
+                //
             ])
-            ->font(
-                'Nunito',
-                'https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Bebas+Neue&display=swap'
+
+            ->discoverResources(
+                in: app_path('Filament/Resources'),
+                for: 'App\\Filament\\Resources'
             )
-            ->brandName('Tahu Bakso Morojoyo')
-            // ->brandLogo(fn () => view('filament.brand-logo'))
-            ->brandLogoHeight('2.5rem')
-            ->sidebarCollapsibleOnDesktop()
-            ->navigationGroups(['Utama', 'Data Master'])
+
+            ->discoverPages(
+                in: app_path('Filament/Pages'),
+                for: 'App\\Filament\\Pages'
+            )
+
+            ->pages([
+                Dashboard::class,
+            ])
+
+            ->discoverWidgets(
+                in: app_path('Filament/Widgets'),
+                for: 'App\\Filament\\Widgets'
+            )
+
+            ->widgets([
+                DashboardOwnerStats::class,
+            ])
+
             ->navigationItems([
                 NavigationItem::make('Face ID Karyawan')
-                    ->icon('heroicon-o-camera')
-                    ->url('/owner/karyawan')
+                    ->url('/owner/karyawan', shouldOpenInNewTab: false)
+                    ->icon('heroicon-o-user-circle')
                     ->group('Absensi')
-                    ->sort(1),
+                    ->sort(1)
+                    ->visible(fn() => optional(Auth::user())->role === 'owner'),
 
                 NavigationItem::make('Rekap Absensi')
-                    ->icon('heroicon-o-clipboard-document-list')
-                    ->url('/owner/absensi')
+                    ->url('/owner/absensi', shouldOpenInNewTab: false)
+                    ->icon('heroicon-o-clock')
                     ->group('Absensi')
-                    ->sort(2),
+                    ->sort(2)
+                    ->visible(fn() => optional(Auth::user())->role === 'owner'),
+
+                NavigationItem::make('Laporan Keuangan')
+                    ->url('/admin/laporan-keuangan', shouldOpenInNewTab: false)
+                    ->icon('heroicon-o-banknotes')
+                    ->group('Laporan')
+                    ->sort(3)
+                    ->visible(fn() => optional(Auth::user())->role === 'owner'),
             ])
-            ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
-            ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
-            ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
-            ->widgets([])
-            ->pages([
-                \App\Filament\Pages\Dashboard::class,
-            ])
+            ->brandLogo(function () {
+                $identitas = Identitas::first();
+
+                return $identitas?->logo
+                    ? asset('storage/' . $identitas->logo)
+                    : asset('images/default-logo.png');
+            })
+            ->brandLogoHeight('2rem')
+            ->brandName('')
             ->renderHook(
                 'panels::head.end',
-                fn() => Blade::render('
+                fn() => Blade::render(<<<'BLADE'
                     <script src="https://cdn.tailwindcss.com"></script>
                     <script>
                         tailwind.config = {
@@ -71,75 +101,26 @@ class AdminPanelProvider extends PanelProvider
                                 extend: {
                                     colors: {
                                         brand: {
-                                            red:     "#C0271A",
-                                            darkred: "#9B1E13",
-                                            yellow:  "#F5C518",
-                                            cream:   "#FFF8E7",
+                                            red: '#C0271A',
+                                            darkred: '#9B1E13',
+                                            yellow: '#F5C518',
+                                            cream: '#FFF8E7',
                                         }
                                     },
                                     fontFamily: {
-                                        display: ["Bebas Neue", "sans-serif"],
-                                        body:    ["Nunito", "sans-serif"],
+                                        display: ['Bebas Neue', 'sans-serif'],
+                                        body: ['Nunito', 'sans-serif'],
                                     }
                                 }
                             }
                         }
                     </script>
                     <style>
-                        /* ══ DARK MODE — kembalikan ke default Filament ══ */
-                        html.dark body,
-                        html.dark .fi-body,
-                        html.dark .fi-main,
-                        html.dark main,
-                        html.dark .fi-main-ctn { background-color: unset !important; color: unset !important; }
-
-                        html.dark .fi-topbar,
-                        html.dark .fi-topbar nav { background-color: unset !important; border-bottom: unset !important; box-shadow: unset !important; }
-
-                        html.dark .fi-sidebar,
-                        html.dark aside { background-color: unset !important; border-right: unset !important; }
-
-                        html.dark .fi-sidebar-header { background: unset !important; border-bottom: unset !important; }
-                        html.dark .fi-sidebar-header * { color: unset !important; font-family: unset !important; }
-
-                        html.dark .fi-sidebar-item-button { background: unset !important; color: unset !important; border-left: unset !important; box-shadow: unset !important; }
-                        html.dark .fi-sidebar-item-button:hover { background: unset !important; color: unset !important; border-left-color: unset !important; }
-                        html.dark .fi-sidebar-item-button[aria-current="page"],
-                        html.dark .fi-sidebar-item-button.fi-active { background: unset !important; color: unset !important; box-shadow: unset !important; }
-                        html.dark .fi-sidebar-item-button svg { color: unset !important; }
-
-                        html.dark .fi-page-header-heading { color: unset !important; font-size: unset !important; }
-                        html.dark .fi-page-header-heading::after { display: none !important; }
-
-                        html.dark .fi-ta-header-cell { background: unset !important; color: unset !important; border-bottom: unset !important; font-family: unset !important; }
-                        html.dark .fi-ta-ctn { border: unset !important; box-shadow: unset !important; }
-                        html.dark .fi-ta-row:hover td { background: unset !important; }
-                        html.dark .fi-ta-row td { border-bottom: unset !important; color: unset !important; }
-
-                        html.dark .fi-btn-primary { background: unset !important; box-shadow: unset !important; border: unset !important; }
-                        html.dark .fi-btn-primary:hover { background: unset !important; transform: unset !important; }
-
-                        html.dark .fi-section { border: unset !important; box-shadow: unset !important; }
-                        html.dark .fi-section-header-heading { color: unset !important; }
-
-                        html.dark .fi-sidebar-group-label { color: unset !important; }
-                        html.dark .fi-breadcrumbs li,
-                        html.dark .fi-breadcrumbs a { color: unset !important; }
-                        html.dark .fi-breadcrumbs li:last-child { color: unset !important; }
-
-                        html.dark input,
-                        html.dark textarea,
-                        html.dark select { background-color: unset !important; border-color: unset !important; color: unset !important; }
-                        html.dark input:focus { border-color: unset !important; box-shadow: unset !important; }
-
-                        html.dark ::-webkit-scrollbar-track { background: unset; }
-                        html.dark ::-webkit-scrollbar-thumb { background: unset; }
-
                         :root {
-                            --brand-red:     #C0271A;
+                            --brand-red: #C0271A;
                             --brand-darkred: #9B1E13;
-                            --brand-yellow:  #F5C518;
-                            --brand-cream:   #FFF8E7;
+                            --brand-yellow: #F5C518;
+                            --brand-cream: #FFF8E7;
                         }
 
                         body {
@@ -152,19 +133,23 @@ class AdminPanelProvider extends PanelProvider
                         }
 
                         .fi-sidebar {
-                            background: #ffffff;
-                            border-right: 2px solid #f3f4f6;
+                            background: #ffffff !important;
+                            border-right: 2px solid #f3f4f6 !important;
                         }
 
                         .fi-sidebar-header {
                             background: var(--brand-red) !important;
+                            padding: 2rem 0 !important;
+                            display: flex;
+                            justify-content: center;
+                            align-items: center;
                         }
 
                         .fi-sidebar-item-button {
                             border-radius: 12px !important;
                             font-weight: 700 !important;
                             font-size: .875rem !important;
-                            transition: all .2s !important;
+                            transition: all .2s ease !important;
                         }
 
                         .fi-sidebar-item-button:hover {
@@ -176,8 +161,10 @@ class AdminPanelProvider extends PanelProvider
                         .fi-sidebar-item-button.fi-active {
                             background: var(--brand-red) !important;
                             color: #ffffff !important;
-                            box-shadow: 0 4px 12px rgba(192,39,26,.25) !important;
+                            box-shadow: 0 4px 12px rgba(192, 39, 26, .25) !important;
                         }
+                        
+
 
                         .fi-topbar {
                             border-bottom: 4px solid var(--brand-red) !important;
@@ -191,13 +178,6 @@ class AdminPanelProvider extends PanelProvider
                             letter-spacing: .05em !important;
                         }
 
-                        .fi-wi {
-                            background: transparent !important;
-                            border: none !important;
-                            box-shadow: none !important;
-                            padding: 0 !important;
-                        }
-
                         .fi-ta-header-cell {
                             font-family: "Bebas Neue", sans-serif !important;
                             color: var(--brand-red) !important;
@@ -206,7 +186,7 @@ class AdminPanelProvider extends PanelProvider
                         }
 
                         .fi-ta-row td {
-                            transition: background-color .2s ease;
+                            transition: background-color .2s ease !important;
                         }
 
                         .fi-ta-row:hover td {
@@ -232,7 +212,7 @@ class AdminPanelProvider extends PanelProvider
                         .fi-section {
                             border: 1.5px solid #f0e6d3 !important;
                             border-radius: 14px !important;
-                            box-shadow: 0 2px 10px rgba(0,0,0,.05) !important;
+                            box-shadow: 0 2px 10px rgba(0, 0, 0, .05) !important;
                         }
 
                         .fi-breadcrumbs li,
@@ -243,7 +223,7 @@ class AdminPanelProvider extends PanelProvider
                         }
 
                         .fi-breadcrumbs li:last-child {
-                            color: #C0271A !important;
+                            color: var(--brand-red) !important;
                         }
 
                         ::-webkit-scrollbar {
@@ -255,7 +235,7 @@ class AdminPanelProvider extends PanelProvider
                             border-radius: 99px;
                         }
                     </style>
-                ')
+                BLADE)
             )
             ->middleware([
                 EncryptCookies::class,
@@ -268,6 +248,8 @@ class AdminPanelProvider extends PanelProvider
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
             ])
-            ->authMiddleware([Authenticate::class]);
+            ->authMiddleware([
+                Authenticate::class,
+            ]);
     }
 }

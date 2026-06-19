@@ -6,6 +6,7 @@ use App\Filament\Resources\Menus\Pages\CreateMenu;
 use App\Filament\Resources\Menus\Pages\EditMenu;
 use App\Filament\Resources\Menus\Pages\ListMenus;
 use App\Models\Menu;
+use App\Models\PcsTahu;
 use BackedEnum;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
@@ -22,21 +23,23 @@ use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Facades\Auth;
 
 class MenuResource extends Resource
 {
     protected static ?string $model = Menu::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBookOpen;
+    protected static string | BackedEnum | null $navigationIcon = Heroicon::OutlinedBookOpen;
+
     protected static string | \UnitEnum | null $navigationGroup = 'Master Data';
+
     protected static ?string $recordTitleAttribute = 'namaMenu';
 
     protected static ?string $navigationLabel = 'Menu';
+
     protected static ?string $modelLabel = 'Menu';
+
     protected static ?string $pluralModelLabel = 'Menu';
 
     public static function form(Schema $schema): Schema
@@ -63,18 +66,26 @@ class MenuResource extends Resource
                     ->rows(4)
                     ->columnSpanFull(),
 
-                Repeater::make('compositions')
-                    ->label('Komposisi Menu / Pengurangan Stok')
-                    ->relationship('compositions')
+                Textarea::make('deskripsi')
+                    ->label('Isi Menu')
+                    ->rows(3)
+                    ->placeholder('Contoh: Tahu bakso isi keju, original, dan pedas.')
+                    ->columnSpanFull(),
+
+                Repeater::make('menuDetails')
+                    ->label('Komposisi Menu')
+                    ->relationship('menuDetails')
                     ->schema([
-                        Select::make('pcs_tahu_id')
-                            ->label('Jenis PCS Tahu')
-                            ->relationship('pcsTahu', 'nama_pcs')
+                        Select::make('id_pcs')
+                            ->label('Jenis Tahu')
+                            ->options(fn () => PcsTahu::query()
+                                ->orderBy('nama_pcs')
+                                ->pluck('nama_pcs', 'id_pcs'))
                             ->searchable()
                             ->preload()
                             ->required(),
 
-                        TextInput::make('jumlah_pakai')
+                        TextInput::make('jumlah_pcs')
                             ->label('Jumlah Pakai')
                             ->numeric()
                             ->minValue(1)
@@ -103,16 +114,17 @@ class MenuResource extends Resource
                     ->searchable()
                     ->sortable(),
 
-                TextColumn::make('compositions.pcsTahu.nama_pcs')
+                TextColumn::make('menuDetails.pcsTahu.nama_pcs')
                     ->label('Komposisi')
                     ->bulleted()
-                    ->listWithLineBreaks(),
+                    ->listWithLineBreaks()
+                    ->placeholder('Belum ada komposisi'),
 
                 TextColumn::make('jumlah_komposisi')
                     ->label('Jumlah Komposisi')
-                    ->state(fn(Menu $record): string => $record->compositions->count() . ' Item')
+                    ->state(fn (Menu $record): string => $record->menuDetails->count() . ' Item')
                     ->badge()
-                    ->color(fn(string $state): string => $state === '0 Item' ? 'gray' : 'success'),
+                    ->color(fn (string $state): string => $state === '0 Item' ? 'gray' : 'success'),
 
                 TextColumn::make('jumlah_harga')
                     ->label('Harga')
@@ -140,7 +152,7 @@ class MenuResource extends Resource
                         return $jumlah > 0 ? $jumlah . ' Harga' : 'Belum Ada Harga';
                     })
                     ->badge()
-                    ->color(fn(string $state): string => $state === 'Belum Ada Harga' ? 'gray' : 'success'),
+                    ->color(fn (string $state): string => $state === 'Belum Ada Harga' ? 'gray' : 'success'),
 
                 TextColumn::make('tagline_product')
                     ->label('Tagline')
@@ -148,15 +160,15 @@ class MenuResource extends Resource
                     ->limit(40),
 
                 TextColumn::make('deskripsi_produk')
-                    ->label('Deskripsi')
+                    ->label('Deskripsi Produk')
                     ->limit(60)
                     ->wrap(),
 
                 TextColumn::make('deskripsi')
                     ->label('Isi Menu')
                     ->wrap()
-                    ->placeholder('—')
-                    ->getStateUsing(fn($record) => $record->deskripsi),
+                    ->limit(60)
+                    ->placeholder('—'),
 
                 IconColumn::make('is_active')
                     ->label('Aktif')
@@ -186,7 +198,7 @@ class MenuResource extends Resource
     {
         return parent::getEloquentQuery()
             ->with([
-                'compositions.pcsTahu',
+                'menuDetails.pcsTahu',
                 'hargas',
             ]);
     }

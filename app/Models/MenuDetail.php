@@ -3,11 +3,11 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class MenuDetail extends Model
 {
     protected $table = 'menu_details';
+
     protected $primaryKey = 'id_detail';
 
     protected $fillable = [
@@ -16,12 +16,12 @@ class MenuDetail extends Model
         'jumlah_pcs',
     ];
 
-    public function menu(): BelongsTo
+    public function menu()
     {
         return $this->belongsTo(Menu::class, 'idMenu', 'idMenu');
     }
 
-    public function pcsTahu(): BelongsTo
+    public function pcsTahu()
     {
         return $this->belongsTo(PcsTahu::class, 'id_pcs', 'id_pcs');
     }

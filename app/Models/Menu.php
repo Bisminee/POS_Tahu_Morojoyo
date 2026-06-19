@@ -33,11 +33,6 @@ class Menu extends Model
         return $this->hasOne(Harga::class, 'idMenu', 'idMenu');
     }
 
-    public function compositions(): HasMany
-    {
-        return $this->hasMany(MenuComposition::class, 'menu_id', 'idMenu');
-    }
-
     public function menuDetails(): HasMany
     {
         return $this->hasMany(MenuDetail::class, 'idMenu', 'idMenu');

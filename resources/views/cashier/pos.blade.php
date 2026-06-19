@@ -2,6 +2,10 @@
 
 <x-layouts.app :title="$title">
 
+    @php
+        $selectedShift = $selectedShift ?? null;
+    @endphp
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Nunito:wght@400;600;700;800&display=swap"
         rel="stylesheet" />
@@ -40,29 +44,35 @@
         /* ── LAYOUT ── */
         .pos-wrap {
             display: grid;
-            grid-template-columns: 1fr 360px;
+            grid-template-columns: minmax(0, 1fr) 420px;
             gap: 0;
             height: 100vh;
             max-height: 100vh;
             overflow: hidden;
+            background: #FFF8E7;
         }
 
         .pos-left {
+            min-width: 0;
             overflow-y: auto;
-            padding: 20px;
+            padding: 22px;
             display: flex;
             flex-direction: column;
-            gap: 16px;
+            gap: 18px;
             background: #FFF8E7;
         }
 
         .pos-right {
-            border-left: 3px solid #C0271A;
-            background: #fff;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
+    border-left: 3px solid #C0271A;
+    background: #fff;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    max-height: 100vh;
+    overflow: hidden;
+    padding-bottom: 110px;
+    position: relative;
+}
 
         /* ── CARD ── */
         .card {
@@ -491,68 +501,111 @@
 
         /* ── RIGHT PANEL ── */
         .rp-header {
-            padding: 14px 18px;
+            flex: 0 0 auto;
+            padding: 16px 20px;
             border-bottom: 2px solid #f0d9a0;
             font-family: 'Bebas Neue', sans-serif;
-            font-size: 18px;
-            letter-spacing: .1em;
+            font-size: 22px;
+            letter-spacing: .12em;
             color: #C0271A;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
             background: #FFF8E7;
         }
 
         .cart-scroll {
-            flex: 1;
-            overflow-y: auto;
-            padding: 14px 16px;
-        }
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    padding: 18px 20px;
+}
 
         .cart-empty-box {
             border: 2px dashed #f0d9a0;
             border-radius: 14px;
-            padding: 32px 16px;
+            padding: 24px 16px;
             text-align: center;
             color: #9ca3af;
             font-size: 13px;
         }
 
-        .cart-item-row {
+        .compact-cart-box {
+            border: 2px solid #f0d9a0;
+            border-radius: 16px;
+            background: #FFFDF5;
+            padding: 14px 16px;
+        }
+
+        .compact-cart-row {
             display: flex;
             justify-content: space-between;
-            align-items: flex-start;
-            padding: 9px 0;
+            align-items: center;
+            gap: 12px;
+            padding: 5px 0;
+            font-size: 14px;
+            color: #6b7280;
+        }
+
+        .compact-cart-row strong {
+            color: #C0271A;
+            font-weight: 900;
+            font-size: 16px;
+        }
+
+        .compact-cart-total {
+            margin-top: 8px;
+            padding-top: 10px;
+            border-top: 2px dashed #f0d9a0;
+        }
+
+        .compact-cart-note {
+            margin-top: 8px;
+            font-size: 11px;
+            color: #9ca3af;
+            line-height: 1.4;
+        }
+
+        .cart-item-row {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 12px;
+            padding: 12px 0;
             border-bottom: 1px solid #fef3c7;
-            gap: 8px;
+        }
+
+        .cart-item-row:last-child {
+            border-bottom: none;
         }
 
         .ci-name {
-            font-size: 13px;
-            font-weight: 800;
+            font-size: 14px;
+            font-weight: 900;
             color: #1f1f1f;
+            line-height: 1.35;
         }
 
         .ci-qty {
-            font-size: 11px;
+            font-size: 12px;
             color: #9ca3af;
-            margin-top: 2px;
+            margin-top: 3px;
         }
 
         .ci-price {
-            font-size: 13px;
-            font-weight: 800;
+            font-size: 14px;
+            font-weight: 900;
             color: #C0271A;
             text-align: right;
+            white-space: nowrap;
         }
 
         .ci-remove {
             font-size: 10px;
-            font-weight: 700;
+            font-weight: 800;
             color: #C0271A;
             cursor: pointer;
-            margin-top: 4px;
-            letter-spacing: .05em;
+            margin-top: 6px;
+            letter-spacing: .08em;
             text-transform: uppercase;
         }
 
@@ -576,7 +629,8 @@
 
         /* ── CUSTOM SECTION ── */
         .custom-section {
-            padding: 12px 16px;
+            flex: 0 0 auto;
+            padding: 12px 20px;
             border-top: 2px solid #f0d9a0;
             background: #FFFDF5;
         }
@@ -593,7 +647,7 @@
             width: 100%;
             border: 1.5px solid #f0d9a0;
             border-radius: 10px;
-            padding: 7px 10px;
+            padding: 9px 11px;
             font-size: 13px;
             font-family: 'Nunito', sans-serif;
             color: #1f1f1f;
@@ -639,15 +693,18 @@
         }
 
         /* ── CART SUMMARY ── */
-        .cart-summary {
-            padding: 12px 16px;
-            border-top: 2px solid #f0d9a0;
-            background: #FFFDF5;
-            font-size: 13px;
-        }
+       .cart-summary {
+    padding: 12px 20px;
+    border-top: 2px solid #f0d9a0;
+    background: #FFFDF5;
+    font-size: 13px;
+    max-height: 220px;
+    overflow-y: auto;
+}
 
         .disc-row {
-            display: flex;
+            display: grid;
+            grid-template-columns: 88px 1fr;
             align-items: center;
             gap: 8px;
             margin-bottom: 8px;
@@ -663,23 +720,25 @@
         .sum-line {
             display: flex;
             justify-content: space-between;
-            padding: 3px 0;
+            padding: 2px 0;
             color: #6b7280;
         }
 
         .sum-line.big {
-            font-size: 15px;
-            font-weight: 800;
+            font-size: 16px;
+            font-weight: 900;
             color: #C0271A;
             padding-top: 8px;
-            margin-top: 4px;
+            margin-top: 5px;
             border-top: 2px dashed #f0d9a0;
         }
 
         /* ── MONEY SECTION ── */
         .money-section {
-            padding: 10px 16px;
+            flex: 0 0 auto;
+            padding: 12px 20px;
             border-top: 2px solid #f0d9a0;
+            background: #ffffff;
         }
 
         .money-section label {
@@ -706,29 +765,35 @@
 
         /* ── CHECKOUT ── */
         .checkout-bar {
-            padding: 12px 16px;
-            border-top: 2px solid #f0d9a0;
-            background: #fff;
-        }
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 18px;
+    z-index: 50;
+    padding: 14px 20px;
+    border-top: 2px solid #f0d9a0;
+    background: #ffffff;
+    box-shadow: 0 -10px 24px rgba(192, 39, 26, 0.12);
+}
 
-        .btn-checkout {
-            width: 100%;
-            background: linear-gradient(135deg, #C0271A 0%, #9B1E13 100%);
-            color: #F5C518;
-            border: none;
-            border-radius: 12px;
-            padding: 13px;
-            font-family: 'Bebas Neue', sans-serif;
-            font-size: 18px;
-            letter-spacing: .1em;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            transition: all .15s;
-            box-shadow: 0 4px 14px rgba(192, 39, 26, 0.3);
-        }
+       .btn-checkout {
+    width: 100%;
+    background: linear-gradient(135deg, #C0271A 0%, #9B1E13 100%);
+    color: #F5C518;
+    border: none;
+    border-radius: 14px;
+    padding: 14px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 20px;
+    letter-spacing: .12em;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: all .15s;
+    box-shadow: 0 4px 14px rgba(192, 39, 26, 0.3);
+}
 
         .btn-checkout:hover {
             background: linear-gradient(135deg, #9B1E13 0%, #7a1710 100%);
@@ -1452,6 +1517,20 @@
             }
         }
 
+
+
+        @media (max-height: 780px) {
+            .rp-header { padding: 12px 18px; font-size: 20px; }
+            .cart-scroll { min-height: 90px; padding: 12px 18px; }
+            .custom-section { padding: 10px 18px; }
+            .custom-section .ct { margin-bottom: 6px; }
+            .cart-summary { padding: 10px 18px; font-size: 13px; }
+            .money-section { padding: 10px 18px; }
+            .checkout-bar { padding: 10px 18px; }
+            .btn-checkout { padding: 12px; font-size: 20px; }
+            .input-sm { padding: 7px 10px; }
+        }
+
         /* ── PRINT ── */
         @media print {
 
@@ -1503,9 +1582,17 @@
         @media (max-width: 768px) {
             .pos-wrap {
                 grid-template-columns: 1fr;
-                grid-template-rows: 1fr auto;
+                grid-template-rows: auto auto;
                 max-height: none;
                 height: auto;
+            }
+
+            .pos-right {
+                height: auto;
+                max-height: none;
+                border-left: none;
+                border-top: 3px solid #C0271A;
+                grid-template-rows: auto minmax(240px, 45vh) auto auto auto auto;
             }
 
             .stat-row {
@@ -1585,7 +1672,7 @@
                     <button type="button" class="btn-laporan-topbar" onclick="openRiwayatModal()">
                         Riwayat Pesanan
                     </button>
-                    <a href="{{ route('attendance.reset') }}"
+                    <a href="{{ route('attendance.index') }}"
                         style="display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:99px;
                         background:rgba(245,197,24,0.15);color:#F5C518;border:1px solid rgba(245,197,24,0.35);
                         font-size:12px;font-weight:700;text-decoration:none;transition:background .15s;font-family:'Nunito',sans-serif"
@@ -1698,7 +1785,7 @@
             <div class="card">
                 <div class="card-title">Pilih Menu</div>
                 <div class="menu-grid">
-                    @foreach ($menus as $menu)
+                    @foreach ($menus->where('is_active', 1) as $menu)
                         <button type="button" class="menu-card" onclick="openMenuModal({{ $menu->idMenu }})">
                             <h3>{{ $menu->namaMenu }}</h3>
                             <p>{{ $menu->deskripsi ?: 'Tidak ada deskripsi.' }}</p>
@@ -1751,22 +1838,36 @@
                     Keranjang masih kosong.<br>
                     <span style="font-size:11px;color:#d1d5db">Klik kartu menu untuk menambahkan.</span>
                 </div>
-                <div id="cart-items-container"></div>
+
+                <div class="compact-cart-box" id="compact-filled" style="display:none">
+                    <div class="compact-cart-row">
+                        <span>Total item</span>
+                        <strong id="compact-items">0</strong>
+                    </div>
+                    <div class="compact-cart-row compact-cart-total">
+                        <span>Subtotal sementara</span>
+                        <strong id="compact-subtotal">Rp0</strong>
+                    </div>
+                </div>
+
+                <div id="cart-items-container" style="display:none"></div>
             </div>
 
             <div class="custom-section" id="custom-section">
                 <div class="ct">Menu Tambahan</div>
-                <input id="custom-name" class="input-sm" type="text"
-                    placeholder="Nama item (mis: Saus Extra, Ongkir)">
-                <div class="custom-row" style="margin-top:6px">
-                    <input id="custom-price" class="input-sm" type="number" min="0"
-                        placeholder="Harga (Rp)">
-                    <input id="custom-qty" class="input-sm" type="number" min="1" value="1"
-                        style="max-width:64px">
+
+                <div style="display:grid;gap:8px">
+                    <input id="custom-name" class="input-sm" type="text" placeholder="Nama item tambahan">
+
+                    <div style="display:grid;grid-template-columns:1fr 72px;gap:8px">
+                        <input id="custom-price" class="input-sm" type="number" min="0" placeholder="Harga">
+                        <input id="custom-qty" class="input-sm" type="number" min="1" value="1">
+                    </div>
+
+                    <button class="btn-add-custom" style="width:100%;padding:10px 14px" onclick="addCustomMenu()">
+                        + Tambah
+                    </button>
                 </div>
-                <button class="btn-add-custom" style="width:100%;margin-top:10px" onclick="addCustomMenu()">
-                    + Tambah ke Keranjang
-                </button>
             </div>
 
             <div class="cart-summary" id="cart-summary" style="display:none">
@@ -1781,15 +1882,7 @@
                 <div class="sum-line big"><span>Total</span><span id="sum-total">Rp0</span></div>
             </div>
 
-            <div class="money-section" id="money-section" style="display:none">
-                <label for="money-paid">Uang Dibayar</label>
-                <input id="money-paid" class="input-sm" type="number" min="0" value="0"
-                    oninput="calcChange()">
-                <div class="change-row">
-                    <span>Kembalian</span>
-                    <span id="change-display" class="change-amt">Rp0</span>
-                </div>
-            </div>
+            {{-- Uang dibayar dipindahkan ke popup checkout agar tampilan kanan lebih ringkas. --}}
 
             <div class="checkout-bar">
                 <button class="btn-checkout" id="btn-checkout" onclick="openCheckoutModal()">
@@ -1882,6 +1975,22 @@
                 </div>
                 <div id="co-pay-methods" style="display:flex;gap:8px;flex-wrap:wrap"></div>
             </div>
+
+            <div style="background:#ffffff;border-radius:12px;padding:14px;border:2px solid #f0d9a0;margin-top:14px">
+                <div
+                    style="font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:.1em;color:#C0271A;margin-bottom:10px">
+                    Pembayaran
+                </div>
+                <label for="co-money-paid" style="font-size:12px;color:#9ca3af;font-weight:800;display:block;margin-bottom:6px">
+                    Uang Dibayar
+                </label>
+                <input id="co-money-paid" class="input-sm" type="number" min="0" value="0" oninput="calcCheckoutChange()">
+                <div class="change-row" style="margin-top:10px">
+                    <span>Kembalian</span>
+                    <span id="co-change-modal" class="change-amt">Rp0</span>
+                </div>
+            </div>
+
             <div class="modal-actions">
                 <button class="btn-modal-cancel" id="btn-cancel-checkout"
                     onclick="closeModal('modal-checkout')">Batal</button>
@@ -2030,9 +2139,18 @@
                 ->values()
                 ->toArray();
 
-            $todayTrxFull = \App\Models\Transaction::with('items')
-                ->whereDate('created_at', today())
-                ->when(auth()->user()?->cabang_id, fn($q, $idCabang) => $q->where('id_cabang', $idCabang))
+            $todayTrxQuery = \App\Models\Transaction::with('items')
+                ->whereDate('created_at', today());
+
+            $userCabangId = auth()->user()?->cabang_id;
+
+            if ($userCabangId && \Illuminate\Support\Facades\Schema::hasColumn('transactions', 'cabang_id')) {
+                $todayTrxQuery->where('cabang_id', $userCabangId);
+            } elseif ($userCabangId && \Illuminate\Support\Facades\Schema::hasColumn('transactions', 'id_cabang')) {
+                $todayTrxQuery->where('id_cabang', $userCabangId);
+            }
+
+            $todayTrxFull = $todayTrxQuery
                 ->get()
                 ->map(
                     fn($t) => [
@@ -2173,9 +2291,11 @@
             const disc = Math.max(0, parseFloat(document.getElementById('discount').value) || 0);
             const sub = cart.reduce((s, i) => s + i.subtotal, 0);
             const total = Math.max(0, sub - disc);
-            const paid = parseFloat(document.getElementById('money-paid').value) || 0;
+            const paid = parseFloat(document.getElementById('co-money-paid')?.value) || 0;
             document.getElementById('co-total').textContent = fmt(total);
             document.getElementById('co-change').textContent = fmt(Math.max(0, paid - total));
+            const coChangeModal = document.getElementById('co-change-modal');
+            if (coChangeModal) coChangeModal.textContent = fmt(Math.max(0, paid - total));
             document.getElementById('co-method').textContent = METHOD_LABELS[method] ?? method;
         }
 
@@ -2370,16 +2490,19 @@
             const empty = document.getElementById('cart-empty');
             const summary = document.getElementById('cart-summary');
             const moneyEl = document.getElementById('money-section');
+            const compactFilled = document.getElementById('compact-filled');
             container.innerHTML = '';
             if (!cart.length) {
                 empty.style.display = '';
+                if (compactFilled) compactFilled.style.display = 'none';
                 summary.style.display = 'none';
-                moneyEl.style.display = 'none';
+                if (moneyEl) moneyEl.style.display = 'none';
                 return;
             }
             empty.style.display = 'none';
+            if (compactFilled) compactFilled.style.display = '';
             summary.style.display = '';
-            moneyEl.style.display = '';
+            if (moneyEl) moneyEl.style.display = '';
             cart.forEach((item, i) => {
                 const div = document.createElement('div');
                 div.className = 'cart-item-row';
@@ -2406,15 +2529,34 @@
             document.getElementById('sum-sub').textContent = fmt(sub);
             document.getElementById('sum-disc').textContent = fmt(disc);
             document.getElementById('sum-total').textContent = fmt(total);
+            const compactItems = document.getElementById('compact-items');
+            const compactSubtotal = document.getElementById('compact-subtotal');
+            if (compactItems) compactItems.textContent = items;
+            if (compactSubtotal) compactSubtotal.textContent = fmt(total);
             calcChange();
+
+            const cartScroll = document.getElementById('cart-scroll');
+            if (cartScroll) {
+                cartScroll.scrollTop = cartScroll.scrollHeight;
+            }
         }
 
         function calcChange() {
-            const disc = Math.max(0, parseFloat(document.getElementById('discount').value) || 0);
+            calcCheckoutChange();
+        }
+
+        function calcCheckoutChange() {
+            const disc = Math.max(0, parseFloat(document.getElementById('discount')?.value) || 0);
             const sub = cart.reduce((s, i) => s + i.subtotal, 0);
             const total = Math.max(0, sub - disc);
-            const paid = parseFloat(document.getElementById('money-paid').value) || 0;
-            document.getElementById('change-display').textContent = fmt(Math.max(0, paid - total));
+            const paid = parseFloat(document.getElementById('co-money-paid')?.value) || 0;
+            const change = Math.max(0, paid - total);
+
+            const coChange = document.getElementById('co-change');
+            const coChangeModal = document.getElementById('co-change-modal');
+
+            if (coChange) coChange.textContent = fmt(change);
+            if (coChangeModal) coChangeModal.textContent = fmt(change);
         }
 
         function openCheckoutModal() {
@@ -2425,8 +2567,8 @@
             const disc = Math.max(0, parseFloat(document.getElementById('discount').value) || 0);
             const sub = cart.reduce((s, i) => s + i.subtotal, 0);
             const total = Math.max(0, sub - disc);
-            const paid = parseFloat(document.getElementById('money-paid').value) || 0;
-            const change = Math.max(0, paid - total);
+            const paid = total;
+            const change = 0;
             const stockImpact = {};
             cart.forEach(item => {
                 (item.details || []).forEach(d => {
@@ -2475,6 +2617,9 @@
                     `<button class="pay-btn ${currentPaymentMethod === m ? 'active' : ''}" onclick="setCheckoutPayment(this, '${m}')" data-method="${m}">${labels[m]}</button>`
                 ).join('');
             }
+            const coMoneyPaid = document.getElementById('co-money-paid');
+            if (coMoneyPaid) coMoneyPaid.value = total;
+            calcCheckoutChange();
             openModal('modal-checkout');
         }
 
@@ -2487,8 +2632,8 @@
             const disc = Math.max(0, parseFloat(document.getElementById('discount').value) || 0);
             const sub = cart.reduce((s, i) => s + i.subtotal, 0);
             const total = Math.max(0, sub - disc);
-            const paid = parseFloat(document.getElementById('money-paid').value) || 0;
-            const change = Math.max(0, paid - total);
+            const paid = total;
+            const change = 0;
             try {
                 const formData = new FormData();
                 formData.append('_token', CSRF_TOKEN);
@@ -2608,7 +2753,8 @@
         function resetAndClose() {
             cart = [];
             document.getElementById('discount').value = 0;
-            document.getElementById('money-paid').value = 0;
+            const moneyPaidInput = document.getElementById('co-money-paid');
+            if (moneyPaidInput) moneyPaidInput.value = 0;
             renderCart();
             closeModal('modal-receipt');
             const lastSyncDate = localStorage.getItem('synced_date');
